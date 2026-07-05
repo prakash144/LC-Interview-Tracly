@@ -26,6 +26,32 @@ Difficulty color system (Easy=green, Medium=yellow, Hard=red) verified across al
 ### 7. Production Theme System — ✅
 Light / Dark / System modes with localStorage persistence. Semantic CSS variable system replacing all hardcoded dark colors across 32+ files. Flash-prevention inline script. 3-mode selector in Settings (Light / Dark / System buttons with active state). Accent color picker (Green / Blue / Purple / Orange) applied to focus rings. No `dark:` prefix variants — all theme-aware via CSS variables.
 
+### 8. Notes Editor — Markdown & Code Formatting — ✅
+Markdown editor with syntax-highlighted code blocks inside NotesDialog. Edit/Preview tabs with `react-markdown` + `rehype-highlight`. Theme-aware syntax highlighting via custom OKLCH CSS variables in `globals.css`. Supports 190+ languages (Python default, extensible to Java/C++/Go/JS without code changes).
+
+### 9. GitHub Pages Favicon — ✅
+Complete favicon asset set generated from SVG (16×16, 32×32, 48×48, 180×180, 192×192, 512×512). Deleted conflicting `src/app/favicon.ico`. Updated metadata with basePath-aware icon links and manifest. Fixed OG/Twitter image URLs (double basePath). Updated manifest.json with relative asset paths.
+Light / Dark / System modes with localStorage persistence. Semantic CSS variable system replacing all hardcoded dark colors across 32+ files. Flash-prevention inline script. 3-mode selector in Settings (Light / Dark / System buttons with active state). Accent color picker (Green / Blue / Purple / Orange) applied to focus rings. No `dark:` prefix variants — all theme-aware via CSS variables.
+
+---
+
+### 8. Notes Editor – Python Code Formatting — ✅
+Markdown editor with syntax-highlighted code blocks. Edit/Preview toggle in NotesDialog.
+- Installed `react-markdown` + `rehype-highlight` (highlight.js-based)
+- Created `src/app/components/MarkdownRenderer.tsx` — reusable markdown renderer supporting fenced code blocks with automatic language detection
+- Enhanced `NotesDialog.tsx` — Edit/Preview tab toggle; textarea uses monospace font; preview renders with full Markdown + syntax highlighting
+- Added highlight.js CSS theme in `globals.css` (custom OKLCH colors for both light/dark themes)
+- Extensible by design — `rehype-highlight` supports 190+ languages out of the box; no code changes needed to add Java, C++, Go, JS, etc.
+
+### 9. GitHub Pages Favicon — ✅
+Favicon not appearing on deployed GitHub Pages site. Root cause: `src/app/favicon.ico` auto-generated a `<link>` that may not respect `basePath`; missing standard favicon assets (16×16, 32×32, apple-touch-icon); manifest icons used absolute paths without basePath.
+- Deleted `src/app/favicon.ico` (removes conflicting auto-generated link)
+- Generated favicon assets from SVG using `sharp`: `favicon-16x16.png`, `favicon-32x32.png`, `favicon-48x48.png`, `apple-touch-icon.png`, `icon-192x192.png`, `icon-512x512.png`
+- Updated `layout.tsx` metadata: `icons.icon` array with SVG + 32×32 + 16×16; `apple` for apple-touch-icon; `manifest` with basePath
+- Removed manual `<link rel="icon">` and `<link rel="manifest">` from `<head>` (metadata handles them)
+- Fixed OG/Twitter image URLs (double basePath → resolved against `metadataBase`)
+- Updated `manifest.json` with all icon sizes and relative `start_url`/`src` paths
+
 ---
 
 ## Production Readiness Review — ✅
@@ -80,7 +106,7 @@ All checks pass:
 
 | Check | Status |
 |---|---|
-| `npm run build` | ✅ Passes — 11/11 static pages generated |
+| `npm run build` | ✅ Passes — 10/10 static pages generated |
 | `npm run lint` | ✅ Passes — only pre-existing `<img>` warning in CompanyLogo.tsx |
 | Typecheck | ✅ Passes (included in build) |
 | Light mode | ✅ All components render correctly |
@@ -92,6 +118,12 @@ All checks pass:
 | No flash of incorrect theme | ✅ Inline script runs before first paint |
 | Responsive | ✅ Tested at desktop, tablet, mobile |
 | Accessibility | ✅ Keyboard nav, ARIA labels, semantic HTML, focus states |
+| Markdown rendering | ✅ Edit/Preview tabs, syntax-highlighted code blocks (Python) |
+| Code highlighting themes | ✅ Light + Dark via custom OKLCH CSS variables |
+| Backward compat (notes) | ✅ Existing plain-text notes render correctly in preview |
+| Favicon — local | ✅ Correct paths in dev mode (no basePath) |
+| Favicon — build output | ✅ All icon links use `/Interview-Tracly/` basePath |
+| OG/Twitter images | ✅ Correct full URLs without double basePath |
 
 ---
 

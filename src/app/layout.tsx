@@ -19,21 +19,27 @@ const basePath = isProd ? "/Interview-Tracly" : "";
 export const metadata: Metadata = {
     metadataBase: new URL("https://prakash144.github.io/Interview-Tracly"),
     title: "Interview Tracly",
-    description: "Track your journey. Crack your dream company. 🚀",
+    description: "Track your journey. Crack your dream company.",
     icons: {
-        icon: `${basePath}/icon.svg`,
+        icon: [
+            { url: `${basePath}/favicon.svg`, type: "image/svg+xml" },
+            { url: `${basePath}/favicon-32x32.png`, sizes: "32x32", type: "image/png" },
+            { url: `${basePath}/favicon-16x16.png`, sizes: "16x16", type: "image/png" },
+        ],
+        apple: `${basePath}/apple-touch-icon.png`,
     },
+    manifest: `${basePath}/manifest.json`,
     openGraph: {
         title: "Interview Tracly",
-        description: "Track your journey. Crack your dream company. 🚀",
+        description: "Track your journey. Crack your dream company.",
         type: "website",
         url: "/",
         siteName: "Interview Tracly",
         images: [
             {
-                url: `${basePath}/icon.svg`,
-                width: 100,
-                height: 100,
+                url: "/icon-192x192.png",
+                width: 192,
+                height: 192,
                 alt: "Interview Tracly",
             },
         ],
@@ -41,8 +47,8 @@ export const metadata: Metadata = {
     twitter: {
         card: "summary_large_image",
         title: "Interview Tracly",
-        description: "Track your journey. Crack your dream company. 🚀",
-        images: [`${basePath}/icon.svg`],
+        description: "Track your journey. Crack your dream company.",
+        images: ["/icon-192x192.png"],
     },
 };
 
@@ -56,8 +62,6 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
         <head>
-            <link rel="manifest" href="/manifest.json" />
-            <link rel="icon" href={`${basePath}/favicon.svg`} type="image/svg+xml" />
             <meta name="theme-color" content="#22c55e" />
             <script dangerouslySetInnerHTML={{ __html: FLASH_SCRIPT }} />
         </head>
