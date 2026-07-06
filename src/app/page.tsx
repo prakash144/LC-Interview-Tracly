@@ -22,7 +22,7 @@ import type { Problem, UserProblemProgress } from "@/lib/progressTypes";
 const Heatmap = dynamic(() => import("@/app/components/Heatmap"), {
   ssr: false,
   loading: () => (
-    <div className="rounded-xl border border-border bg-card/70 px-4 py-6">
+    <div className="rounded-xl border border-border bg-card/70 px-4 py-6 transition-shadow duration-200 hover:shadow-md">
       <div className="mx-auto mb-4 h-3 max-w-xs overflow-hidden rounded-full bg-secondary">
         <div className="h-full w-1/3 animate-pulse rounded-full bg-success" />
       </div>
@@ -121,9 +121,9 @@ const DashboardPage = () => {
   }, [stats.companyStats]);
 
   const ringSegments = useMemo(() => {
-    const colorMap: Record<string, string> = { Easy: "#22c55e", Medium: "#eab308", Hard: "#ef4444" };
+    const colorMap: Record<string, string> = { Easy: "var(--color-success)", Medium: "var(--color-warning)", Hard: "var(--color-destructive)" };
     return stats.difficultyStats.map((d) => ({
-      name: d.name, total: d.total, solved: d.solved, color: colorMap[d.name] || "#6366f1",
+      name: d.name, total: d.total, solved: d.solved, color: colorMap[d.name] || "var(--color-info)",
     }));
   }, [stats.difficultyStats]);
 
@@ -169,7 +169,7 @@ const DashboardPage = () => {
           <>
             {/* Row 1: Profile Summary + Overall Progress */}
             <div className="grid gap-4 lg:grid-cols-3">
-              <section className="lg:col-span-2 rounded-xl border border-border bg-card/80 p-5">
+              <section className="lg:col-span-2 rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md transition-shadow duration-200 hover:shadow-md">
                 <div className="flex flex-wrap items-center gap-5">
                   {auth.user ? (
                     <>
@@ -212,14 +212,21 @@ const DashboardPage = () => {
                       <span>Overall Progress</span>
                       <span>{solvedPercent}%</span>
                     </div>
-                    <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="h-2 rounded-full bg-secondary overflow-hidden"
+                      role="progressbar"
+                      aria-valuenow={solvedPercent}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Overall progress"
+                    >
                       <div className="h-full rounded-full bg-gradient-to-r from-success to-success/60 transition-all duration-500" style={{ width: `${solvedPercent}%` }} />
                     </div>
                   </div>
                 )}
               </section>
 
-              <section className="rounded-xl border border-border bg-card/80 p-5">
+              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <div className="flex items-start gap-5">
                   <div className="relative shrink-0">
                     <ProgressRingChart
@@ -244,7 +251,14 @@ const DashboardPage = () => {
                               <span className="text-muted-foreground">{s.name}</span>
                               <span className="text-card-foreground font-medium tabular-nums">{s.solved}/{s.total}</span>
                             </div>
-                            <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                            <div
+                              className="h-1.5 rounded-full bg-secondary overflow-hidden"
+                              role="progressbar"
+                              aria-valuenow={pct}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                              aria-label={`${s.name} progress`}
+                            >
                               <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: s.color }} />
                             </div>
                           </div>
@@ -273,7 +287,7 @@ const DashboardPage = () => {
 
             {/* Row 3: Continue Solving + Recent Activity */}
             <div className="grid gap-4 lg:grid-cols-2">
-              <section className="rounded-xl border border-border bg-card/80 p-5">
+              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Continue Solving</h3>
                 {lastAttempted ? (
                   <div className="space-y-3">
@@ -327,7 +341,7 @@ const DashboardPage = () => {
                 )}
               </section>
 
-              <section className="rounded-xl border border-border bg-card/80 p-5">
+              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Recent Activity</h3>
                   {recentSolved.length > 0 && (
@@ -366,7 +380,7 @@ const DashboardPage = () => {
 
             {/* Row 4: Difficulty Breakdown + Company Progress */}
             <div className="grid gap-4 lg:grid-cols-2">
-              <section className="rounded-xl border border-border bg-card/80 p-5">
+              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Difficulty Breakdown</h3>
                 {ringSegments.some((s) => s.solved > 0) ? (
                   <div className="space-y-3">
@@ -397,7 +411,7 @@ const DashboardPage = () => {
                 )}
               </section>
 
-              <section className="rounded-xl border border-border bg-card/80 p-5">
+              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Company Progress</h3>
                 {topCompanies.length > 0 ? (
                   <div className="space-y-3">
@@ -418,7 +432,14 @@ const DashboardPage = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                          <div
+                            className="h-2 rounded-full bg-secondary overflow-hidden"
+                            role="progressbar"
+                            aria-valuenow={percent}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={`${company.name} progress`}
+                          >
                             <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${percent}%` }} />
                           </div>
                         </Link>
@@ -441,7 +462,7 @@ const DashboardPage = () => {
                   <Link
                     key={action.title}
                     href={action.href}
-                    className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card/80 p-4 text-center transition-colors hover:border-border hover:bg-accent"
+                    className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card/80 p-4 text-center transition-all duration-200 hover:border-border hover:bg-accent hover:shadow-md active:scale-[0.98]"
                   >
                     <div className="flex size-10 items-center justify-center rounded-lg bg-success/10 text-success">
                       <Icon className="size-5" />

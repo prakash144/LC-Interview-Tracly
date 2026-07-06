@@ -149,79 +149,72 @@ const ProgressPage = () => {
   const acceptedCount = entries.filter((e) => e.progress.solved).length;
   const acceptanceRate = totalSubmissions > 0 ? Math.round((acceptedCount / totalSubmissions) * 100) : 0;
 
-  const solvedThisWeek = useMemo(() => {
-    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    return entries.filter((e) => e.progress.solved && e.progress.solvedAt && e.progress.solvedAt.seconds * 1000 >= weekAgo).length;
+  const { solvedThisWeek, solvedThisMonth } = useMemo(() => {
+    const now = Date.now();
+    const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const monthAgo = now - 30 * 24 * 60 * 60 * 1000;
+    let week = 0;
+    let month = 0;
+    for (const e of entries) {
+      if (e.progress.solved && e.progress.solvedAt) {
+        const t = e.progress.solvedAt.seconds * 1000;
+        if (t >= weekAgo) week++;
+        if (t >= monthAgo) month++;
+      }
+    }
+    return { solvedThisWeek: week, solvedThisMonth: month };
   }, [entries]);
 
-  const solvedThisMonth = useMemo(() => {
-    const monthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    return entries.filter((e) => e.progress.solved && e.progress.solvedAt && e.progress.solvedAt.seconds * 1000 >= monthAgo).length;
-  }, [entries]);
-
-  const currentStreak = useMemo(() => {
+  const { currentStreak, maxStreak } = useMemo(() => {
     const solvedDates = new Set<string>();
     for (const e of entries) {
       if (e.progress.solved && e.progress.solvedAt) {
         solvedDates.add(new Date(e.progress.solvedAt.seconds * 1000).toISOString().slice(0, 10));
       }
     }
-    if (solvedDates.size === 0) return 0;
-    let streak = 0;
+    if (solvedDates.size === 0) return { currentStreak: 0, maxStreak: 0 };
+
+    let cur = 0;
     for (let i = 0; i < 365; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       if (solvedDates.has(d.toISOString().slice(0, 10))) {
-        streak++;
+        cur++;
       } else {
         break;
       }
     }
-    return streak;
-  }, [entries]);
 
-  const maxStreak = useMemo(() => {
-    const solvedDates = new Set<string>();
-    for (const e of entries) {
-      if (e.progress.solved && e.progress.solvedAt) {
-        solvedDates.add(new Date(e.progress.solvedAt.seconds * 1000).toISOString().slice(0, 10));
-      }
-    }
-    if (solvedDates.size === 0) return 0;
     const allDates = Array.from(solvedDates).sort();
-    let maxStreak = 0;
+    let mx = 0;
     let streak = 0;
     let prevDate: Date | null = null;
     for (const dateStr of allDates) {
       const d = new Date(dateStr);
       if (prevDate) {
         const diff = (d.getTime() - prevDate.getTime()) / (24 * 60 * 60 * 1000);
-        if (diff === 1) {
-          streak++;
-        } else {
-          streak = 1;
-        }
+        if (diff === 1) streak++;
+        else streak = 1;
       } else {
         streak = 1;
       }
-      maxStreak = Math.max(maxStreak, streak);
+      mx = Math.max(mx, streak);
       prevDate = d;
     }
-    return maxStreak;
+
+    return { currentStreak: cur, maxStreak: mx };
   }, [entries]);
 
-  const avgDaily = useMemo(() => {
-    if (entries.length === 0) return 0;
+  const { avgDaily, avgWeekly } = useMemo(() => {
+    if (entries.length === 0) return { avgDaily: 0, avgWeekly: 0 };
     const oldest = entries.reduce((min, e) => (e.lastDate < min ? e.lastDate : min), entries[0].lastDate);
-    const days = Math.max(1, Math.ceil((Date.now() - oldest.getTime()) / (24 * 60 * 60 * 1000)));
-    return Math.round((totalSubmissions / days) * 10) / 10;
-  }, [entries, totalSubmissions]);
-
-  const avgWeekly = useMemo(() => {
-    if (entries.length === 0) return 0;
-    const oldest = entries.reduce((min, e) => (e.lastDate < min ? e.lastDate : min), entries[0].lastDate);
-    const weeks = Math.max(1, Math.ceil((Date.now() - oldest.getTime()) / (7 * 24 * 60 * 60 * 1000)));
-    return Math.round((totalSubmissions / weeks) * 10) / 10;
+    const now = Date.now();
+    const days = Math.max(1, Math.ceil((now - oldest.getTime()) / (24 * 60 * 60 * 1000)));
+    const weeks = Math.max(1, Math.ceil((now - oldest.getTime()) / (7 * 24 * 60 * 60 * 1000)));
+    return {
+      avgDaily: Math.round((totalSubmissions / days) * 10) / 10,
+      avgWeekly: Math.round((totalSubmissions / weeks) * 10) / 10,
+    };
   }, [entries, totalSubmissions]);
 
   const insights = useMemo(() => {
@@ -264,9 +257,9 @@ const ProgressPage = () => {
   }, [entries]);
 
   const ringSegments = useMemo(() => {
-    const colorMap: Record<string, string> = { Easy: "#22c55e", Medium: "#eab308", Hard: "#ef4444" };
+    const colorMap: Record<string, string> = { Easy: "var(--color-success)", Medium: "var(--color-warning)", Hard: "var(--color-destructive)" };
     return stats.difficultyStats.map((d) => ({
-      name: d.name, total: d.total, solved: d.solved, color: colorMap[d.name] || "#6366f1",
+      name: d.name, total: d.total, solved: d.solved, color: colorMap[d.name] || "var(--color-info)",
     }));
   }, [stats.difficultyStats]);
 
@@ -288,7 +281,7 @@ const ProgressPage = () => {
         description="Review your detailed coding history, submission stats, and progress trends."
       />
 
-      <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-12">
+      <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10">
         {hasError && typeof hasError === "string" && <ErrorState message={hasError} />}
         {isLoading && <LoadingState message="Loading progress data..." />}
 
@@ -389,7 +382,7 @@ const ProgressPage = () => {
                     </thead>
                     <tbody>
                       {paginated.map((entry) => (
-                        <tr key={entry.problem.problemId} className="border-b border-border bg-zinc-900/50 transition-colors hover:bg-secondary/50">
+                        <tr key={entry.problem.problemId} className="border-b border-border bg-card/30 transition-colors duration-150 hover:bg-accent/40">
                           <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{formatRelativeTime(entry.lastDate)}</td>
                           <td className="px-4 py-3 font-medium">
                             <a href={entry.problem.link} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-info transition-colors">
@@ -450,7 +443,7 @@ const ProgressPage = () => {
             </div>
 
             <aside className="w-full lg:w-80 shrink-0 space-y-4">
-              <div className="rounded-xl border border-border bg-card/80 p-4">
+              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Overall Progress</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm"><span className="text-muted-foreground">Solved</span><span className="text-card-foreground font-medium">{acceptedCount}</span></div>
@@ -460,7 +453,7 @@ const ProgressPage = () => {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card/80 p-4">
+              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Difficulty Breakdown</h3>
                 {ringSegments.some((s) => s.solved > 0) ? (
                   <div className="flex flex-col items-center">
@@ -478,7 +471,7 @@ const ProgressPage = () => {
                 ) : (<p className="text-sm text-muted-foreground text-center py-4">No solved problems yet</p>)}
               </div>
 
-              <div className="rounded-xl border border-border bg-card/80 p-4">
+              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Monthly Submissions</h3>
                 {monthlyTrend.length > 0 ? (
                   <div className="flex items-end gap-1.5 h-20">
@@ -488,7 +481,15 @@ const ProgressPage = () => {
                       return (
                         <div key={month} className="flex-1 flex flex-col items-center gap-1">
                           <span className="text-[10px] text-muted-foreground">{count}</span>
-                          <div className="w-full rounded-sm bg-success/60 transition-all duration-500" style={{ height: `${Math.max(height, 4)}%` }} />
+                          <div
+                            className="w-full rounded-sm bg-success/60 transition-all duration-500"
+                            style={{ height: `${Math.max(height, 4)}%` }}
+                            role="progressbar"
+                            aria-valuenow={count}
+                            aria-valuemin={0}
+                            aria-valuemax={maxCount}
+                            aria-label={`${month} submissions`}
+                          />
                           <span className="text-[9px] text-muted-foreground truncate w-full text-center">{month.split("-")[1]}</span>
                         </div>
                       );
@@ -497,19 +498,19 @@ const ProgressPage = () => {
                 ) : (<p className="text-sm text-muted-foreground text-center py-4">No data yet</p>)}
               </div>
 
-              <div className="rounded-xl border border-border bg-card/80 p-4">
+              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Recent Statistics</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div><div className="text-lg font-bold text-success">{solvedThisWeek}</div><div className="text-xs text-muted-foreground">This Week</div></div>
                   <div><div className="text-lg font-bold text-success">{solvedThisMonth}</div><div className="text-xs text-muted-foreground">This Month</div></div>
-                  <div><div className="text-lg font-bold text-orange-400">{currentStreak}</div><div className="text-xs text-muted-foreground">Current Streak</div></div>
+                  <div><div className="text-lg font-bold text-warning">{currentStreak}</div><div className="text-xs text-muted-foreground">Current Streak</div></div>
                   <div><div className="text-lg font-bold text-foreground">{maxStreak}</div><div className="text-xs text-muted-foreground">Max Streak</div></div>
                   <div><div className="text-lg font-bold text-foreground">{avgDaily}</div><div className="text-xs text-muted-foreground">Avg Daily</div></div>
                   <div><div className="text-lg font-bold text-foreground">{avgWeekly}</div><div className="text-xs text-muted-foreground">Avg / Week</div></div>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card/80 p-4">
+              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Practice Insights</h3>
                 {entries.length > 0 ? (
                   <div className="space-y-3 text-xs">
@@ -523,7 +524,7 @@ const ProgressPage = () => {
                     {insights.weakest.length > 0 && (
                       <div><div className="text-muted-foreground mb-1">Weakest Topics</div>
                         {insights.weakest.map((t) => (
-                          <div key={t.name} className="flex justify-between text-foreground"><span className="truncate">{t.name}</span><span className="text-red-400 shrink-0 ml-2">{Math.round(t.rate * 100)}%</span></div>
+                          <div key={t.name} className="flex justify-between text-foreground"><span className="truncate">{t.name}</span><span className="text-destructive shrink-0 ml-2">{Math.round(t.rate * 100)}%</span></div>
                         ))}
                       </div>
                     )}

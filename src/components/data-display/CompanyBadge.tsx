@@ -6,15 +6,15 @@ interface CompanyBadgeProps {
   className?: string;
 }
 
-const BADGE_COLORS = [
-  "bg-blue-500/20 text-blue-300 border-blue-500/30",
-  "bg-purple-500/20 text-purple-300 border-purple-500/30",
-  "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
-  "bg-pink-500/20 text-pink-300 border-pink-500/30",
-  "bg-orange-500/20 text-orange-300 border-orange-500/30",
-  "bg-teal-500/20 text-teal-300 border-teal-500/30",
-  "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
-  "bg-rose-500/20 text-rose-300 border-rose-500/30",
+const BADGE_COLORS: { bg: string; text: string; border: string }[] = [
+  { bg: "bg-blue-500/15", text: "text-blue-600 dark:text-blue-400", border: "border-blue-500/25" },
+  { bg: "bg-purple-500/15", text: "text-purple-600 dark:text-purple-400", border: "border-purple-500/25" },
+  { bg: "bg-cyan-500/15", text: "text-cyan-600 dark:text-cyan-400", border: "border-cyan-500/25" },
+  { bg: "bg-pink-500/15", text: "text-pink-600 dark:text-pink-400", border: "border-pink-500/25" },
+  { bg: "bg-orange-500/15", text: "text-orange-600 dark:text-orange-400", border: "border-orange-500/25" },
+  { bg: "bg-teal-500/15", text: "text-teal-600 dark:text-teal-400", border: "border-teal-500/25" },
+  { bg: "bg-indigo-500/15", text: "text-indigo-600 dark:text-indigo-400", border: "border-indigo-500/25" },
+  { bg: "bg-rose-500/15", text: "text-rose-600 dark:text-rose-400", border: "border-rose-500/25" },
 ];
 
 const hashColor = (name: string) => {
@@ -22,7 +22,8 @@ const hashColor = (name: string) => {
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return BADGE_COLORS[Math.abs(hash) % BADGE_COLORS.length];
+  const c = BADGE_COLORS[Math.abs(hash) % BADGE_COLORS.length];
+  return `${c.bg} ${c.text} ${c.border}`;
 };
 
 const sizeMap: Record<string, string> = {

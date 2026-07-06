@@ -147,8 +147,8 @@ const PracticeCalendar = ({
       {/* Streak banner */}
       {stats.currentStreak > 0 && isCurrentMonth && (
         <div className="flex items-center gap-1 mb-2 text-[11px] text-muted-foreground">
-          <Flame className="size-3 text-orange-400" />
-          <span className="font-semibold text-orange-400">Day {stats.currentStreak}</span>
+          <Flame className="size-3 text-warning" />
+          <span className="font-semibold text-warning">Day {stats.currentStreak}</span>
           <span>— keep going!</span>
         </div>
       )}

@@ -7,6 +7,7 @@ import {
 import Link from "next/link";
 import Footer from "@/app/components/Footer";
 import AppShell from "@/components/layout/AppShell";
+import PageHeader from "@/components/layout/PageHeader";
 import ErrorState from "@/components/states/ErrorState";
 import LoadingState from "@/components/states/LoadingState";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
@@ -97,6 +98,12 @@ const ActivityPage = () => {
 
   return (
     <AppShell footer={<Footer />}>
+      <PageHeader
+        eyebrow="Activity"
+        title="Your Activity"
+        description="Your daily coding practice at a glance"
+      />
+
       <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10">
         {hasError && typeof hasError === "string" && <ErrorState message={hasError} />}
         {isLoading && <LoadingState message="Loading activity data..." />}
@@ -110,14 +117,6 @@ const ActivityPage = () => {
 
         {auth.user && !isLoading && !hasError && (
           <div className="space-y-5 sm:space-y-6">
-            {/* Page Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Activity</h1>
-                <p className="text-xs text-muted-foreground mt-0.5">Your daily coding practice at a glance</p>
-              </div>
-            </div>
-
             <ProgressFilters
               active={timeRange}
               onChange={setTimeRange}

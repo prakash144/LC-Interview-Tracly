@@ -21,7 +21,7 @@ const WeakAreas = ({ weakTopics, weakDifficulties, weakPatterns }: WeakAreasProp
   if (!hasAny) return null;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
+    <div className="rounded-xl border border-border bg-card/80 p-5">
       <div className="flex items-center gap-2 mb-4">
         <div className="flex size-6 items-center justify-center rounded bg-destructive/10">
           <AlertTriangle className="size-3.5 text-destructive" />

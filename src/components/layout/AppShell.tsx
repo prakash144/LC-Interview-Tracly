@@ -19,6 +19,12 @@ const AppShell = ({ children, footer }: AppShellProps) => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:text-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-success"
+      >
+        Skip to content
+      </a>
       <TopNav
         user={user}
         authLoading={loading}
@@ -26,7 +32,7 @@ const AppShell = ({ children, footer }: AppShellProps) => {
         onLogin={login}
         onLogout={logout}
       />
-      <main>{children}</main>
+      <main id="main-content">{children}</main>
       {footer}
     </div>
   );

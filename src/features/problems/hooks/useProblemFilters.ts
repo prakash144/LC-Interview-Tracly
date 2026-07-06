@@ -24,7 +24,7 @@ export const useProblemFilters = () => {
           selectedTopics.length > 0 ||
           statusFilter !== "all"
       ),
-    [difficulty, searchTerm, selectedTopics.length, statusFilter]
+    [difficulty, searchTerm, selectedTopics, statusFilter]
   );
 
   return {

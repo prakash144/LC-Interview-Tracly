@@ -14,12 +14,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface CollectionOption {
-  id: string;
-  name: string;
-  icon?: string;
-}
-
 interface FilterBarProps {
     selectedCompany: string;
     onCompanySelect: (company: string) => void;
@@ -36,9 +30,6 @@ interface FilterBarProps {
     onResetFilters: () => void;
     hasActiveFilters: boolean;
     lastUpdated?: string | null;
-    collectionOptions?: CollectionOption[];
-    selectedCollection?: string | null;
-    onCollectionSelect?: (collectionId: string | null) => void;
 }
 
 const FilterBar = ({
@@ -56,11 +47,8 @@ const FilterBar = ({
                        onSearchChange,
                        onResetFilters,
                        hasActiveFilters,
-    lastUpdated,
-    collectionOptions,
-    selectedCollection,
-    onCollectionSelect,
-                    }: FilterBarProps) => {
+                       lastUpdated,
+                   }: FilterBarProps) => {
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onSearchChange(e.target.value);
     };
@@ -172,44 +160,6 @@ const FilterBar = ({
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
-
-                {/* Collection Dropdown */}
-                {collectionOptions && onCollectionSelect && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="outline"
-                                className="text-sm text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md"
-                            >
-                                {selectedCollection
-                                    ? collectionOptions.find((c) => c.id === selectedCollection)?.name || "Collection"
-                                    : "Collection"} <ChevronDown size={16} className="ml-1" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-card border-border text-foreground max-h-60 overflow-y-auto">
-                            <DropdownMenuItem
-                                className={`hover:bg-accent cursor-pointer ${!selectedCollection ? "bg-secondary font-semibold text-success" : ""}`}
-                                onClick={() => onCollectionSelect(null)}
-                            >
-                                {!selectedCollection && <span className="mr-2">✅</span>}
-                                All Collections
-                            </DropdownMenuItem>
-                            {collectionOptions.map((item) => (
-                                <DropdownMenuItem
-                                    key={item.id}
-                                    className={`hover:bg-accent cursor-pointer ${
-                                        selectedCollection === item.id ? "bg-secondary font-semibold text-success" : ""
-                                    }`}
-                                    onClick={() => onCollectionSelect(selectedCollection === item.id ? null : item.id)}
-                                >
-                                    {selectedCollection === item.id && <span className="mr-2">✅</span>}
-                                    {item.icon && <span className="mr-1.5">{item.icon}</span>}
-                                    {item.name}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                )}
 
                 <Button
                     type="button"

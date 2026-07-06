@@ -25,12 +25,12 @@ const CELL = 11;
 const GAP = 3;
 const DAY_LABEL_W = 28;
 
-const getActivityFill = (count: number) => {
-    if (count >= 10) return "#22c55e";
-    if (count >= 6) return "#16a34a";
-    if (count >= 3) return "#15803d";
-    if (count >= 1) return "#166534";
-    return "transparent";
+const getActivityOpacity = (count: number) => {
+    if (count >= 10) return 0.9;
+    if (count >= 6) return 0.7;
+    if (count >= 3) return 0.5;
+    if (count >= 1) return 0.3;
+    return 1;
 };
 
 const getCellLabel = (count: number) => {
@@ -39,7 +39,7 @@ const getCellLabel = (count: number) => {
 };
 
 const LEVELS = [0, 1, 3, 6, 10];
-const LEVEL_COLORS = ["transparent", "#166534", "#15803d", "#16a34a", "#22c55e"];
+const LEVEL_OPACITIES = [0, 0.3, 0.5, 0.7, 0.9];
 
 interface CalendarData {
     weeks: HeatmapDay[][];
@@ -204,7 +204,7 @@ const Heatmap = memo(function Heatmap({ uid }: HeatmapProps) {
     const currentLabel = TIME_RANGES.find((t) => t.value === timeRange)?.label || "Current";
 
     return (
-        <section className="bg-card/80 border border-border rounded-xl p-5">
+        <section className="bg-card/80 border border-border rounded-xl p-5 transition-shadow duration-200 hover:shadow-md">
             {/* Header: submissions count + stats + dropdown */}
             {uid && !loading && (
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-4">
@@ -273,7 +273,7 @@ const Heatmap = memo(function Heatmap({ uid }: HeatmapProps) {
                                         x={DAY_LABEL_W - 4}
                                         y={i * (CELL + GAP) + CELL - 1}
                                         textAnchor="end"
-                                        fill="#71717a"
+                                        fill="var(--color-muted-foreground)"
                                         fontSize={10}
                                         fontFamily="inherit"
                                     >
@@ -286,8 +286,8 @@ const Heatmap = memo(function Heatmap({ uid }: HeatmapProps) {
                             {weeks.map((week, weekIdx) =>
                                 week.map((day, dayIdx) => {
                                     const isToday = day.date === todayStr;
-                                    const fill = day.date > todayStr ? "transparent" :
-                                        day.count > 0 ? getActivityFill(day.count) : "#27272a";
+                                    const hasActivity = day.date <= todayStr && day.count > 0;
+                                    const isFuture = day.date > todayStr;
                                     return (
                                         <rect
                                             key={day.date}
@@ -297,8 +297,9 @@ const Heatmap = memo(function Heatmap({ uid }: HeatmapProps) {
                                             height={CELL}
                                             rx={2}
                                             ry={2}
-                                            fill={fill}
-                                            stroke={isToday ? "#22c55e" : "none"}
+                                            fill={isFuture ? "transparent" : hasActivity ? "var(--color-success)" : "var(--color-secondary)"}
+                                            opacity={hasActivity ? getActivityOpacity(day.count) : 1}
+                                            stroke={isToday ? "var(--color-success)" : "none"}
                                             strokeWidth={isToday ? 1.5 : 0}
                                             className="cursor-pointer transition-colors duration-100"
                                             onMouseEnter={(e) => handleMouseEnter(day, e as unknown as React.MouseEvent)}
@@ -315,7 +316,7 @@ const Heatmap = memo(function Heatmap({ uid }: HeatmapProps) {
                                     x={DAY_LABEL_W + ml.weekIndex * (CELL + GAP) + CELL / 2}
                                     y={svgHeight - 2}
                                     textAnchor="middle"
-                                    fill="#71717a"
+                                    fill="var(--color-muted-foreground)"
                                     fontSize={10}
                                     fontFamily="inherit"
                                 >
@@ -336,7 +337,8 @@ const Heatmap = memo(function Heatmap({ uid }: HeatmapProps) {
                                     style={{
                                         width: `${CELL}px`,
                                         height: `${CELL}px`,
-                                        backgroundColor: i === 0 ? "#27272a" : LEVEL_COLORS[i],
+                                        backgroundColor: i === 0 ? "var(--color-secondary)" : "var(--color-success)",
+                                        opacity: i === 0 ? 1 : LEVEL_OPACITIES[i],
                                         display: "inline-block",
                                     }}
                                 />

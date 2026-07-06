@@ -64,7 +64,7 @@ const CollectionView = ({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-card p-4">
+      <div className="rounded-xl border border-border bg-card/80 p-4">
         <div className="flex items-center gap-2 mb-1">
           <Icon className="size-4 text-foreground" />
           <h2 className="text-sm font-bold text-foreground">{collection.name}</h2>

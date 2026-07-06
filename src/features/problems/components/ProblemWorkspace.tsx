@@ -1,12 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import FilterBar from "@/app/components/FilterBar";
 import QuestionTable from "@/app/components/QuestionTable";
 import ErrorState from "@/components/states/ErrorState";
 import LoadingState from "@/components/states/LoadingState";
 import { useCustomLists } from "@/hooks/useCustomLists";
-import { useCollections, getCollectionFilterStatus } from "@/hooks/useCollections";
 import type { ProblemWorkspaceData } from "../hooks/useProblemWorkspaceData";
 
 interface ProblemWorkspaceProps {
@@ -27,54 +25,7 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
     setSelectedList,
   } = workspace;
 
-  const customListsData = useCustomLists(auth.user?.uid);
-  const { collections, actions } = useCollections(
-    progress.progressMap,
-    customListsData.lists,
-    (problemId: string) => {
-      const q = questionsState.questions.find((qq) => qq.problemId === problemId);
-      if (q) progress.toggleBookmarked(q);
-    },
-    {
-      addProblem: customListsData.addProblem,
-      removeProblem: customListsData.removeProblem,
-      create: customListsData.create,
-      rename: customListsData.rename,
-      remove: customListsData.remove,
-    },
-  );
-
-  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
-
-  const collectionProblemIds = useMemo(() => {
-    if (!selectedCollection) return undefined;
-    const col = collections.find((c) => c.id === selectedCollection);
-    if (!col) return undefined;
-    if (col.type === "favorites") {
-      return new Set(col.problemIds);
-    }
-    return new Set(col.problemIds);
-  }, [selectedCollection, collections]);
-
-  const collectionOptions = useMemo(
-    () =>
-      collections.map((c) => ({
-        id: c.id,
-        name: c.name,
-        icon: c.icon,
-      })),
-    [collections],
-  );
-
-  const handleCollectionSelect = (collectionId: string | null) => {
-    setSelectedCollection(collectionId);
-    if (collectionId) {
-      const statusFilter = getCollectionFilterStatus(collectionId);
-      if (statusFilter) {
-        filters.setStatusFilter(statusFilter);
-      }
-    }
-  };
+  const customLists = useCustomLists(auth.user?.uid);
 
   return (
     <>
@@ -95,9 +46,6 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
           onResetFilters={filters.resetFilters}
           hasActiveFilters={filters.hasActiveFilters}
           lastUpdated={lastUpdated}
-          collectionOptions={collectionOptions}
-          selectedCollection={selectedCollection}
-          onCollectionSelect={handleCollectionSelect}
         />
       )}
 
@@ -121,16 +69,7 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
           onToggleBookmarked={progress.toggleBookmarked}
           onToggleRevision={progress.toggleRevision}
           onSaveNotes={progress.saveNotes}
-          collectionProblemIds={collectionProblemIds}
-          collections={collections}
-          isProblemInCollection={actions.isProblemInCollection}
-          addToCollection={actions.addProblem}
-          removeFromCollection={actions.removeProblem}
-          onCreateCollection={actions.createCollection}
-          onToggleBookmarkedById={(problemId: string) => {
-            const q = questionsState.questions.find((qq) => qq.problemId === problemId);
-            if (q) progress.toggleBookmarked(q);
-          }}
+          customLists={customLists}
         />
       </div>
     </>

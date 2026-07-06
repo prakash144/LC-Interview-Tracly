@@ -1,7 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import AppShell from "@/components/layout/AppShell";
 import Footer from "@/app/components/Footer";
+import PageHeader from "@/components/layout/PageHeader";
+import ErrorState from "@/components/states/ErrorState";
+import LoadingState from "@/components/states/LoadingState";
 import { useCompanyReadiness } from "@/hooks/useCompanyReadiness";
 import { useRevisionTracker } from "@/hooks/useRevisionTracker";
 import { useInterviewReadiness } from "@/hooks/useInterviewReadiness";
@@ -29,7 +33,22 @@ const ReadinessPage = () => {
     "this-year"
   );
 
-  const weeklySolved = 0;
+  const weeklySolved = useMemo(() => {
+    if (!progress.progressMap) return 0;
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+
+    let count = 0;
+    for (const [, p] of Object.entries(progress.progressMap)) {
+      if (p.solved && p.solvedAt) {
+        const solvedDate = new Date(p.solvedAt.seconds * 1000);
+        if (solvedDate >= weekStart) count++;
+      }
+    }
+    return count;
+  }, [progress.progressMap]);
 
   const interviewReadiness = useInterviewReadiness(
     progress.progressMap,
@@ -47,24 +66,40 @@ const ReadinessPage = () => {
 
   return (
     <AppShell footer={<Footer />}>
-      <div className="mx-auto max-w-5xl p-4 sm:px-6 lg:px-8 pb-10">
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Interview Readiness</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Are you ready for your target company&apos;s coding interview?
-            </p>
-          </div>
+      <PageHeader
+        eyebrow="Readiness"
+        title="Interview Readiness"
+        description="Are you ready for your target company&apos;s coding interview?"
+        actions={
           <CompanySelector
             selected={companyReadiness.selectedCompany}
             onChange={companyReadiness.selectCompany}
           />
-        </div>
+        }
+      />
+      <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10">
+        {questionsState.error && (
+          <ErrorState message={questionsState.error} />
+        )}
+
+        {auth.error && typeof auth.error === "string" && (
+          <ErrorState message={auth.error} />
+        )}
+
+        {progress.error && (
+          <ErrorState message={progress.error} />
+        )}
+
+        {calendarData.error && (
+          <ErrorState message={calendarData.error} />
+        )}
 
         {!auth.user ? (
           <div className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-12 text-center">
             <p className="text-sm text-muted-foreground">Sign in to view your readiness data.</p>
           </div>
+        ) : questionsState.loading || progress.loading || calendarData.loading ? (
+          <LoadingState message="Loading readiness data..." />
         ) : (
           <div className="space-y-5">
             <HeroCard

@@ -67,7 +67,7 @@ const FactorProgress = ({ value, label, description, weight }: { value: number; 
 
 const ReadinessBreakdown = ({ factors }: ReadinessBreakdownProps) => {
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
+    <div className="rounded-xl border border-border bg-card/80 p-5">
       <div className="flex items-center gap-2 mb-4">
         <div className="flex size-6 items-center justify-center rounded bg-info/10">
           <BarChart3 className="size-3.5 text-info" />

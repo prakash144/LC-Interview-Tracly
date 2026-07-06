@@ -3,8 +3,11 @@
 import { useState } from "react";
 import AppShell from "@/components/layout/AppShell";
 import Footer from "@/app/components/Footer";
+import PageHeader from "@/components/layout/PageHeader";
 import CollectionSidebar from "@/app/components/collections/CollectionSidebar";
 import CollectionView from "@/app/components/collections/CollectionView";
+import ErrorState from "@/components/states/ErrorState";
+import LoadingState from "@/components/states/LoadingState";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
 import { useCustomLists } from "@/hooks/useCustomLists";
 import { useCollections } from "@/hooks/useCollections";
@@ -37,18 +40,31 @@ const CollectionsPage = () => {
 
   return (
     <AppShell footer={<Footer />}>
+      <PageHeader
+        eyebrow="Collections"
+        title="Collections"
+        description="Organize your interview preparation with collections"
+      />
+
       <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10">
-        <div className="mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Collections</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Organize your interview preparation with collections
-          </p>
-        </div>
+        {questionsState.error && (
+          <ErrorState message={questionsState.error} />
+        )}
+
+        {auth.error && typeof auth.error === "string" && (
+          <ErrorState message={auth.error} />
+        )}
+
+        {customListsData.error && (
+          <ErrorState message={customListsData.error} />
+        )}
 
         {!auth.user ? (
           <div className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-12 text-center">
             <p className="text-sm text-muted-foreground">Sign in to create and manage collections.</p>
           </div>
+        ) : questionsState.loading || customListsData.loading ? (
+          <LoadingState message="Loading collections..." />
         ) : (
           <div className="flex gap-6">
             <aside className="hidden sm:block w-64 shrink-0">
@@ -85,7 +101,10 @@ const CollectionsPage = () => {
                 ))}
                 <button
                   type="button"
-                  onClick={() => {/* TODO: open create dialog */}}
+                  onClick={async () => {
+                    const name = window.prompt("Collection name:");
+                    if (name?.trim()) await actions.createCollection(name.trim());
+                  }}
                   className="whitespace-nowrap rounded-lg border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
                 >
                   + New

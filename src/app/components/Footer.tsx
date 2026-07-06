@@ -89,13 +89,13 @@ const Footer = () => {
                 </div>
 
                 {/* Copyright */}
-                <p className="text-sm md:text-base text-gray-400 text-center leading-relaxed">
+                <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">
                     &copy; {new Date().getFullYear()}{" "}
                     <a
                         href="https://www.prakashrabidas.in"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-400 hover:underline"
+                        className="text-info hover:underline"
                     >
                         PrakashRabidas.in
                     </a>{" "}

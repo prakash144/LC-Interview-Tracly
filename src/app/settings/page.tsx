@@ -5,6 +5,8 @@ import { ExternalLink, Github, Monitor, Moon, Sun, Trash2 } from "lucide-react";
 import Footer from "@/app/components/Footer";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
+import ErrorState from "@/components/states/ErrorState";
+import LoadingState from "@/components/states/LoadingState";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
@@ -22,7 +24,7 @@ function getStoredAccent(): string {
 }
 
 const SettingsPage = () => {
-  const { auth, progress } = useProblemWorkspaceData();
+  const { auth, progress, questionsState } = useProblemWorkspaceData();
   const { mode, setMode, effective } = useTheme();
   const [accent, setAccent] = useState<string>(getStoredAccent);
 
@@ -44,9 +46,25 @@ const SettingsPage = () => {
         description="Manage your account, preferences, and application settings."
       />
 
-      <div className="mx-auto max-w-3xl space-y-8 p-4 sm:px-6 lg:px-8 pb-12">
+      <div className="mx-auto max-w-3xl space-y-8 p-4 sm:px-6 lg:px-8 pb-10">
+        {questionsState.error && (
+          <ErrorState message={questionsState.error} />
+        )}
+
+        {auth.error && typeof auth.error === "string" && (
+          <ErrorState message={auth.error} />
+        )}
+
+        {progress.error && (
+          <ErrorState message={progress.error} />
+        )}
+
+        {progress.loading && (
+          <LoadingState message="Loading progress data..." />
+        )}
+
         {/* Appearance */}
-        <section className="rounded-xl border border-border bg-card/80 p-5">
+        <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
           <h2 className="text-base font-semibold text-foreground mb-4">Appearance</h2>
           <div className="space-y-4">
             <div>
@@ -104,7 +122,7 @@ const SettingsPage = () => {
         </section>
 
         {/* Coding Preferences */}
-        <section className="rounded-xl border border-border bg-card/80 p-5">
+        <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
           <h2 className="text-base font-semibold text-foreground mb-4">Coding Preferences</h2>
           <div className="space-y-4 text-sm text-muted-foreground">
             <p>Preferences will sync across devices once signed in. Configure your defaults below.</p>
@@ -130,7 +148,7 @@ const SettingsPage = () => {
         </section>
 
         {/* Dashboard */}
-        <section className="rounded-xl border border-border bg-card/80 p-5">
+        <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
           <h2 className="text-base font-semibold text-foreground mb-4">Dashboard</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -181,7 +199,7 @@ const SettingsPage = () => {
         </section>
 
         {/* Account */}
-        <section className="rounded-xl border border-border bg-card/80 p-5">
+        <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
           <h2 className="text-base font-semibold text-foreground mb-4">Account</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -235,7 +253,7 @@ const SettingsPage = () => {
                 variant="outline"
                 size="sm"
                 disabled
-                className="border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+                className="border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20"
               >
                 <Trash2 className="size-4" />
                 Delete Account
@@ -246,7 +264,7 @@ const SettingsPage = () => {
         </section>
 
         {/* About */}
-        <section className="rounded-xl border border-border bg-card/80 p-5">
+        <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
           <h2 className="text-base font-semibold text-foreground mb-4">About</h2>
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
