@@ -183,9 +183,9 @@ const DashboardPage = () => {
                         <h3 className="text-lg font-semibold text-foreground truncate">{auth.user.displayName || "User"}</h3>
                         <p className="text-sm text-muted-foreground">{stats.total} problems in current dataset</p>
                         {streak > 0 && (
-                          <div className="inline-flex items-center gap-1.5 rounded-md border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 mt-1.5">
-                            <Flame className="size-4 text-orange-400" />
-                            <span className="text-sm font-bold text-orange-300">{streak}</span>
+                          <div className="inline-flex items-center gap-1.5 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1 mt-1.5">
+                            <Flame className="size-4 text-warning" />
+                            <span className="text-sm font-bold text-warning">{streak}</span>
                             <span className="text-xs text-muted-foreground">day streak</span>
                           </div>
                         )}
@@ -193,7 +193,7 @@ const DashboardPage = () => {
                       <div className="flex flex-wrap gap-6 text-center">
                         <div><div className="text-2xl font-bold text-success">{stats.solved}</div><div className="text-xs text-muted-foreground">Solved</div></div>
                         <div><div className="text-2xl font-bold text-info">{stats.attempted}</div><div className="text-xs text-muted-foreground">Attempted</div></div>
-                        <div><div className="text-2xl font-bold text-yellow-400">{stats.bookmarked}</div><div className="text-xs text-muted-foreground">Bookmarked</div></div>
+                        <div><div className="text-2xl font-bold text-warning">{stats.bookmarked}</div><div className="text-xs text-muted-foreground">Bookmarked</div></div>
                       </div>
                     </>
                   ) : (
@@ -309,7 +309,7 @@ const DashboardPage = () => {
                   </div>
                 ) : (
                   <Link href="/problems" className="group block">
-                    <div className="rounded-lg border border-dashed border-border px-4 py-6 text-center transition-colors hover:border-zinc-600">
+                    <div className="rounded-lg border border-dashed border-border px-4 py-6 text-center transition-colors hover:border-foreground/20">
                       <p className="text-sm text-muted-foreground">Start solving your first problem</p>
                       <span className="mt-2 inline-flex items-center gap-1 text-xs text-success group-hover:text-success">
                         Browse Problems <ArrowRight className="size-3" />
@@ -342,7 +342,7 @@ const DashboardPage = () => {
                           href={entry.problem.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-zinc-800/50"
+                          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-accent"
                         >
                           <div className="min-w-0 flex-1">
                             <div className="truncate text-sm font-medium text-foreground">{entry.problem.title}</div>
@@ -407,7 +407,7 @@ const DashboardPage = () => {
                         <Link
                           key={company.name}
                           href={`/problems`}
-                          className="block rounded-lg border border-border bg-background p-3 transition-colors hover:bg-zinc-800/50"
+                          className="block rounded-lg border border-border bg-background p-3 transition-colors hover:bg-accent"
                         >
                           <div className="flex items-center gap-3 mb-1.5">
                             <CompanyLogo company={company.name} size="sm" />
@@ -441,7 +441,7 @@ const DashboardPage = () => {
                   <Link
                     key={action.title}
                     href={action.href}
-                    className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card/80 p-4 text-center transition-colors hover:border-border hover:bg-zinc-800/50"
+                    className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card/80 p-4 text-center transition-colors hover:border-border hover:bg-accent"
                   >
                     <div className="flex size-10 items-center justify-center rounded-lg bg-success/10 text-success">
                       <Icon className="size-5" />

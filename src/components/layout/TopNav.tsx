@@ -7,6 +7,8 @@ import type { User } from "firebase/auth";
 import {
   BarChart3,
   Bookmark,
+  CalendarDays,
+  Crosshair,
   FolderKanban,
   LayoutDashboard,
   ListChecks,
@@ -35,6 +37,8 @@ const navItems = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Problems", href: "/problems", icon: ListChecks },
   { label: "Progress", href: "/progress", icon: BarChart3 },
+  { label: "Activity", href: "/activity", icon: CalendarDays },
+  { label: "Readiness", href: "/readiness", icon: Crosshair },
   { label: "Favorites", href: "/favorites", icon: Bookmark },
   { label: "My Lists", href: "/my-lists", icon: FolderKanban },
 ] as const;

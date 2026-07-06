@@ -4,7 +4,7 @@ import {
     Twitter,
     Instagram,
     Linkedin,
-    SendHorizonal,
+    SendHorizontal,
     Github,
     Globe,
 } from "lucide-react";
@@ -25,17 +25,17 @@ const Footer = () => {
                         <a
                             href="https://t.me/"
                             target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-cyan-400 transition-all"
+                             rel="noopener noreferrer"
+                            className="hover:text-foreground transition-colors"
                             aria-label="Telegram"
                         >
-                            <SendHorizonal size={22} />
+                            <SendHorizontal size={22} />
                         </a>
                         <a
                             href="https://twitter.com/Rabidas_Prakash"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:text-sky-400 transition-all"
+                            className="hover:text-foreground transition-colors"
                             aria-label="Twitter"
                         >
                             <Twitter size={22} />
@@ -44,7 +44,7 @@ const Footer = () => {
                             href="https://www.facebook.com/light144/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:text-blue-500 transition-all"
+                            className="hover:text-foreground transition-colors"
                             aria-label="Facebook"
                         >
                             <Facebook size={22} />
@@ -53,7 +53,7 @@ const Footer = () => {
                             href="https://www.instagram.com/__prakash_r__/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:text-pink-500 transition-all"
+                            className="hover:text-foreground transition-colors"
                             aria-label="Instagram"
                         >
                             <Instagram size={22} />
@@ -62,7 +62,7 @@ const Footer = () => {
                             href="https://www.linkedin.com/in/prakashrabidas/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:text-blue-400 transition-all"
+                            className="hover:text-foreground transition-colors"
                             aria-label="LinkedIn"
                         >
                             <Linkedin size={22} />
@@ -71,7 +71,7 @@ const Footer = () => {
                             href="https://github.com/prakash144"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:text-gray-300 transition-all"
+                            className="hover:text-foreground transition-colors"
                             aria-label="GitHub"
                         >
                             <Github size={22} />
@@ -80,7 +80,7 @@ const Footer = () => {
                             href="https://prakashrabidas.in/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:text-emerald-400 transition-all"
+                            className="hover:text-foreground transition-colors"
                             aria-label="Portfolio"
                         >
                             <Globe size={22} />
