@@ -6,11 +6,10 @@ import { memo, useState } from "react";
 import type { User } from "firebase/auth";
 import {
   BarChart3,
-  Bookmark,
   CalendarDays,
   Crosshair,
-  FolderKanban,
   LayoutDashboard,
+  LibraryBig,
   ListChecks,
   Menu,
   Moon,
@@ -39,8 +38,7 @@ const navItems = [
   { label: "Progress", href: "/progress", icon: BarChart3 },
   { label: "Activity", href: "/activity", icon: CalendarDays },
   { label: "Readiness", href: "/readiness", icon: Crosshair },
-  { label: "Favorites", href: "/favorites", icon: Bookmark },
-  { label: "My Lists", href: "/my-lists", icon: FolderKanban },
+  { label: "Collections", href: "/collections", icon: LibraryBig },
 ] as const;
 
 const NavLink = memo(function NavLink({

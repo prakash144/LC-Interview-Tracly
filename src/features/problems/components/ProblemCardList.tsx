@@ -2,9 +2,11 @@
 
 import { RotateCcw, Star } from "lucide-react";
 import type { Problem, ProgressMap } from "@/lib/progressTypes";
+import type { Collection } from "@/hooks/useCollections";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
 import TopicBadge from "@/components/data-display/TopicBadge";
 import NotesDialog from "@/app/components/NotesDialog";
+import CollectionChips from "@/app/components/collections/CollectionChips";
 
 interface ProblemCardListProps {
   problems: Problem[];
@@ -17,6 +19,8 @@ interface ProblemCardListProps {
   onToggleBookmarked: (problem: Problem) => void;
   onToggleRevision: (problem: Problem) => void;
   onSaveNotes: (problem: Problem, notes: string) => void;
+  collections?: Collection[];
+  isProblemInCollection?: (problemId: string, collectionId: string) => boolean;
 }
 
 const ProblemCardList = ({
@@ -30,6 +34,8 @@ const ProblemCardList = ({
   onToggleBookmarked,
   onToggleRevision,
   onSaveNotes,
+  collections,
+  isProblemInCollection,
 }: ProblemCardListProps) => {
   const requireProgressOrRun = (action: () => void) => {
     if (!progressEnabled) {
@@ -88,6 +94,15 @@ const ProblemCardList = ({
                 return <TopicBadge key={trimmed} topic={trimmed} />;
               })}
             </div>
+            {collections && isProblemInCollection && (
+              <div className="mt-1.5">
+                <CollectionChips
+                  problemId={q.problemId}
+                  collections={collections}
+                  isProblemInCollection={isProblemInCollection}
+                />
+              </div>
+            )}
 
             <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-2">
               <button

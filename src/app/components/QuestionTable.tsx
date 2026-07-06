@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { RotateCcw, Star } from "lucide-react";
-import type { CustomList, Problem, ProgressMap } from "@/lib/progressTypes";
+import type { Problem, ProgressMap } from "@/lib/progressTypes";
+import type { Collection } from "@/hooks/useCollections";
 import EmptyState from "@/components/states/EmptyState";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
 import TopicBadge from "@/components/data-display/TopicBadge";
@@ -12,7 +13,8 @@ import { useProblemSorting } from "@/features/problems/hooks/useProblemSorting";
 import { usePagination } from "@/features/problems/hooks/usePagination";
 import ProblemPagination from "@/features/problems/components/ProblemPagination";
 import ProblemCardList from "@/features/problems/components/ProblemCardList";
-import AddToListDialog from "@/features/problems/components/AddToListDialog";
+import AddToCollectionDialog from "@/features/problems/components/AddToCollectionDialog";
+import CollectionChips from "@/app/components/collections/CollectionChips";
 
 const NotesDialog = dynamic(() => import("./NotesDialog"), { ssr: false });
 
@@ -31,13 +33,13 @@ interface QuestionTableProps {
     onToggleBookmarked: (problem: Problem) => void;
     onToggleRevision: (problem: Problem) => void;
     onSaveNotes: (problem: Problem, notes: string) => void;
-    customLists?: {
-        lists: CustomList[];
-        isProblemInAnyList: (problemId: string) => string[];
-        addProblem: (listId: string, problemId: string) => Promise<void>;
-        removeProblem: (listId: string, problemId: string) => Promise<void>;
-        create: (name: string, description?: string) => Promise<void>;
-    };
+    collectionProblemIds?: Set<string>;
+    collections?: Collection[];
+    isProblemInCollection?: (problemId: string, collectionId: string) => boolean;
+    addToCollection?: (collectionId: string, problemId: string) => Promise<void>;
+    removeFromCollection?: (collectionId: string, problemId: string) => Promise<void>;
+    onCreateCollection?: (name: string, description?: string) => Promise<void>;
+    onToggleBookmarkedById?: (problemId: string) => void;
 }
 
 const QuestionTable = ({
@@ -55,7 +57,13 @@ const QuestionTable = ({
                             onToggleBookmarked,
                             onToggleRevision,
                             onSaveNotes,
-                            customLists,
+                            collectionProblemIds,
+                            collections,
+                            isProblemInCollection,
+                            addToCollection,
+                            removeFromCollection,
+                            onCreateCollection,
+                            onToggleBookmarkedById,
                         }: QuestionTableProps) => {
     const filteredQuestions = useFilteredProblems(questions, {
         difficulty: difficultyFilter,
@@ -63,6 +71,7 @@ const QuestionTable = ({
         searchTerm,
         status: statusFilter,
         progressMap,
+        collectionProblemIds,
     });
     const { sortedProblems, sortBy, sortDirection, handleSort } =
         useProblemSorting(filteredQuestions);
@@ -143,6 +152,8 @@ const QuestionTable = ({
                         onToggleBookmarked={onToggleBookmarked}
                         onToggleRevision={onToggleRevision}
                         onSaveNotes={onSaveNotes}
+                        collections={collections}
+                        isProblemInCollection={isProblemInCollection}
                     />
                 )}
             </div>
@@ -188,7 +199,7 @@ const QuestionTable = ({
                     <th className="px-4 py-3 text-center"><Star className="size-4 inline-block text-yellow-400" /></th>
                     <th className="px-4 py-3 text-center">Revision</th>
                     <th className="px-4 py-3 text-center">Notes</th>
-                    {customLists && <th className="px-4 py-3 text-center">List</th>}
+                    {collections && isProblemInCollection && <th className="px-4 py-3 text-center">List</th>}
                 </tr>
                 </thead>
                 <tbody>
@@ -218,6 +229,15 @@ const QuestionTable = ({
                                     <TopicBadge key={trimmed} topic={trimmed} active={isSelected} className="mr-1 mb-1" />
                                 );
                             })}
+                            {collections && isProblemInCollection && (
+                                <div className="mt-1">
+                                    <CollectionChips
+                                        problemId={q.problemId}
+                                        collections={collections}
+                                        isProblemInCollection={isProblemInCollection}
+                                    />
+                                </div>
+                            )}
                         </td>
                         <td className="px-4 py-3 text-center">
                             <input
@@ -282,16 +302,17 @@ const QuestionTable = ({
                                 onSave={onSaveNotes}
                             />
                         </td>
-                        {customLists && (
+                        {collections && isProblemInCollection && addToCollection && removeFromCollection && onCreateCollection && onToggleBookmarkedById && (
                             <td className="px-4 py-3 text-center">
-                                <AddToListDialog
+                                <AddToCollectionDialog
                                     problemId={q.problemId}
                                     problemTitle={q.title}
-                                    lists={customLists.lists}
-                                    isProblemInList={customLists.isProblemInAnyList}
-                                    onAddProblem={customLists.addProblem}
-                                    onRemoveProblem={customLists.removeProblem}
-                                    onCreateList={customLists.create}
+                                    collections={collections}
+                                    isProblemInCollection={isProblemInCollection}
+                                    onToggleBookmarked={onToggleBookmarkedById}
+                                    onAddProblem={addToCollection}
+                                    onRemoveProblem={removeFromCollection}
+                                    onCreateCollection={onCreateCollection}
                                 />
                             </td>
                         )}

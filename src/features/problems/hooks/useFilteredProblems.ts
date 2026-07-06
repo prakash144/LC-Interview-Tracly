@@ -17,6 +17,7 @@ export interface ProblemFilters {
   searchTerm?: string;
   status?: ProblemStatusFilter;
   progressMap?: ProgressMap;
+  collectionProblemIds?: Set<string>;
 }
 
 export const matchesProblemFilters = (
@@ -27,6 +28,7 @@ export const matchesProblemFilters = (
     searchTerm = "",
     status = "all",
     progressMap = {},
+    collectionProblemIds,
   }: ProblemFilters
 ) => {
   const normalizedDifficulty = difficulty.toLowerCase();
@@ -68,7 +70,11 @@ export const matchesProblemFilters = (
     }
   })();
 
-  return matchesDifficulty && matchesTopics && matchesSearch && matchesStatus;
+  const matchesCollection = !collectionProblemIds || collectionProblemIds.size === 0
+    ? true
+    : collectionProblemIds.has(problem.problemId);
+
+  return matchesDifficulty && matchesTopics && matchesSearch && matchesStatus && matchesCollection;
 };
 
 export const filterProblems = (problems: Problem[], filters: ProblemFilters) =>
@@ -78,7 +84,7 @@ export const useFilteredProblems = (
   problems: Problem[],
   filters: ProblemFilters
 ) => {
-  const { difficulty, progressMap, searchTerm, selectedTopics, status } = filters;
+  const { difficulty, progressMap, searchTerm, selectedTopics, status, collectionProblemIds } = filters;
 
   return useMemo(
     () =>
@@ -88,7 +94,8 @@ export const useFilteredProblems = (
         searchTerm,
         selectedTopics,
         status,
+        collectionProblemIds,
       }),
-    [difficulty, problems, progressMap, searchTerm, selectedTopics, status]
+    [difficulty, problems, progressMap, searchTerm, selectedTopics, status, collectionProblemIds]
   );
 };

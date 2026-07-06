@@ -62,18 +62,30 @@ export interface Achievement {
   description: string;
 }
 
+export interface ActionItem {
+  id: string;
+  type: "solve" | "revise" | "practice" | "complete";
+  description: string;
+  explanation: string;
+  priority: "high" | "medium" | "low";
+}
+
 export interface InterviewReadinessResult {
   overallScore: number;
   factors: ReadinessFactors;
   companyScores: { company: string; score: number }[];
   weakTopics: WeakTopic[];
   weakDifficulties: { difficulty: string; completion: number }[];
+  weakPatterns: { pattern: string; completion: number }[];
   recommendations: Recommendation[];
   weeklyReview: WeeklyReview;
   patternCoverage: PatternCoverage[];
   mockReadiness: MockInterviewItem[];
   achievements: Achievement[];
   level: string;
+  remainingProblems: number;
+  estimatedTime: string;
+  actionPlan: ActionItem[];
 }
 
 function daysBetween(a: Date, b: Date): number {
@@ -89,6 +101,7 @@ export function useInterviewReadiness(
   calendarInsights: CalendarInsightsData,
   settings: GoalSettings,
   weeklySolved: number,
+  selectedCompany?: string | null,
 ): InterviewReadinessResult {
   return useMemo(() => {
     const now = new Date();
@@ -418,6 +431,86 @@ export function useInterviewReadiness(
         : 0,
     };
 
+    // --- Remaining Problems ---
+    const remainingProblems = validStats.reduce((sum, s) => sum + (s.total - s.solved), 0);
+
+    // --- Estimated Time ---
+    const dailyTarget = settings.dailyTarget || 3;
+    const estimatedDays = Math.ceil(remainingProblems / dailyTarget);
+    const estimatedTime = estimatedDays <= 1 ? "1 Day" : `${estimatedDays} Days`;
+
+    // --- Weak Patterns ---
+    const weakPatterns: { pattern: string; completion: number }[] = patternCoverage
+      .map((p) => ({ pattern: p.pattern, completion: p.completion }))
+      .sort((a, b) => a.completion - b.completion)
+      .slice(0, 5);
+
+    // --- Action Plan ---
+    const actionPlan: ActionItem[] = [];
+    const usedTopics = new Set<string>();
+
+    const weakForActions = weakTopics
+      .filter((t) => t.completion < 70 && t.daysSinceLastSolved > 3)
+      .slice(0, 3);
+
+    for (const wt of weakForActions) {
+      const days = wt.daysSinceLastSolved === 999 ? 30 : wt.daysSinceLastSolved;
+      const count = Math.max(1, Math.min(3, Math.ceil(days / 7)));
+      const topic = wt.topic as string;
+      if (!usedTopics.has(topic)) {
+        usedTopics.add(topic);
+        actionPlan.push({
+          id: `solve-${topic.toLowerCase().replace(/\s+/g, "-")}`,
+          type: "solve",
+          description: `Solve ${count} ${topic} problem${count > 1 ? "s" : ""}`,
+          explanation: `${topic} is at ${wt.completion}% completion and hasn't been practiced for ${days} day${days > 1 ? "s" : ""}.`,
+          priority: days > 14 ? "high" : days > 7 ? "medium" : "low",
+        });
+      }
+    }
+
+    if (weakPatterns.length > 0 && actionPlan.length < 3) {
+      for (const wp of weakPatterns) {
+        if (wp.completion >= 70) continue;
+        actionPlan.push({
+          id: `practice-${wp.pattern.toLowerCase().replace(/\s+/g, "-")}`,
+          type: "practice",
+          description: `Practice ${wp.pattern} patterns`,
+          explanation: `${wp.pattern} patterns are at ${wp.completion}% completion.`,
+          priority: wp.completion < 40 ? "high" : "medium",
+        });
+        if (actionPlan.length >= 4) break;
+      }
+    }
+
+    if (revisionStats.overdue > 0 && actionPlan.length < 4) {
+      actionPlan.push({
+        id: "revise-overdue",
+        type: "revise",
+        description: `Revise ${revisionStats.overdue} overdue problem${revisionStats.overdue > 1 ? "s" : ""}`,
+        explanation: `${revisionStats.overdue} problem${revisionStats.overdue > 1 ? "s are" : " is"} past their revision interval.`,
+        priority: "high",
+      });
+    }
+
+    const sc = selectedCompany;
+    const selectedCompanyStat = sc
+      ? validStats.find((s) => s.company === sc)
+      : null;
+
+    if (sc && selectedCompanyStat && actionPlan.length < 4) {
+      const remaining = selectedCompanyStat.total - selectedCompanyStat.solved;
+      if (remaining > 0) {
+        actionPlan.push({
+          id: `complete-${sc.toLowerCase().replace(/\s+/g, "-")}`,
+          type: "complete",
+          description: `Complete ${Math.min(remaining, 5)} more ${sc} problem${Math.min(remaining, 5) > 1 ? "s" : ""}`,
+          explanation: `You have ${remaining} unsolved ${sc} problems remaining.`,
+          priority: "medium",
+        });
+      }
+    }
+
     return {
       overallScore: Math.max(0, Math.min(100, overallScore)),
       factors: {
@@ -431,12 +524,16 @@ export function useInterviewReadiness(
       companyScores,
       weakTopics,
       weakDifficulties,
+      weakPatterns,
       recommendations,
       weeklyReview,
       patternCoverage,
       mockReadiness,
       achievements,
       level,
+      remainingProblems,
+      estimatedTime,
+      actionPlan,
     };
-  }, [progressMap, questions, companyStats, revisionStats, calendarStats, calendarInsights, settings, weeklySolved]);
+  }, [progressMap, questions, companyStats, revisionStats, calendarStats, calendarInsights, settings, weeklySolved, selectedCompany]);
 }

@@ -110,9 +110,9 @@ const UserMenu = ({
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="cursor-pointer hover:bg-accent">
-          <Link href="/my-lists" className="flex items-center gap-3">
+          <Link href="/collections" className="flex items-center gap-3">
             <FolderKanban className="size-4" />
-            My Lists
+            Collections
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="cursor-pointer hover:bg-accent">

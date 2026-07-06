@@ -145,7 +145,7 @@ const DashboardPage = () => {
   const quickActions = [
     { title: "Continue Solving", description: "Resume your last problem", href: "/problems", icon: Play },
     { title: "Random Problem", description: "Get a random challenge", href: "/problems", icon: Shuffle },
-    { title: "My Lists", description: "Manage custom problem lists", href: "/my-lists", icon: FolderKanban },
+    { title: "Collections", description: "Organize problems into collections", href: "/collections", icon: FolderKanban },
     { title: "Progress", description: "Detailed stats and history", href: "/progress", icon: BarChart3 },
   ];
 
