@@ -1,5 +1,7 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import type { InterviewReadinessResult } from "@/hooks/useInterviewReadiness";
 
 interface InterviewReadinessProps {
@@ -38,29 +40,33 @@ const ScoreRing = ({ score, size = "lg" }: { score: number; size?: "lg" | "sm" }
         strokeDashoffset={offset}
         transform={`rotate(-90 ${radius + stroke / 2} ${radius + stroke / 2})`}
       />
-      <text x={radius + stroke / 2} y={radius + stroke / 2} textAnchor="middle" dominantBaseline="central" className="fill-foreground text-lg font-bold" fontSize={size === "lg" ? 22 : 13}>
+      <text x={radius + stroke / 2} y={radius + stroke / 2 - 4} textAnchor="middle" dominantBaseline="central" className="fill-foreground text-lg font-bold" fontSize={size === "lg" ? 22 : 13}>
         {score}%
       </text>
+      {size === "lg" && (
+        <text x={radius + stroke / 2} y={radius + stroke / 2 + 12} textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground" fontSize={8}>
+          Readiness
+        </text>
+      )}
     </svg>
   );
 };
 
-const FactorBar = ({ label, value, weight }: { label: string; value: number; weight: string }) => {
+const FactorBar = ({ label, value }: { label: string; value: number }) => {
   const color = value >= 80 ? "bg-success" : value >= 50 ? "bg-warning" : "bg-destructive";
   return (
     <div className="flex items-center gap-2 text-[11px]">
-      <span className="w-24 text-muted-foreground truncate">{label}</span>
+      <span className="w-28 shrink-0 text-muted-foreground truncate" title={label}>{label}</span>
       <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${value}%` }} />
       </div>
-      <span className="w-7 text-right font-semibold text-foreground tabular-nums">{value}%</span>
-      <span className="w-8 text-right text-muted-foreground/50 tabular-nums">{weight}</span>
+      <span className="w-7 shrink-0 text-right font-semibold text-foreground tabular-nums">{value}%</span>
     </div>
   );
 };
 
 const InterviewReadiness = ({ data }: InterviewReadinessProps) => {
-  const { overallScore, factors, companyScores, weakTopics, weakDifficulties, recommendations, weeklyReview } = data;
+  const { overallScore, level, factors, companyScores, weakTopics, weakDifficulties, recommendations, weeklyReview } = data;
   const noData = companyScores.length === 0 && weakTopics.length === 0;
 
   const topTopic = safeStr(weeklyReview.mostPracticedTopic);
@@ -68,59 +74,55 @@ const InterviewReadiness = ({ data }: InterviewReadinessProps) => {
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-      <div className="flex items-center gap-1.5 mb-4">
-        <div className="flex size-5 items-center justify-center rounded bg-warning/10">
-          <svg className="size-3 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <h2 className="text-xs font-semibold text-foreground">Interview Readiness</h2>
-      </div>
-
       {noData ? (
-        <div className="text-[11px] text-muted-foreground/50 text-center py-8">
+        <div className="text-[11px] text-muted-foreground/50 text-center py-12">
           Solve problems to see your interview readiness score.
         </div>
       ) : (
-        <div className="space-y-4">
-          {/* Overall Score + Factors */}
-          <div className="flex items-start gap-4 sm:gap-6">
-            <div className="shrink-0 flex flex-col items-center">
-              <ScoreRing score={overallScore} />
-              <span className="text-[9px] text-muted-foreground mt-1">Overall</span>
+        <div className="space-y-5">
+          {/* Hero: Score + Level */}
+          <div className="flex items-center gap-4 sm:gap-6">
+            <ScoreRing score={overallScore} />
+            <div>
+              <div className={`text-lg font-bold tracking-tight ${
+                overallScore >= 80 ? "text-success" : overallScore >= 50 ? "text-warning" : "text-destructive"
+              }`}>{level}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">
+                Based on company coverage, topic depth, revision accuracy, and consistency
+              </div>
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5 pt-1">
-              <FactorBar label="Company Completion" value={factors.companyCompletion} weight="25%" />
-              <FactorBar label="Topic Coverage" value={factors.topicCoverage} weight="20%" />
-              <FactorBar label="Difficulty Balance" value={factors.difficultyBalance} weight="15%" />
-              <FactorBar label="Revision Completion" value={factors.revisionCompletion} weight="15%" />
-              <FactorBar label="Consistency" value={factors.consistency} weight="15%" />
-              <FactorBar label="Current Streak" value={factors.currentStreakScore} weight="10%" />
-            </div>
+          </div>
+
+          {/* Factor Bars */}
+          <div className="space-y-1.5">
+            <FactorBar label="Company Completion" value={factors.companyCompletion} />
+            <FactorBar label="Topic Coverage" value={factors.topicCoverage} />
+            <FactorBar label="Difficulty Balance" value={factors.difficultyBalance} />
+            <FactorBar label="Revision Completion" value={factors.revisionCompletion} />
+            <FactorBar label="Consistency" value={factors.consistency} />
+            <FactorBar label="Current Streak" value={factors.currentStreakScore} />
           </div>
 
           {/* Company Scores */}
           {companyScores.length > 0 && (
-            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
-              {companyScores.map((c) => {
-                const score = c.score;
-                return (
-                  <div key={c.company} className="rounded-lg border border-border bg-card/50 p-2.5 text-center">
-                    <div className="text-[10px] font-semibold text-foreground truncate">{c.company}</div>
-                    <div className="flex items-center justify-center gap-1 mt-1">
-                      <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            score >= 80 ? "bg-success" : score >= 50 ? "bg-warning" : "bg-destructive"
-                          }`}
-                          style={{ width: `${score}%` }}
-                        />
+            <div>
+              <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Company Readiness</div>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {companyScores.map((c) => {
+                  const color = c.score >= 80 ? "bg-success" : c.score >= 50 ? "bg-warning" : "bg-destructive";
+                  return (
+                    <div key={c.company} className="rounded-lg border border-border bg-card/50 p-2.5 text-center">
+                      <div className="text-[10px] font-semibold text-foreground truncate" title={c.company}>{c.company}</div>
+                      <div className="flex items-center justify-center gap-1 mt-1">
+                        <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+                          <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${c.score}%` }} />
+                        </div>
+                        <span className="text-[10px] font-bold tabular-nums text-foreground">{c.score}%</span>
                       </div>
-                      <span className="text-[10px] font-bold tabular-nums text-foreground">{score}%</span>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -132,12 +134,19 @@ const InterviewReadiness = ({ data }: InterviewReadinessProps) => {
                 <div className="space-y-1">
                   {weakTopics.slice(0, 4).map((t) => (
                     <div key={t.topic} className="flex items-center justify-between text-[11px]">
-                      <span className="text-muted-foreground truncate mr-2">{safeStr(t.topic)}</span>
+                      <span className="text-muted-foreground truncate mr-2" title={t.topic}>{safeStr(t.topic)}</span>
                       <span className={`tabular-nums font-medium ${t.completion < 30 ? "text-destructive" : t.completion < 60 ? "text-warning" : "text-success"}`}>
                         {t.completion}%
                       </span>
                     </div>
                   ))}
+                  <Link
+                    href="/problems"
+                    className="inline-flex items-center gap-1 text-[10px] text-info hover:text-info/80 transition-colors mt-1"
+                  >
+                    Practice weak topics
+                    <ArrowRight className="size-2.5" />
+                  </Link>
                 </div>
               ) : (
                 <div className="text-[11px] text-muted-foreground/50 py-1">No topic data available</div>
@@ -162,29 +171,28 @@ const InterviewReadiness = ({ data }: InterviewReadinessProps) => {
             </div>
           </div>
 
-          {/* Recommendations */}
+          {/* Smart Recommendations */}
           {recommendations.length > 0 && (
             <div className="rounded-lg bg-zap/5 border border-zap/10 p-3">
               <div className="text-[10px] font-semibold text-zap uppercase tracking-wider mb-2">Smart Recommendations</div>
-              <div className="text-[11px] text-muted-foreground mb-2">Today you should solve:</div>
-              <ul className="space-y-1 mb-2">
+              <ul className="space-y-1.5">
                 {recommendations.map((r) => (
-                  <li key={r.topic} className="text-[11px] text-foreground flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-zap shrink-0" />
-                    {r.count} {safeStr(r.topic)} problem{r.count > 1 ? "s" : ""}
+                  <li key={r.topic} className="text-[11px] text-foreground flex items-start gap-1.5">
+                    <span className="size-1.5 rounded-full bg-zap shrink-0 mt-1" />
+                    <div>
+                      <span className="font-medium">{r.count} {safeStr(r.topic)} problem{r.count > 1 ? "s" : ""}</span>
+                      <span className="text-muted-foreground"> — {r.reason}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
-              <div className="text-[10px] text-muted-foreground">
-                {recommendations.map((r) => r.reason).join(" ")}
-              </div>
             </div>
           )}
 
           {/* Weekly Review */}
           <div>
             <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Weekly Review</div>
-            <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {[
                 { label: "Solved", value: String(weeklyReview.problemsSolved) },
                 { label: "Acceptance", value: `${weeklyReview.acceptanceRate}%` },
@@ -193,9 +201,10 @@ const InterviewReadiness = ({ data }: InterviewReadinessProps) => {
                 { label: "Top Topic", value: topTopic },
                 { label: "Weak Topic", value: weakTopic },
                 { label: "Goal", value: `${weeklyReview.goalCompletion}%` },
+                { label: "Streak", value: `${data.factors.currentStreakScore}d` },
               ].map((item) => (
-                <div key={item.label} className="rounded-lg bg-secondary/50 p-2 text-center">
-                  <div className="text-[10px] font-semibold text-foreground tabular-nums truncate">{item.value}</div>
+                <div key={item.label} className="rounded-lg bg-secondary/50 p-2 text-center min-w-0">
+                  <div className="text-[10px] font-semibold text-foreground tabular-nums truncate" title={item.value}>{item.value}</div>
                   <div className="text-[8px] text-muted-foreground mt-0.5 truncate">{item.label}</div>
                 </div>
               ))}

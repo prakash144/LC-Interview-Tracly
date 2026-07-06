@@ -6,6 +6,9 @@ import AppShell from "@/components/layout/AppShell";
 import Footer from "@/app/components/Footer";
 import CompanyReadiness from "@/app/components/CompanyReadiness";
 import InterviewReadiness from "@/app/components/InterviewReadiness";
+import PatternCoverage from "@/app/components/PatternCoverage";
+import MockInterviewReadiness from "@/app/components/MockInterviewReadiness";
+import Achievements from "@/app/components/Achievements";
 import { useCompanyReadiness } from "@/hooks/useCompanyReadiness";
 import { useRevisionTracker } from "@/hooks/useRevisionTracker";
 import { useInterviewReadiness } from "@/hooks/useInterviewReadiness";
@@ -49,9 +52,9 @@ const ReadinessPage = () => {
             <ArrowLeft className="size-3" />
             Back to Activity
           </Link>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Readiness</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Interview Readiness</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Your interview preparation control center
+            Measure your interview preparedness and discover what to practice next.
           </p>
         </div>
 
@@ -60,18 +63,30 @@ const ReadinessPage = () => {
             <p className="text-sm text-muted-foreground">Sign in to view your readiness data.</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            <CompanyReadiness
-              stats={companyReadiness.stats}
-              loading={companyReadiness.loading}
-              selectedCompany={companyReadiness.selectedCompany}
-              selectedProblems={companyReadiness.selectedProblems}
-              difficultyBreakdown={companyReadiness.difficultyBreakdown}
-              topicBreakdown={companyReadiness.topicBreakdown}
-              solvedSet={companyReadiness.solvedSet}
-              onSelectCompany={companyReadiness.selectCompany}
-            />
-            <InterviewReadiness data={interviewReadiness} />
+          <div className="space-y-5">
+            {/* Two-column: Interview Readiness (left) + Company Readiness (right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <InterviewReadiness data={interviewReadiness} />
+              <CompanyReadiness
+                stats={companyReadiness.stats}
+                loading={companyReadiness.loading}
+                selectedCompany={companyReadiness.selectedCompany}
+                selectedProblems={companyReadiness.selectedProblems}
+                difficultyBreakdown={companyReadiness.difficultyBreakdown}
+                topicBreakdown={companyReadiness.topicBreakdown}
+                solvedSet={companyReadiness.solvedSet}
+                onSelectCompany={companyReadiness.selectCompany}
+              />
+            </div>
+
+            {/* Two-column: Pattern Coverage + Mock Interview Readiness */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <PatternCoverage patterns={interviewReadiness.patternCoverage} />
+              <MockInterviewReadiness items={interviewReadiness.mockReadiness} />
+            </div>
+
+            {/* Full-width: Achievements */}
+            <Achievements achievements={interviewReadiness.achievements} />
           </div>
         )}
       </div>

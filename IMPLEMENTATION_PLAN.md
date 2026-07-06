@@ -3,40 +3,48 @@
 > **Status:** Phase 20 in progress.
 > **IMPORTANT:** No automatic updates to this file unless explicitly requested.
 
-## Latest: Phase 20 — Activity Page Premium Redesign — In Progress
+## Latest: Phase 21 — Interview Readiness Dashboard — ✅
 
 ### Goal
-Transform the Activity page from a cluttered statistics dashboard into a focused, premium daily workspace. Remove overloaded sections (Company Readiness, Interview Readiness) to a dedicated `/readiness` page. Simplify stats, promote Today's Mission to hero, polish calendar, consolidate insights, and streamline revision queue.
+Transform the `/readiness` page into a premium analytics dashboard that answers: "Can I confidently clear my next coding interview?" Fix layout truncation issues, add Pattern Coverage, Mock Interview Readiness, and Achievements sections, and restructure to a two-column layout.
 
 ### Changes Made
 
 #### New Files
-- **`src/app/readiness/page.tsx`** — New route `/readiness`. Two-section layout rendering Company Readiness + Interview Readiness. Header with back-to-activity link.
-- **`src/app/activity/ActivityDayDetail.tsx`** — Inline component shown below the calendar when a day is clicked. Displays solved/attempted problem titles with difficulty, links to filtered Progress page.
+- **`src/app/components/PatternCoverage.tsx`** — Section showing top 10 interview patterns (Sliding Window, DFS, DP, etc.) with completion progress bars, solved/total counts, and color-coded status. Derived from topic-to-pattern keyword matching.
+- **`src/app/components/MockInterviewReadiness.tsx`** — Per-company readiness cards showing Coding, Revision, and Topic subscores with an overall readiness label (Ready/Almost/Needs Work/Not Ready) and combined progress bar.
+- **`src/app/components/Achievements.tsx`** — Badge row showing unlocked achievements (streak, problem count, company ready, topic master, revision ace) with emoji icons and locked achievement placeholders.
 
 #### Modified Files
-- **`src/hooks/useCalendarData.ts`** — Added `yesterday`, `last-90-days`, `this-quarter`, `custom` to `TimeRangeId`. Added `customStart`/`customEnd` optional fields for date picker. Added `solvedTitles` + `attemptedTitles` to `CalendarDay` for richer inline detail.
-- **`src/app/components/ProgressFilters.tsx`** — Supports all new presets. Added "Custom" button that expands inline date inputs. Horizontal scroll on mobile.
-- **`src/app/components/TodayMission.tsx`** — Rewritten as hero section. Large SVG ring for daily progress. Weekly + Monthly bars. Compact sub-goal checkboxes. Gradient background banner.
-- **`src/app/components/PracticeCalendar.tsx`** — Removed footer stats row. Selected day shows inline detail (`ActivityDayDetail`). Added "View Full History →" link.
-- **`src/app/components/CalendarInsights.tsx`** — Consolidated from 3 cards to 2: "Highlights" (best day/week/month) + "Trends" (monthly + weekly bars combined). Removed inactive days count.
-- **`src/app/components/RevisionTracker.tsx`** — Removed "Review This Week" bucket. Removed stats row. Only "Review Today" + "Overdue" (collapsed by default). Renamed to "Revision Queue".
-- **`src/app/activity/page.tsx`** — Removed CompanyReadiness + InterviewReadiness imports. Removed 8-card stat section. New layout: Mission hero → Calendar + Quick Stats → Insights → Revision Queue → readiness link.
-
-#### Unchanged Files (moved to /readiness)
-- `src/app/components/CompanyReadiness.tsx`
-- `src/app/components/InterviewReadiness.tsx`
-- `src/hooks/useCompanyReadiness.ts`
-- `src/hooks/useInterviewReadiness.ts`
+- **`src/hooks/useInterviewReadiness.ts`** — Extended `InterviewReadinessResult` with:
+  - `PatternCoverage[]` — 30 interview patterns mapped from topics via keyword matching (Array, String, Two Pointers, Sliding Window, Binary Search, DFS, BFS, DP, etc.)
+  - `MockInterviewItem[]` — Per-company readiness (coding 50% + revision 25% + topics 25%)
+  - `Achievement[]` — 10 achievements across solved count, streaks, company readiness, topic mastery, revision accuracy
+  - `level` string — Beginner / Improving / Interview Ready / Strong Candidate / Excellent
+- **`src/app/components/InterviewReadiness.tsx`** — Fixed FactorBar label truncation (w-24 → w-28 + title attribute). Fixed Weekly Review grid (7-col → 4-col, added titles). Enhanced hero section with level label and subtitle. Removed weight column from factor bars. Added "Practice weak topics" link. Improved recommendation layout with reason inline.
+- **`src/app/components/CompanyReadiness.tsx`** — Added `title` attribute to company card name to prevent truncation of long names. Added `min-w-0` to flex container.
+- **`src/app/readiness/page.tsx`** — Restructured to premium two-column layout:
+  - Left column: InterviewReadiness (score ring, level, factor bars, company scores, weak areas, recommendations, weekly review)
+  - Right column: CompanyReadiness (company grid with full drill-down)
+  - Below: PatternCoverage | MockInterviewReadiness (side by side)
+  - Bottom: Achievements (full width badge row)
+  - Improved header title/subtitle
 
 ### Design
-- **Today's Mission (Hero)**: Full-width gradient card with large SVG donut ring for daily %, stacked weekly/monthly progress bars, and compact sub-goal row with checkmarks.
-- **Calendar + Quick Stats**: 2-column layout on desktop. Calendar is compact focal point. Quick Stats is a single 4-item row (Streak, Best, Active, Avg/Day).
-- **Calendar Day Click**: Inline panel slides open below grid showing problem titles with difficulty colors. "View Full History →" opens `/progress?date=YYYY-MM-DD`.
-- **Insights**: 2 equal cards. Highlights (best day/week/month with trophy icons). Trends (combined monthly + weekly horizontal bars).
-- **Revision Queue**: Only "Review Today" + "Overdue" buckets, both collapsed by default. No analytics row.
-- **Time Filters**: Scrollable row on mobile. Custom date picker via inline date inputs. New presets: Yesterday, Last 90 Days, This Quarter.
-- **Readiness Page**: Two stacked sections (Company Readiness, Interview Readiness) with a back link to Activity. Room to grow into interview control center.
+- **Two-column layout**: Interview Readiness (left) + Company Readiness (right) at lg+, stacked on mobile.
+- **Overall Score Hero**: Large SVG ring with score %, level label (color-coded), and explanation subtitle.
+- **Factor Bars**: Cleaner layout without weight column, wider labels for "Company Completion" readability.
+- **Pattern Coverage**: 10 patterns shown with completion bars and solved/total. Matched via 30-rule keyword system covering all common interview patterns.
+- **Mock Interview Readiness**: Per-company card with 3 subscores (Coding, Revision, Topics), overall label, and combined progress bar. Shows top companies from readiness data.
+- **Achievements**: Dual-row layout (unlocked + locked badges). Emoji icons with green border for unlocked, grayscale + dimmed for locked. 10 achievements covering progression, streaks, company, topic, and revision.
+- **All text truncation**: `title` attributes on all truncated elements. Fixed-width labels use `w-28 shrink-0` to prevent overlap. Responsive grids that don't compress items.
+
+### Scoring Algorithm
+- **Overall Readiness Score**: Weighted from 6 factors as before.
+- **Level thresholds**: 0–39 Beginner, 40–59 Improving, 60–74 Interview Ready, 75–89 Strong Candidate, 90–100 Excellent.
+- **Pattern Mapping**: 30 pattern rules match topic names by keyword inclusion (e.g., "two pointers" → Two Pointers, "dynamic programming" → DP). Each problem contributes its topics to mapped patterns.
+- **Mock Readiness**: Per-company score = coding(50%) + revision(25%) + topics(25%). Coding = company solved%, revision = revision completion%, topics = overall topic coverage%.
+- **Achievements**: 10 deterministic badges computed from solved count, current streak, active days, company completion, topic mastery, and revision accuracy.
 
 ### Validation
 - `npm run build` ✅
@@ -151,7 +159,7 @@ Restructured layout with overall progress, difficulty breakdown with progress ba
 React.memo on key components, deleted unused code (MetricCard, StatusBadge, DonutChart, Checkbox, unused types/functions), `/analytics` → `/progress` redirect, company logos via Simple Icons CDN with CompanyBadge fallback, CSS variable card backgrounds.
 
 ### 5. Navigation Update — ✅
-TopNav: Dashboard, Problems, Progress, Favorites, My Lists, Settings. Profile dropdown: My Profile, My Lists, Settings, Sign Out. (Theme selector moved to Settings page.)
+TopNav: Dashboard, Problems, Progress, Activity, Readiness, Favorites, My Lists, Settings. Profile dropdown: My Profile, My Lists, Settings, Sign Out. (Theme selector moved to Settings page.)
 
 ### 6. Final Visual Consistency Pass — ✅
 Difficulty color system (Easy=green, Medium=yellow, Hard=red) verified across all components. LeetCode-style ProgressRingChart (SVG ring with gaps, animated, clickable). Unified card backgrounds. Green focus/accent states. CompanyLogo component.

@@ -40,6 +40,28 @@ export interface WeeklyReview {
   goalCompletion: number;
 }
 
+export interface PatternCoverage {
+  pattern: string;
+  total: number;
+  solved: number;
+  completion: number;
+}
+
+export interface MockInterviewItem {
+  company: string;
+  coding: number;
+  revision: number;
+  topics: number;
+  overall: number;
+}
+
+export interface Achievement {
+  label: string;
+  unlocked: boolean;
+  icon: string;
+  description: string;
+}
+
 export interface InterviewReadinessResult {
   overallScore: number;
   factors: ReadinessFactors;
@@ -48,6 +70,10 @@ export interface InterviewReadinessResult {
   weakDifficulties: { difficulty: string; completion: number }[];
   recommendations: Recommendation[];
   weeklyReview: WeeklyReview;
+  patternCoverage: PatternCoverage[];
+  mockReadiness: MockInterviewItem[];
+  achievements: Achievement[];
+  level: string;
 }
 
 function daysBetween(a: Date, b: Date): number {
@@ -213,6 +239,159 @@ export function useInterviewReadiness(
       });
     }
 
+    // --- Pattern Coverage ---
+    const PATTERN_RULES: { name: string; keywords: string[] }[] = [
+      { name: "Array", keywords: ["array"] },
+      { name: "String", keywords: ["string"] },
+      { name: "Hash Table", keywords: ["hash table", "hashmap", "hash map"] },
+      { name: "Two Pointers", keywords: ["two pointers", "two pointer"] },
+      { name: "Sliding Window", keywords: ["sliding window"] },
+      { name: "Binary Search", keywords: ["binary search"] },
+      { name: "Sorting", keywords: ["sorting", "sort"] },
+      { name: "Recursion", keywords: ["recursion", "recursive"] },
+      { name: "Backtracking", keywords: ["backtracking"] },
+      { name: "DFS", keywords: ["depth-first", "depth first", "dfs"] },
+      { name: "BFS", keywords: ["breadth-first", "breadth first", "bfs"] },
+      { name: "Tree", keywords: ["tree", "bst", "binary search tree", "binary tree"] },
+      { name: "Graph", keywords: ["graph"] },
+      { name: "Linked List", keywords: ["linked list", "linked-list"] },
+      { name: "Stack", keywords: ["stack"] },
+      { name: "Queue", keywords: ["queue"] },
+      { name: "Heap", keywords: ["heap", "priority queue"] },
+      { name: "Trie", keywords: ["trie"] },
+      { name: "Dynamic Programming", keywords: ["dynamic programming", "dp"] },
+      { name: "Greedy", keywords: ["greedy"] },
+      { name: "Union Find", keywords: ["union find", "disjoint"] },
+      { name: "Bit Manipulation", keywords: ["bit", "bit manipulation"] },
+      { name: "Math", keywords: ["math", "mathematical"] },
+      { name: "Matrix", keywords: ["matrix"] },
+      { name: "Prefix Sum", keywords: ["prefix sum", "prefix-sum", "prefix"] },
+      { name: "Counting", keywords: ["counting", "count"] },
+      { name: "Design", keywords: ["design"] },
+      { name: "Simulation", keywords: ["simulation", "simulate"] },
+      { name: "Monotonic Stack", keywords: ["monotonic stack"] },
+      { name: "Segment Tree", keywords: ["segment tree", "segment-tree"] },
+    ];
+
+    function matchPattern(topic: string): string | null {
+      const lower = topic.toLowerCase();
+      for (const rule of PATTERN_RULES) {
+        for (const kw of rule.keywords) {
+          if (lower.includes(kw)) return rule.name;
+        }
+      }
+      return null;
+    }
+
+    const patternMap = new Map<string, { total: number; solved: number }>();
+    const topicToPattern = new Map<string, string>();
+
+    for (const topic of topicData.keys()) {
+      const pattern = matchPattern(topic);
+      if (pattern) {
+        topicToPattern.set(topic, pattern);
+        const data = topicData.get(topic)!;
+        const entry = patternMap.get(pattern) ?? { total: 0, solved: 0 };
+        entry.total += data.total;
+        entry.solved += data.solved;
+        patternMap.set(pattern, entry);
+      }
+    }
+
+    const patternCoverage: PatternCoverage[] = Array.from(patternMap.entries())
+      .map(([pattern, data]) => ({
+        pattern,
+        total: data.total,
+        solved: data.solved,
+        completion: Math.round((data.solved / data.total) * 100),
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    // --- Mock Interview Readiness ---
+    const mockReadiness: MockInterviewItem[] = validStats.map((s) => {
+      const coding = s.total > 0 ? Math.round((s.solved / s.total) * 100) : 0;
+      const revision = revisionStats.total > 0
+        ? Math.round((revisionStats.completed / revisionStats.total) * 100)
+        : 0;
+      const topics = totalTopics > 0
+        ? Math.round((coveredTopics / totalTopics) * 100)
+        : 0;
+      const overall = Math.round(coding * 0.5 + revision * 0.25 + topics * 0.25);
+      return { company: s.company, coding, revision, topics, overall };
+    });
+
+    // --- Achievements ---
+    const achievements: Achievement[] = [
+      {
+        label: "First Solved",
+        unlocked: totalSolved >= 1,
+        icon: "🌱",
+        description: "Solved your first problem",
+      },
+      {
+        label: "10 Problems",
+        unlocked: totalSolved >= 10,
+        icon: "⭐",
+        description: "Solved 10 problems",
+      },
+      {
+        label: "50 Problems",
+        unlocked: totalSolved >= 50,
+        icon: "🌟",
+        description: "Solved 50 problems",
+      },
+      {
+        label: "100 Problems",
+        unlocked: totalSolved >= 100,
+        icon: "🏆",
+        description: "Solved 100 problems",
+      },
+      {
+        label: "7-Day Streak",
+        unlocked: calendarStats.currentStreak >= 7,
+        icon: "🔥",
+        description: "Maintained a 7-day streak",
+      },
+      {
+        label: "30-Day Streak",
+        unlocked: calendarStats.currentStreak >= 30,
+        icon: "🔥",
+        description: "Maintained a 30-day streak",
+      },
+      {
+        label: "Consistent",
+        unlocked: calendarStats.activeDays >= 20,
+        icon: "📅",
+        description: "Active on 20+ days",
+      },
+      {
+        label: "Company Ready",
+        unlocked: validStats.some((s) => s.total > 0 && (s.solved / s.total) >= 0.8),
+        icon: "🎯",
+        description: "80%+ completion for a company",
+      },
+      {
+        label: "Topic Master",
+        unlocked: Array.from(topicData.values()).some((t) => t.total >= 5 && (t.solved / t.total) >= 0.9),
+        icon: "🧠",
+        description: "90%+ completion in a topic with 5+ problems",
+      },
+      {
+        label: "Revision Ace",
+        unlocked: revisionStats.total >= 5 && revisionStats.completed >= revisionStats.total * 0.8,
+        icon: "🔄",
+        description: "80%+ revision completion rate",
+      },
+    ];
+
+    // --- Level ---
+    const level =
+      overallScore >= 90 ? "Excellent" :
+      overallScore >= 75 ? "Strong Candidate" :
+      overallScore >= 60 ? "Interview Ready" :
+      overallScore >= 40 ? "Improving" :
+      "Beginner";
+
     // --- Weekly Review ---
     const mostPracticedTopic =
       weekTopicCount.size > 0
@@ -254,6 +433,10 @@ export function useInterviewReadiness(
       weakDifficulties,
       recommendations,
       weeklyReview,
+      patternCoverage,
+      mockReadiness,
+      achievements,
+      level,
     };
   }, [progressMap, questions, companyStats, revisionStats, calendarStats, calendarInsights, settings, weeklySolved]);
 }

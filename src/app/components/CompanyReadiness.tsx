@@ -39,9 +39,9 @@ const CompanyCard = ({ stat, onClick }: { stat: CompanyStat; onClick: () => void
       onClick={onClick}
       className="rounded-lg border border-border bg-card p-3 text-left hover:bg-accent hover:border-foreground/20 transition-all cursor-pointer w-full"
     >
-      <div className="flex items-center gap-2 mb-1.5">
+      <div className="flex items-center gap-2 mb-1.5 min-w-0">
         <CompanyLogo company={stat.company} size="sm" />
-        <div className="text-xs font-bold text-foreground truncate">{stat.company}</div>
+        <div className="text-xs font-bold text-foreground truncate" title={stat.company}>{stat.company}</div>
       </div>
       <div className="h-1.5 rounded-full bg-secondary overflow-hidden mb-1.5">
         <div
