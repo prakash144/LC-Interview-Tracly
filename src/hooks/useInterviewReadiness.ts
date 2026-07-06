@@ -431,8 +431,16 @@ export function useInterviewReadiness(
         : 0,
     };
 
-    // --- Remaining Problems ---
-    const remainingProblems = validStats.reduce((sum, s) => sum + (s.total - s.solved), 0);
+    // --- Remaining Problems (deduplicated from global questions set) ---
+    const uniqueProblemMap = new Map<string, Problem>();
+    for (const q of questions) {
+      if (!uniqueProblemMap.has(q.problemId)) {
+        uniqueProblemMap.set(q.problemId, q);
+      }
+    }
+    const totalUnique = uniqueProblemMap.size;
+    const totalUniqueSolved = Array.from(uniqueProblemMap.keys()).filter((id) => progressMap[id]?.solved).length;
+    const remainingProblems = totalUnique - totalUniqueSolved;
 
     // --- Estimated Time ---
     const dailyTarget = settings.dailyTarget || 3;

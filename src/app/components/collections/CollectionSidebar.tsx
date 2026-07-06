@@ -211,10 +211,12 @@ interface CollectionItemProps {
 }
 
 const CollectionItem = ({ collection, isSelected, onSelect, icon: Icon, iconColor, children }: CollectionItemProps) => (
-  <button
-    type="button"
+  <div
+    role="button"
+    tabIndex={0}
     onClick={onSelect}
-    className={`w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors ${
+    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(); } }}
+    className={`w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors cursor-pointer ${
       isSelected ? "bg-accent/60 text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
     }`}
   >
@@ -222,7 +224,7 @@ const CollectionItem = ({ collection, isSelected, onSelect, icon: Icon, iconColo
     <span className="text-xs font-medium truncate flex-1">{collection.name}</span>
     <span className="text-[10px] text-muted-foreground/50 tabular-nums">{collection.count}</span>
     {children}
-  </button>
+  </div>
 );
 
 export default CollectionSidebar;

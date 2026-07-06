@@ -22,14 +22,15 @@ import CompanyProgress from "@/app/components/readiness/CompanyProgress";
 import MockInterviewSection from "@/app/components/readiness/MockInterviewSection";
 
 const ReadinessPage = () => {
-  const { auth, progress, questionsState } = useProblemWorkspaceData();
+  const { auth, progress, questionsState, unifiedProblems, unifiedLoading } = useProblemWorkspaceData();
+  const allQuestions = unifiedProblems.length > 0 ? unifiedProblems : questionsState.questions;
   const companyReadiness = useCompanyReadiness(progress.progressMap);
-  const revisionTracker = useRevisionTracker(progress.progressMap, questionsState.questions);
+  const revisionTracker = useRevisionTracker(progress.progressMap, allQuestions);
   const { settings } = useGoals();
   const calendarData = useCalendarData(
     auth.user?.uid,
     progress.progressMap,
-    questionsState.questions,
+    allQuestions,
     "this-year"
   );
 
@@ -52,7 +53,7 @@ const ReadinessPage = () => {
 
   const interviewReadiness = useInterviewReadiness(
     progress.progressMap,
-    questionsState.questions,
+    allQuestions,
     companyReadiness.stats,
     revisionTracker.stats,
     calendarData.stats,
@@ -72,6 +73,7 @@ const ReadinessPage = () => {
         description="Are you ready for your target company&apos;s coding interview?"
         actions={
           <CompanySelector
+            companies={companyReadiness.allCompanies}
             selected={companyReadiness.selectedCompany}
             onChange={companyReadiness.selectCompany}
           />
@@ -98,7 +100,7 @@ const ReadinessPage = () => {
           <div className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-12 text-center">
             <p className="text-sm text-muted-foreground">Sign in to view your readiness data.</p>
           </div>
-        ) : questionsState.loading || progress.loading || calendarData.loading ? (
+        ) : questionsState.loading || progress.loading || calendarData.loading || unifiedLoading ? (
           <LoadingState message="Loading readiness data..." />
         ) : (
           <div className="space-y-5">
@@ -124,9 +126,12 @@ const ReadinessPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <CompanyProgress
                 stats={companyReadiness.stats}
+                allCompanies={companyReadiness.allCompanies}
                 loading={companyReadiness.loading}
                 selectedCompany={companyReadiness.selectedCompany}
                 onSelectCompany={companyReadiness.selectCompany}
+                onLoadCompany={companyReadiness.loadCompanyData}
+                fetchingCompany={companyReadiness.fetchingCompany}
               />
               <MockInterviewSection
                 items={mockReadiness}

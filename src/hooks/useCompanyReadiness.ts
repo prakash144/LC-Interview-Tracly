@@ -1,13 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import type { Problem, ProgressMap } from "@/lib/progressTypes";
 import { getProblemId } from "@/lib/problemId";
-
-export const READINESS_COMPANIES = [
-  "Google", "Amazon", "Microsoft", "Meta", "Uber",
-  "Atlassian", "Agoda", "Netflix", "Apple",
-];
 
 interface CsvItem {
   Title: string;
@@ -74,66 +69,78 @@ async function parseCSV(text: string): Promise<Problem[]> {
 }
 
 export function useCompanyReadiness(progressMap: ProgressMap) {
-  const [stats, setStats] = useState<CompanyStat[]>(() =>
-    READINESS_COMPANIES.map((c) => ({ company: c, total: 0, solved: 0, loading: true }))
-  );
-  const [allProblems, setAllProblems] = useState<Map<string, Problem[]>>(new Map());
+  const [allCompanies, setAllCompanies] = useState<string[]>([]);
+  const [companyData, setCompanyData] = useState<Map<string, { stat: CompanyStat; problems: Problem[] }>>(new Map());
   const [loading, setLoading] = useState(true);
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [fetchingCompany, setFetchingCompany] = useState<string | null>(null);
+  const fetchedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-
-    const fetchAll = async () => {
-      const results = await Promise.allSettled(
-        READINESS_COMPANIES.map(async (company) => {
-          const url = `https://raw.githubusercontent.com/prakash144/leetcode-company-wise-problems/main/${company}/5.%20All.csv`;
-          const text = await fetchCSVText(url);
-          const problems = await parseCSV(text);
-          const solved = problems.filter((p) => progressMap[p.problemId]?.solved).length;
-          return { company, total: problems.length, solved, problems };
-        })
-      );
-
-      if (cancelled) return;
-
-      const newStats: CompanyStat[] = [];
-      const newProblems = new Map<string, Problem[]>();
-
-      for (const result of results) {
-        if (result.status === "fulfilled") {
-          newStats.push({
-            company: result.value.company,
-            total: result.value.total,
-            solved: result.value.solved,
-            loading: false,
-          });
-          newProblems.set(result.value.company, result.value.problems);
-        } else {
-          const company = READINESS_COMPANIES[results.indexOf(result)];
-          newStats.push({
-            company,
-            total: 0,
-            solved: 0,
-            loading: false,
-            error: "Failed to load",
-          });
-        }
+    const run = async () => {
+      const { fetchCompanyList } = await import("../app/services/fetchCompanies");
+      const list = await fetchCompanyList();
+      if (!cancelled) {
+        setAllCompanies(list);
+        setLoading(false);
       }
-
-      setStats(newStats);
-      setAllProblems(newProblems);
-      setLoading(false);
     };
-
-    fetchAll();
+    run();
     return () => { cancelled = true; };
+  }, []);
+
+  const loadCompanyData = useCallback(async (company: string) => {
+    if (fetchedRef.current.has(company)) return;
+    fetchedRef.current.add(company);
+    setFetchingCompany(company);
+    try {
+      const url = `https://raw.githubusercontent.com/prakash144/leetcode-company-wise-problems/main/${encodeURIComponent(company)}/5.%20All.csv`;
+      const text = await fetchCSVText(url);
+      const problems = await parseCSV(text);
+      const solved = problems.filter((p) => progressMap[p.problemId]?.solved).length;
+      setCompanyData((prev) => {
+        const next = new Map(prev);
+        next.set(company, {
+          stat: { company, total: problems.length, solved, loading: false },
+          problems,
+        });
+        return next;
+      });
+    } catch {
+      setCompanyData((prev) => {
+        const next = new Map(prev);
+        next.set(company, {
+          stat: { company, total: 0, solved: 0, loading: false, error: "Failed to load" },
+          problems: [],
+        });
+        return next;
+      });
+    }
+    setFetchingCompany(null);
   }, [progressMap]);
+
+  useEffect(() => {
+    if (selectedCompany) {
+      loadCompanyData(selectedCompany);
+    }
+  }, [selectedCompany, loadCompanyData]);
 
   const selectCompany = useCallback((company: string | null) => {
     setSelectedCompany(company);
   }, []);
+
+  const stats = useMemo(() => {
+    return Array.from(companyData.values()).map((d) => d.stat);
+  }, [companyData]);
+
+  const allProblems = useMemo(() => {
+    const map = new Map<string, Problem[]>();
+    for (const [company, data] of companyData) {
+      map.set(company, data.problems);
+    }
+    return map;
+  }, [companyData]);
 
   const selectedProblems = selectedCompany ? allProblems.get(selectedCompany) ?? null : null;
 
@@ -175,6 +182,7 @@ export function useCompanyReadiness(progressMap: ProgressMap) {
   }, [progressMap]);
 
   return {
+    allCompanies,
     stats,
     loading,
     selectedCompany,
@@ -183,5 +191,7 @@ export function useCompanyReadiness(progressMap: ProgressMap) {
     difficultyBreakdown,
     topicBreakdown,
     solvedSet,
+    loadCompanyData,
+    fetchingCompany,
   };
 }

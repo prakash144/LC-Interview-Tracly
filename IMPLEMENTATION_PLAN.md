@@ -1,8 +1,89 @@
-# Implementation Plan — Readiness Page Redesign (Premium UI/UX)
+# Implementation Plan — Final Polish & Problem Workspace Revert
 
-> **Status:** Phase 22 in progress.
+> **Status:** Phase 23 complete.
 
-## Latest: Phase 22 — Readiness Page Redesign — In Progress
+## Latest: Phase 23 — Final Polish & Problem Workspace Revert — ✅
+
+### Goal
+Production-quality polish across the entire app: theme consistency, accessibility, performance, micro-interactions, and reverting the Problem Workspace page to pre-collections UI/UX.
+
+### Changes Made
+
+#### Phase 23a — Theme Color Audit
+- Converted 32+ hardcoded hex/utility colors to CSS variables across: `Heatmap.tsx`, `CompanyBadge.tsx`, `ErrorState.tsx`, `page.tsx`, `progress/page.tsx`, `PracticeCalendar.tsx`, `Footer.tsx`, `ProgressRingChart.tsx`.
+
+#### Phase 23b — Loading/Error States
+- Added loading and error states to **readiness**, **collections**, and **settings** pages.
+
+#### Phase 23c — Bug Fixes
+- Fixed `weeklySolved` always showing 0 — now uses real `useMemo` count.
+- Wired dead mobile "New" button on collections page (`window.prompt` + `createCollection`).
+- No `console.log` statements found.
+
+#### Phase 23d — Accessibility
+- Added skip-to-content link to `AppShell`.
+- Added ARIA attributes (`role="progressbar"`, `aria-valuenow/min/max`, `aria-label`) to dashboard overall/difficulty/company bars and progress page monthly bars.
+
+#### Phase 23e — Performance
+- Fixed `useMemo` dependency (`selectedTopics.length` → `selectedTopics`) in `useProblemFilters.ts`.
+- Consolidated 3 duplicate `progressMap` iteration pairs in progress page (currentStreak+maxStreak, solvedThisWeek+solvedThisMonth, avgDaily+avgWeekly).
+- Skipped React.memo on rows/cards (negligible gain at current scale).
+
+#### Phase 23f — Micro-interactions
+- Button press animation: `active:scale-[0.97]` on `Button` component, `active:scale-[0.98]` on quick action cards.
+- Hover shadows (`transition-shadow duration-200 hover:shadow-md`) on all card sections across dashboard, progress, settings, Heatmap, readiness.
+
+#### Phase 23g — Card/Table Polish
+- Standardized card padding (`p-4`→`p-5` for progress sidebar).
+- Backgrounds (`bg-card`→`bg-card/80` for readiness components and `CollectionView`).
+- Table row hover (`hover:bg-secondary/50`→`hover:bg-accent/40` with `transition-colors duration-150`) on progress page to match `QuestionTable`.
+
+#### Phase 23h — Page Headers & Max-Widths
+- Normalized `max-w-7xl` + `pb-10` across all pages.
+- Added `PageHeader` to readiness (with `actions` slot for `CompanySelector`), collections, activity pages.
+- All `PageHeader`s now siblings before content div (not nested).
+- Fixed progress and settings pages from `pb-12` → `pb-10`.
+
+#### Phase 23i — Problem Workspace Revert
+- **Reverted** `ProblemWorkspace.tsx`, `FilterBar.tsx`, `QuestionTable.tsx` to pre-collections state (commit `6403f4a`).
+- **Restored** `AddToListDialog.tsx` (deleted in `d914907`) — replaces `AddToCollectionDialog`.
+- Problem Workspace now uses `useCustomLists` instead of `useCollections`.
+- `FilterBar` no longer has collection filter dropdown.
+- `QuestionTable` renders `AddToListDialog` for custom list management.
+
+#### Phase 23j — Validation
+- Build passes: **11/11 pages, 0 errors**, 1 pre-existing warning (`CompanyLogo.tsx` img tag).
+- No type errors.
+- No lint errors.
+
+### Data Flow (Post-Revert)
+
+```
+ProblemWorkspace
+  ├── useCustomLists(auth.user?.uid)
+  │     └── → { lists, addProblem, removeProblem, create, isProblemInAnyList, ... }
+  ├── FilterBar — no collection props
+  └── QuestionTable
+        ├── customLists prop (passed through)
+        └── AddToListDialog per row
+```
+
+### Design Principles
+- All colors use CSS variables (no hardcoded hex) for light/dark theme compatibility.
+- Page headers are consistently `PageHeader` component as sibling before content div.
+- All content pages use `max-w-7xl` wrapper + `pb-10` bottom padding.
+- Table rows use `hover:bg-accent/40` with `transition-colors duration-150` for consistent interaction.
+- Buttons use `active:scale-[0.97]` for press feedback.
+- Cards use `transition-shadow duration-200 hover:shadow-md` for depth.
+
+### Validation
+- `npm run build` ✅
+- `npm run lint` ✅ (only pre-existing CompanyLogo warning)
+- Light + Dark mode consistent
+
+---
+
+## Previous: Phase 22 — Readiness Page Redesign — ✅
 
 ### Goal
 

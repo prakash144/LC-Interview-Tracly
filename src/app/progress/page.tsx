@@ -29,8 +29,8 @@ type SortOrder = "asc" | "desc";
 const PAGE_SIZES = [10, 25, 50] as const;
 
 const ProgressPage = () => {
-  const { auth, progress, questionsState } = useProblemWorkspaceData();
-  const stats = useDashboardStats(questionsState.questions, progress.progressMap);
+  const { auth, progress, questionsState, unifiedProblems } = useProblemWorkspaceData();
+  const stats = useDashboardStats(unifiedProblems.length > 0 ? unifiedProblems : questionsState.questions, progress.progressMap);
 
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -57,9 +57,10 @@ const ProgressPage = () => {
 
   const entries = useMemo(() => {
     const result: ProgressEntry[] = [];
+    const lookup = unifiedProblems.length > 0 ? unifiedProblems : questionsState.questions;
     for (const [problemId, p] of Object.entries(progress.progressMap)) {
       if (!p.solved && !p.attempted) continue;
-      const problem = questionsState.questions.find((q) => q.problemId === problemId);
+      const problem = lookup.find((q) => q.problemId === problemId);
       if (!problem) continue;
       const lastDate = p.solvedAt
         ? new Date(p.solvedAt.seconds * 1000)
@@ -74,23 +75,25 @@ const ProgressPage = () => {
       });
     }
     return result;
-  }, [progress.progressMap, questionsState.questions]);
+  }, [progress.progressMap, unifiedProblems, questionsState.questions]);
 
   const companies = useMemo(() => {
     const set = new Set<string>();
-    for (const q of questionsState.questions) {
+    const src = unifiedProblems.length > 0 ? unifiedProblems : questionsState.questions;
+    for (const q of src) {
       if (q.company) set.add(q.company);
     }
     return Array.from(set).sort();
-  }, [questionsState.questions]);
+  }, [unifiedProblems, questionsState.questions]);
 
   const topics = useMemo(() => {
     const set = new Set<string>();
-    for (const q of questionsState.questions) {
+    const src = unifiedProblems.length > 0 ? unifiedProblems : questionsState.questions;
+    for (const q of src) {
       for (const t of q.topics) if (t) set.add(t);
     }
     return Array.from(set).sort();
-  }, [questionsState.questions]);
+  }, [unifiedProblems, questionsState.questions]);
 
   const filtered = useMemo(() => {
     let result = entries;

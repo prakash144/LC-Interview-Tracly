@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import useFetchQuestions from "@/app/services/fetchQuestions";
 import { fetchLastUpdated } from "@/app/services/fetchLastUpdated";
+import { fetchUnifiedProblems } from "@/app/services/fetchUnifiedProblems";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProblemProgress } from "@/hooks/useProblemProgress";
 import { useProblemFilters } from "./useProblemFilters";
+import type { Problem } from "@/lib/progressTypes";
 
 const DEFAULT_COMPANY = "Google";
 const DEFAULT_LIST = "5. All.csv";
@@ -15,6 +17,9 @@ export const useProblemWorkspaceData = () => {
   const [selectedCompany, setSelectedCompany] = useState(DEFAULT_COMPANY);
   const [selectedList, setSelectedList] = useState(DEFAULT_LIST);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [unifiedProblems, setUnifiedProblems] = useState<Problem[]>([]);
+  const [unifiedLoading, setUnifiedLoading] = useState(true);
+  const [unifiedError, setUnifiedError] = useState<string>("");
 
   const filters = useProblemFilters();
   const debouncedSearchQuery = useDebouncedValue(filters.searchTerm, 500);
@@ -26,6 +31,25 @@ export const useProblemWorkspaceData = () => {
     list: selectedList,
   });
   const progress = useProblemProgress(auth.user?.uid);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setUnifiedLoading(true);
+      setUnifiedError("");
+      try {
+        const problems = await fetchUnifiedProblems();
+        if (!cancelled) setUnifiedProblems(problems);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to load";
+        if (!cancelled) setUnifiedError(msg);
+        console.error("Failed to fetch unified problems:", msg);
+      }
+      if (!cancelled) setUnifiedLoading(false);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,6 +78,9 @@ export const useProblemWorkspaceData = () => {
     lastUpdated,
     progress,
     questionsState,
+    unifiedProblems,
+    unifiedLoading,
+    unifiedError,
     selectedCompany,
     selectedList,
     setSelectedCompany,

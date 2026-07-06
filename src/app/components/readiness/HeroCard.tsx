@@ -55,7 +55,7 @@ const HeroCard = ({ overallScore, level, remainingProblems, estimatedTime, selec
   const cfg = getLevelConfig(level);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-card via-card/95 to-card/90 p-5 sm:p-6">
+    <div className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-card via-card/95 to-card/90 p-5 sm:p-6 transition-shadow duration-200 hover:shadow-md">
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-success/5 via-success/3 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
       <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
         <ScoreRing score={overallScore} />

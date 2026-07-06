@@ -56,7 +56,7 @@ const MockInterviewSection = ({ items, selectedCompany }: MockInterviewSectionPr
   const color = scoreColor(activeItem.overall);
 
   return (
-    <div className="rounded-xl border border-border bg-card/80 p-5">
+    <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
       <div className="flex items-center gap-2 mb-4">
         <div className="flex size-6 items-center justify-center rounded bg-zap/10">
           <Swords className="size-3.5 text-zap" />
