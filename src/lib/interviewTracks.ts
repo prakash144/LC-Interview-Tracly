@@ -4,7 +4,8 @@ export type TrackId =
   | "backend"
   | "behavioral"
   | "leadership"
-  | "interview-experience";
+  | "interview-experience"
+  | "ai-ml";
 
 export interface InterviewTrack {
   id: TrackId;
@@ -63,6 +64,14 @@ export const INTERVIEW_TRACKS: InterviewTrack[] = [
     color: "text-sky-500",
     description: "Real interview experiences from LeetCode discuss and other sources",
     shortDescription: "Learn from real interview loops",
+  },
+  {
+    id: "ai-ml",
+    name: "AI & Machine Learning",
+    icon: "🤖",
+    color: "text-violet-500",
+    description: "AI/ML system design, LLM engineering, prompt engineering, and MLOps",
+    shortDescription: "Prepare for AI engineering roles",
   },
 ];
 
