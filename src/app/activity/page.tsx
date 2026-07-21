@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import {
-  Flame, Trophy, CalendarDays, TrendingUp, Clock, ArrowRight,
+  Flame, Trophy, CalendarDays, TrendingUp, Clock, ArrowRight, BookOpen, CheckCircle2, RotateCcw,
 } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/app/components/Footer";
@@ -20,6 +20,9 @@ import TodayMission from "@/app/components/TodayMission";
 import GoalSettingsDialog from "@/app/components/GoalSettingsDialog";
 import { useRevisionTracker } from "@/hooks/useRevisionTracker";
 import RevisionTracker from "@/app/components/RevisionTracker";
+import { useResources } from "@/hooks/useResources";
+import { useResourceProgress } from "@/hooks/useResourceProgress";
+import { formatRelativeTime } from "@/lib/formatRelativeTime";
 
 function QuickStat({ icon: Icon, value, label, color }: {
   icon: typeof Flame;
@@ -40,6 +43,8 @@ function QuickStat({ icon: Icon, value, label, color }: {
 
 const ActivityPage = () => {
   const { auth, progress, questionsState } = useProblemWorkspaceData();
+  const { resources: allResources } = useResources(auth.user?.uid);
+  const { progressMap: resourceProgress } = useResourceProgress(auth.user?.uid);
   const [timeRange, setTimeRange] = useState<TimeRangeId>("this-year");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
@@ -87,6 +92,36 @@ const ActivityPage = () => {
     }
     return count;
   }, [progress.progressMap]);
+
+  const resourceActivityEntries = useMemo(() => {
+    const entries: { date: Date; icon: typeof BookOpen; label: string; resourceTitle: string; color: string }[] = [];
+    for (const r of allResources) {
+      const p = resourceProgress[r.id];
+      if (!p) continue;
+      if (p.statusChangedAt) {
+        const date = new Date(p.statusChangedAt.seconds * 1000);
+        const label = p.status === "completed" ? "Completed" : p.status === "in-progress" ? "Started" : "";
+        if (label) {
+          entries.push({
+            date, resourceTitle: r.title,
+            icon: p.status === "completed" ? CheckCircle2 : BookOpen,
+            label, color: p.status === "completed" ? "text-success" : "text-warning",
+          });
+        }
+      }
+      if (p.revisionAddedAt && p.inRevisionList) {
+        entries.push({
+          date: new Date(p.revisionAddedAt.seconds * 1000),
+          resourceTitle: r.title,
+          icon: RotateCcw,
+          label: "Added to Revision",
+          color: "text-cyan-400",
+        });
+      }
+    }
+    entries.sort((a, b) => b.date.getTime() - a.date.getTime());
+    return entries.slice(0, 10);
+  }, [allResources, resourceProgress]);
 
   const isLoading = questionsState.loading || progress.loading || calendarData.loading;
   const hasError = questionsState.error || auth.error || progress.error || calendarData.error;
@@ -195,6 +230,26 @@ const ActivityPage = () => {
               onMarkReviewed={revisionTracker.markReviewed}
               onMarkSkipped={revisionTracker.markSkipped}
             />
+
+            {/* Resource Activity */}
+            {resourceActivityEntries.length > 0 && (
+              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
+                  <BookOpen className="size-3.5" />
+                  Knowledge Base Activity
+                </h3>
+                <div className="space-y-2">
+                  {resourceActivityEntries.map((entry, i) => (
+                    <div key={i} className="flex items-center gap-3 text-xs">
+                      <entry.icon className={`size-3.5 shrink-0 ${entry.color}`} />
+                      <span className="text-foreground truncate flex-1">{entry.resourceTitle}</span>
+                      <span className="text-muted-foreground shrink-0">{entry.label}</span>
+                      <span className="text-muted-foreground/50 shrink-0 tabular-nums">{formatRelativeTime(entry.date)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Readiness link */}
             <div className="text-center">

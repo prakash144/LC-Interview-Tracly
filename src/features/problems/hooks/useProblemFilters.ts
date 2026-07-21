@@ -8,12 +8,14 @@ export const useProblemFilters = () => {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProblemStatusFilter>("all");
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string>("");
 
   const resetFilters = useCallback(() => {
     setDifficulty("");
     setSelectedTopics([]);
     setSearchTerm("");
     setStatusFilter("all");
+    setSelectedCollectionId("");
   }, []);
 
   const hasActiveFilters = useMemo(
@@ -22,9 +24,10 @@ export const useProblemFilters = () => {
         difficulty ||
           searchTerm.trim() ||
           selectedTopics.length > 0 ||
-          statusFilter !== "all"
+          statusFilter !== "all" ||
+          selectedCollectionId
       ),
-    [difficulty, searchTerm, selectedTopics, statusFilter]
+    [difficulty, searchTerm, selectedTopics, statusFilter, selectedCollectionId]
   );
 
   return {
@@ -33,10 +36,12 @@ export const useProblemFilters = () => {
     resetFilters,
     searchTerm,
     selectedTopics,
+    selectedCollectionId,
     setDifficulty,
     setSearchTerm,
     setSelectedTopics,
     setStatusFilter,
+    setSelectedCollectionId,
     statusFilter,
   };
 };

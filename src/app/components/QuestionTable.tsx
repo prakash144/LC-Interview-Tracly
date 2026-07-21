@@ -39,6 +39,7 @@ interface QuestionTableProps {
         create: (name: string, description?: string) => Promise<void>;
         isProblemInAnyList: (problemId: string) => string[];
     };
+    collectionProblemIds?: Set<string>;
 }
 
 const QuestionTable = ({
@@ -57,6 +58,7 @@ const QuestionTable = ({
                              onToggleRevision,
                              onSaveNotes,
                              customLists,
+                             collectionProblemIds,
                          }: QuestionTableProps) => {
     const filteredQuestions = useFilteredProblems(questions, {
         difficulty: difficultyFilter,
@@ -64,6 +66,7 @@ const QuestionTable = ({
         searchTerm,
         status: statusFilter,
         progressMap,
+        collectionProblemIds,
     });
     const { sortedProblems, sortBy, sortDirection, handleSort } =
         useProblemSorting(filteredQuestions);

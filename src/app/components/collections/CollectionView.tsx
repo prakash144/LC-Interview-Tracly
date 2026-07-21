@@ -3,9 +3,12 @@
 import { useMemo } from "react";
 import { Bookmark, FolderKanban, BookOpen } from "lucide-react";
 import QuestionTable from "@/app/components/QuestionTable";
+import CollectionFilterBar from "@/features/collections/components/CollectionFilterBar";
 import type { Collection } from "@/hooks/useCollections";
 import type { Problem } from "@/lib/progressTypes";
 import type { ProgressMap } from "@/lib/progressTypes";
+import type { ProblemStatusFilter } from "@/features/problems/hooks/useFilteredProblems";
+import { useFilteredCollectionProblems } from "@/features/collections/hooks/useFilteredCollectionProblems";
 
 interface CollectionViewProps {
   collection: Collection | null;
@@ -19,6 +22,25 @@ interface CollectionViewProps {
   onToggleBookmarked: (problem: Problem) => void;
   onToggleRevision: (problem: Problem) => void;
   onSaveNotes: (problem: Problem, notes: string) => void;
+  // Filter props
+  difficultyFilter: string;
+  selectedTopics: string[];
+  searchTerm: string;
+  statusFilter: ProblemStatusFilter;
+  onDifficultySelect: (difficulty: string) => void;
+  onTopicSelect: (topics: string[]) => void;
+  onSearchChange: (value: string) => void;
+  onStatusSelect: (status: ProblemStatusFilter) => void;
+  onResetFilters: () => void;
+  hasActiveFilters: boolean;
+  companyFilter: string;
+  onCompanySelect: (company: string) => void;
+  frequencyFilter: string;
+  onFrequencyFilter: (frequency: string) => void;
+  notesFilter: boolean | null;
+  onNotesFilter: (value: boolean | null) => void;
+  revisionFilter: boolean | null;
+  onRevisionFilter: (value: boolean | null) => void;
 }
 
 const typeIcons: Record<string, typeof Bookmark> = {
@@ -39,6 +61,24 @@ const CollectionView = ({
   onToggleBookmarked,
   onToggleRevision,
   onSaveNotes,
+  difficultyFilter,
+  selectedTopics,
+  searchTerm,
+  statusFilter,
+  onDifficultySelect,
+  onTopicSelect,
+  onSearchChange,
+  onStatusSelect,
+  onResetFilters,
+  hasActiveFilters,
+  companyFilter,
+  onCompanySelect,
+  frequencyFilter,
+  onFrequencyFilter,
+  notesFilter,
+  onNotesFilter,
+  revisionFilter,
+  onRevisionFilter,
 }: CollectionViewProps) => {
   const filteredQuestions = useMemo(() => {
     if (!collection) return [];
@@ -48,6 +88,18 @@ const CollectionView = ({
     const idSet = new Set(collection.problemIds);
     return questions.filter((q) => idSet.has(q.problemId));
   }, [collection, questions, progressMap]);
+
+  const finalFiltered = useFilteredCollectionProblems(filteredQuestions, {
+    difficulty: difficultyFilter,
+    selectedTopics,
+    searchTerm,
+    status: statusFilter,
+    companyFilter,
+    frequencyFilter,
+    notesFilter,
+    revisionFilter,
+    progressMap,
+  });
 
   if (!collection) {
     return (
@@ -80,9 +132,30 @@ const CollectionView = ({
         )}
       </div>
 
-      {filteredQuestions.length > 0 ? (
+      <CollectionFilterBar
+        selectedDifficulty={difficultyFilter}
+        onDifficultySelect={onDifficultySelect}
+        selectedTopic={selectedTopics}
+        onTopicSelect={onTopicSelect}
+        selectedStatus={statusFilter}
+        onStatusSelect={onStatusSelect}
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
+        onResetFilters={onResetFilters}
+        hasActiveFilters={hasActiveFilters}
+        selectedCompany={companyFilter}
+        onCompanySelect={onCompanySelect}
+        frequencyFilter={frequencyFilter}
+        onFrequencyFilter={onFrequencyFilter}
+        notesFilter={notesFilter}
+        onNotesFilter={onNotesFilter}
+        revisionFilter={revisionFilter}
+        onRevisionFilter={onRevisionFilter}
+      />
+
+      {finalFiltered.length > 0 ? (
         <QuestionTable
-          questions={filteredQuestions}
+          questions={finalFiltered}
           difficultyFilter=""
           selectedTopics={[]}
           searchTerm=""
