@@ -9,7 +9,7 @@ import { SAMPLE_RESOURCES_BY_TRACK } from "@/lib/knowledgeBase";
 let sampleIdCounter = 0;
 const generateId = () => `res_${Date.now()}_${++sampleIdCounter}`;
 
-const ALL_TRACK_IDS: TrackId[] = ["dsa", "system-design", "backend", "behavioral", "leadership"];
+const ALL_TRACK_IDS: TrackId[] = ["dsa", "system-design", "backend", "behavioral", "leadership", "interview-experience"];
 
 export const useResources = (uid?: string | null, trackId?: TrackId) => {
   const [resources, setResources] = useState<KnowledgeResource[]>([]);

@@ -3,7 +3,8 @@ export type TrackId =
   | "system-design"
   | "backend"
   | "behavioral"
-  | "leadership";
+  | "leadership"
+  | "interview-experience";
 
 export interface InterviewTrack {
   id: TrackId;
@@ -54,6 +55,14 @@ export const INTERVIEW_TRACKS: InterviewTrack[] = [
     color: "text-rose-500",
     description: "Leadership principles and management scenarios",
     shortDescription: "Demonstrate leadership skills",
+  },
+  {
+    id: "interview-experience",
+    name: "Interview Experience",
+    icon: "🎤",
+    color: "text-sky-500",
+    description: "Real interview experiences from LeetCode discuss and other sources",
+    shortDescription: "Learn from real interview loops",
   },
 ];
 

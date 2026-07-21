@@ -627,10 +627,133 @@ export const LEADERSHIP_SAMPLE: KnowledgeResourceInput[] = [
   },
 ];
 
+export const INTERVIEW_EXPERIENCE_SAMPLE: KnowledgeResourceInput[] = [
+  {
+    title: "Google L4 — Phone Screen + Onsite",
+    company: "Google",
+    track: "interview-experience",
+    difficulty: "Hard",
+    tags: ["Google", "L4", "Phone Screen", "Onsite", "System Design", "Behavioral"],
+    resourceLinks: [
+      { type: "youtube", url: "https://youtube.com/watch?v=google-l4-interview", label: "Google L4 Interview Breakdown" },
+      { type: "blog", url: "https://blog.example.com/google-l4-experience", label: "Full Google L4 Experience" },
+    ],
+    askedAt: "2024-06",
+    notes: "Phone screen: medium LC on arrays + strings. Onsite: 1) System design — design YouTube, 2) LC hard on graphs, 3) LC medium on DP, 4) Behavioral — STAR-based. Got offer after 3 weeks.",
+  },
+  {
+    title: "Amazon SDE2 — Leadership Principles Focus",
+    company: "Amazon",
+    track: "interview-experience",
+    difficulty: "Medium",
+    tags: ["Amazon", "SDE2", "Leadership Principles", "LP", "Onsite"],
+    resourceLinks: [
+      { type: "article", url: "https://blog.example.com/amazon-sde2-loop", label: "Amazon SDE2 Interview Loop" },
+    ],
+    askedAt: "2024-05",
+    notes: "Phone screen: LC medium on trees. Onsite: 4 rounds — 2 coding (LC medium + hard), 1 system design (design Amazon cart), 1 LP round with 6+ STAR stories. Every round had LP questions woven in. Prepare 10+ strong STAR stories.",
+  },
+  {
+    title: "Meta E5 — Product Engineering",
+    company: "Meta",
+    track: "interview-experience",
+    difficulty: "Hard",
+    tags: ["Meta", "E5", "Product Engineering", "React", "System Design"],
+    resourceLinks: [
+      { type: "youtube", url: "https://youtube.com/watch?v=meta-e5-prep", label: "Meta E5 Interview Guide" },
+    ],
+    askedAt: "2024-04",
+    notes: "Two phone screens: 1) LC medium on hashmaps, 2) React coding — build a typeahead. Onsite: 1) System design — design Facebook News Feed (focus on product trade-offs), 2) LC hard on DP with bitmask, 3) Behavioral — dive deep into past projects with cross-team impact, 4) Product sense — how would you improve Messenger.",
+  },
+  {
+    title: "Microsoft L62 — Azure Team",
+    company: "Microsoft",
+    track: "interview-experience",
+    difficulty: "Medium",
+    tags: ["Microsoft", "L62", "Azure", "Cloud", "Design"],
+    resourceLinks: [
+      { type: "blog", url: "https://blog.example.com/microsoft-l62-experience", label: "Microsoft L62 Interview Experience" },
+    ],
+    askedAt: "2024-03",
+    notes: "Phone screen: LC medium on string manipulation. Onsite: 4 rounds — 1) Design a distributed task scheduler (Azure-focused), 2) LC medium on LRU cache variations, 3) Deep dive on past project with scalability focus — lots of follow-up questions, 4) Hiring manager — culture fit and team structure. Offer after 1 week.",
+  },
+  {
+    title: "Stripe — Backend Engineer",
+    company: "Stripe",
+    track: "interview-experience",
+    difficulty: "Hard",
+    tags: ["Stripe", "Backend", "API Design", "Distributed Systems", "Coding"],
+    resourceLinks: [
+      { type: "article", url: "https://blog.example.com/stripe-interview-process", label: "Stripe Interview Process Deep Dive" },
+    ],
+    askedAt: "2024-07",
+    notes: "Online assessment: 2 LC mediums with a focus on correctness. Onsite (virtual): 1) API design — design a payment reconciliation API, 2) Debugging — find and fix a race condition in a distributed counter, 3) System design — design a real-time fraud detection system, 4) Engineering values — deep dive on a past incident and how you handled it. Stripe values written communication — all design docs done in shared doc.",
+  },
+  {
+    title: "Uber — Senior Backend (L5a)",
+    company: "Uber",
+    track: "interview-experience",
+    difficulty: "Hard",
+    tags: ["Uber", "Senior", "L5a", "Backend", "Microservices"],
+    resourceLinks: [
+      { type: "youtube", url: "https://youtube.com/watch?v=uber-senior-interview", label: "Uber Senior Backend Interview" },
+    ],
+    askedAt: "2024-06",
+    notes: "Phone screen: LC medium on graph traversal. Onsite: 1) System design — design Uber Eats order dispatch (focus on geospatial + real-time), 2) Coding — design a pub-sub system from scratch with concurrency, 3) Architecture deep dive — present a past system you built and discuss trade-offs in detail, 4) Manager round — leadership, conflict resolution, ownership. Heavy emphasis on ownership and bias for action.",
+  },
+  {
+    title: "Netflix — Senior Software Engineer",
+    company: "Netflix",
+    track: "interview-experience",
+    difficulty: "Hard",
+    tags: ["Netflix", "Senior", "Streaming", "CDN", "Freedom & Responsibility"],
+    resourceLinks: [
+      { type: "blog", url: "https://blog.example.com/netflix-senior-interview", label: "Netflix Senior SE Interview" },
+    ],
+    askedAt: "2024-02",
+    notes: "Phone screen: culture fit + LC medium on arrays. Onsite: 1) System design — design Netflix content recommendation pipeline (focus on data + ML infra), 2) Coding — implement a video transcoding scheduler with priority queues, 3) Architectural decision — review a design doc for a new microservice and provide feedback, 4) Cultural — discuss a time you made a high-risk decision with incomplete data. Netflix values candor and judgment over everything.",
+  },
+  {
+    title: "Apple — Software Engineer (Special Projects Group)",
+    company: "Apple",
+    track: "interview-experience",
+    difficulty: "Medium",
+    tags: ["Apple", "SPG", "Embedded", "C++", "Hardware-Software"],
+    resourceLinks: [],
+    askedAt: "2024-01",
+    notes: "Phone screen: C++ memory management and LC medium on linked lists. Onsite: 7 rounds (!) — 1-2) Coding in C++ (low-level systems programming, concurrency), 3) System design — design a sensor data pipeline with real-time constraints, 4) Hardware-software co-design discussion, 5) Past project presentation to the team, 6-7) Manager + director behavioral. Secrecy was emphasized — no details about the specific product.",
+  },
+  {
+    title: "Atlassian — Senior Backend (P50)",
+    company: "Atlassian",
+    track: "interview-experience",
+    difficulty: "Easy",
+    tags: ["Atlassian", "P50", "Backend", "Java", "Team Culture"],
+    resourceLinks: [
+      { type: "article", url: "https://blog.example.com/atlassian-interview", label: "Atlassian Interview Tips" },
+    ],
+    askedAt: "2024-05",
+    notes: "Phone screen with recruiter then hiring manager: project deep dive. Technical: 1) pair programming — implement a distributed rate limiter in Java, 2) System design — design Jira's notification system at scale, 3) Values round — 'Play as a team' and 'Build with heart and balance' scenarios. Very culture-focused. Offer experience: fast and transparent.",
+  },
+  {
+    title: "Coinbase — Backend Engineer (IC4)",
+    company: "Coinbase",
+    track: "interview-experience",
+    difficulty: "Medium",
+    tags: ["Coinbase", "IC4", "Blockchain", "Backend", "Cryptography"],
+    resourceLinks: [
+      { type: "youtube", url: "https://youtube.com/watch?v=coinbase-interview", label: "Coinbase Engineering Interview" },
+    ],
+    askedAt: "2024-04",
+    notes: "Online assessment: LC medium on DP + SQL. Onsite: 1) System design — design a crypto wallet with multi-sig support, 2) Coding — implement a Merkle tree verification, 3) Debugging — fix a concurrency bug in a blockchain indexing service, 4) Behavioral — crypto mission alignment, 'secure by default' mindset. Strong emphasis on mission alignment with 'crypto-first' ethos.",
+  },
+];
+
 export const SAMPLE_RESOURCES_BY_TRACK: Record<TrackId, KnowledgeResourceInput[]> = {
   "dsa": DSA_SAMPLE,
   "system-design": SYSTEM_DESIGN_SAMPLE,
   "backend": BACKEND_SAMPLE,
   "behavioral": BEHAVIORAL_SAMPLE,
   "leadership": LEADERSHIP_SAMPLE,
+  "interview-experience": INTERVIEW_EXPERIENCE_SAMPLE,
 };
