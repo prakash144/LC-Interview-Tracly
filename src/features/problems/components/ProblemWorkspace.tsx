@@ -1,10 +1,12 @@
 "use client";
 
+import { useMemo } from "react";
 import FilterBar from "@/app/components/FilterBar";
 import QuestionTable from "@/app/components/QuestionTable";
 import ErrorState from "@/components/states/ErrorState";
 import LoadingState from "@/components/states/LoadingState";
 import { useCustomLists } from "@/hooks/useCustomLists";
+import { useCollections } from "@/hooks/useCollections";
 import type { ProblemWorkspaceData } from "../hooks/useProblemWorkspaceData";
 
 interface ProblemWorkspaceProps {
@@ -26,6 +28,33 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
   } = workspace;
 
   const customLists = useCustomLists(auth.user?.uid);
+  const progressMap = progress.progressMap;
+  const { collections } = useCollections(
+    progressMap,
+    customLists.lists,
+    () => {},
+    {
+      addProblem: customLists.addProblem,
+      removeProblem: customLists.removeProblem,
+      create: customLists.create,
+      rename: customLists.rename,
+      remove: customLists.remove,
+    },
+  );
+
+  const collectionProblemIds = useMemo(() => {
+    if (!filters.selectedCollectionId) return undefined;
+    if (filters.selectedCollectionId === "__favorites__") {
+      const ids = new Set<string>();
+      for (const [id, p] of Object.entries(progressMap)) {
+        if (p.bookmarked) ids.add(id);
+      }
+      return ids;
+    }
+    const col = collections.find((c) => c.id === filters.selectedCollectionId);
+    if (!col) return undefined;
+    return new Set(col.problemIds);
+  }, [filters.selectedCollectionId, collections, progressMap]);
 
   return (
     <>
@@ -46,6 +75,9 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
           onResetFilters={filters.resetFilters}
           hasActiveFilters={filters.hasActiveFilters}
           lastUpdated={lastUpdated}
+          selectedCollectionId={filters.selectedCollectionId}
+          onCollectionFilterChange={filters.setSelectedCollectionId}
+          collections={collections}
         />
       )}
 
@@ -70,6 +102,7 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
           onToggleRevision={progress.toggleRevision}
           onSaveNotes={progress.saveNotes}
           customLists={customLists}
+          collectionProblemIds={collectionProblemIds}
         />
       </div>
     </>

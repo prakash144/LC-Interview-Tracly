@@ -22,11 +22,12 @@ export const metadata: Metadata = {
     description: "Track your journey. Crack your dream company.",
     icons: {
         icon: [
-            { url: `${basePath}/favicon.svg`, type: "image/svg+xml" },
             { url: `${basePath}/favicon-32x32.png`, sizes: "32x32", type: "image/png" },
             { url: `${basePath}/favicon-16x16.png`, sizes: "16x16", type: "image/png" },
+            { url: `${basePath}/favicon.svg`, type: "image/svg+xml" },
         ],
         apple: `${basePath}/apple-touch-icon.png`,
+        shortcut: { url: `${basePath}/favicon-48x48.png`, type: "image/png" },
     },
     manifest: `${basePath}/manifest.json`,
     openGraph: {

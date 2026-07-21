@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, CheckCircle2, Circle, Clock, Search, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, BookOpen, CheckCircle2, Circle, Clock, RotateCcw, Search, X } from "lucide-react";
 import Footer from "@/app/components/Footer";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
@@ -14,6 +14,8 @@ import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useResources } from "@/hooks/useResources";
+import { useResourceProgress } from "@/hooks/useResourceProgress";
 import type { Problem, UserProblemProgress } from "@/lib/progressTypes";
 
 type ProgressEntry = {
@@ -31,6 +33,8 @@ const PAGE_SIZES = [10, 25, 50] as const;
 const ProgressPage = () => {
   const { auth, progress, questionsState, unifiedProblems } = useProblemWorkspaceData();
   const stats = useDashboardStats(unifiedProblems.length > 0 ? unifiedProblems : questionsState.questions, progress.progressMap);
+  const { resources: allResources } = useResources(auth.user?.uid);
+  const { progressMap: resourceProgress } = useResourceProgress(auth.user?.uid);
 
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -167,6 +171,17 @@ const ProgressPage = () => {
     }
     return { solvedThisWeek: week, solvedThisMonth: month };
   }, [entries]);
+
+  const resourceStats = useMemo(() => {
+    const total = allResources.length;
+    const completed = allResources.filter((r) => resourceProgress[r.id]?.status === "completed").length;
+    const inProgress = allResources.filter((r) => resourceProgress[r.id]?.status === "in-progress").length;
+    const inRevision = allResources.filter((r) => resourceProgress[r.id]?.inRevisionList).length;
+    const easy = allResources.filter((r) => r.difficulty === "Easy").length;
+    const medium = allResources.filter((r) => r.difficulty === "Medium").length;
+    const hard = allResources.filter((r) => r.difficulty === "Hard").length;
+    return { total, completed, inProgress, inRevision, easy, medium, hard };
+  }, [allResources, resourceProgress]);
 
   const { currentStreak, maxStreak } = useMemo(() => {
     const solvedDates = new Set<string>();
@@ -512,6 +527,55 @@ const ProgressPage = () => {
                   <div><div className="text-lg font-bold text-foreground">{avgWeekly}</div><div className="text-xs text-muted-foreground">Avg / Week</div></div>
                 </div>
               </div>
+
+              {resourceStats.total > 0 && (
+                <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Knowledge Base</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <BookOpen className="size-4 text-info shrink-0" />
+                      <span className="text-muted-foreground">Resources</span>
+                      <span className="ml-auto text-card-foreground font-medium">{resourceStats.total}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Completed</span>
+                      <span className="text-success font-medium">{resourceStats.completed}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">In Progress</span>
+                      <span className="text-warning font-medium">{resourceStats.inProgress}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">In Revision</span>
+                      <span className="inline-flex items-center gap-1 text-cyan-400 font-medium">
+                        <RotateCcw className="size-3" />
+                        {resourceStats.inRevision}
+                      </span>
+                    </div>
+                    {resourceStats.total > 0 && (
+                      <div className="mt-2 pt-2 border-t border-border">
+                        <div className="flex gap-2 text-xs">
+                          <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-success" /> {resourceStats.easy}E</span>
+                          <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-warning" /> {resourceStats.medium}M</span>
+                          <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-error" /> {resourceStats.hard}H</span>
+                        </div>
+                        <div className="flex gap-1 mt-1.5 h-1.5">
+                          {(() => {
+                            const maxV = Math.max(resourceStats.easy, resourceStats.medium, resourceStats.hard, 1);
+                            return (
+                              <>
+                                <div className="bg-success rounded-l-full" style={{ width: `${(resourceStats.easy / maxV) * 100}%` }} />
+                                <div className="bg-warning" style={{ width: `${(resourceStats.medium / maxV) * 100}%` }} />
+                                <div className="bg-error rounded-r-full" style={{ width: `${(resourceStats.hard / maxV) * 100}%` }} />
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Practice Insights</h3>

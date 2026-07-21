@@ -2,27 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { memo, useState } from "react";
+import { memo, useState, useCallback, useEffect } from "react";
 import type { User } from "firebase/auth";
 import {
-  BarChart3,
-  CalendarDays,
-  Crosshair,
-  LayoutDashboard,
-  LibraryBig,
-  ListChecks,
-  Menu,
-  Moon,
-  Search,
-  Sun,
+  BarChart3, CalendarDays, Crosshair, LayoutDashboard,
+  LibraryBig, ListChecks, Menu, Moon, Search, Sun, Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useTheme } from "@/hooks/useTheme";
 import { Logo } from "@/components/ui/logo";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import UserMenu from "./UserMenu";
+import GlobalSearch from "./GlobalSearch";
 
 interface TopNavProps {
   user?: User | null;
@@ -35,6 +27,7 @@ interface TopNavProps {
 const navItems = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Problems", href: "/problems", icon: ListChecks },
+  { label: "Tracks", href: "/tracks", icon: Layers },
   { label: "Progress", href: "/progress", icon: BarChart3 },
   { label: "Activity", href: "/activity", icon: CalendarDays },
   { label: "Readiness", href: "/readiness", icon: Crosshair },
@@ -89,17 +82,18 @@ function ThemeToggle() {
   );
 }
 
-function SearchInput() {
+function SearchTrigger({ onClick }: { onClick: () => void }) {
   return (
-    <div className="relative hidden sm:block">
-      <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        type="search"
-        placeholder="Search"
-        className="h-8 w-40 rounded-md border-border bg-secondary/50 pl-8 text-xs placeholder:text-muted-foreground/60 focus-visible:w-56 transition-all duration-200 lg:w-48 lg:focus-visible:w-64"
-        aria-label="Search problems, companies, topics"
-      />
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="hidden sm:inline-flex items-center gap-2 h-8 rounded-md border border-border bg-secondary/50 px-2.5 text-xs text-muted-foreground/60 hover:text-foreground hover:border-foreground/20 transition-all w-40 lg:w-48"
+      aria-label="Search all resources"
+    >
+      <Search className="size-3.5" />
+      <span className="flex-1 text-left">Search resources...</span>
+      <kbd className="hidden lg:inline-flex h-4 items-center rounded border border-border bg-background px-1 text-[10px] text-muted-foreground/40 font-mono">⌘K</kbd>
+    </button>
   );
 }
 
@@ -142,6 +136,21 @@ const TopNav = ({
 }: TopNavProps) => {
   const pathname = usePathname();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const handleSearchOpen = useCallback(() => setSearchOpen(true), []);
+
+  // Cmd+K keyboard shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -160,14 +169,15 @@ const TopNav = ({
               href={item.href}
               label={item.label}
               icon={item.icon}
-              isActive={pathname === item.href}
+              isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
             />
           ))}
         </nav>
 
         {/* Right: Utilities */}
         <div className="flex items-center gap-1">
-          <SearchInput />
+          <SearchTrigger onClick={handleSearchOpen} />
+          <GlobalSearch uid={user?.uid} open={searchOpen} onOpenChange={setSearchOpen} />
 
           <ThemeToggle />
 
@@ -227,7 +237,7 @@ const TopNav = ({
                       href={item.href}
                       label={item.label}
                       icon={item.icon}
-                      isActive={pathname === item.href}
+                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
                     />
                   ))}
                 </nav>

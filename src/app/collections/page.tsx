@@ -11,6 +11,7 @@ import LoadingState from "@/components/states/LoadingState";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
 import { useCustomLists } from "@/hooks/useCustomLists";
 import { useCollections } from "@/hooks/useCollections";
+import { useCollectionFilters } from "@/features/collections/hooks/useCollectionFilters";
 
 const CollectionsPage = () => {
   const workspace = useProblemWorkspaceData();
@@ -35,6 +36,8 @@ const CollectionsPage = () => {
   const [selectedId, setSelectedId] = useState<string | null>(
     collections.length > 0 ? collections[0].id : null,
   );
+
+  const collectionFilters = useCollectionFilters();
 
   const selectedCollection = collections.find((c) => c.id === selectedId) ?? null;
 
@@ -125,6 +128,24 @@ const CollectionsPage = () => {
                 onToggleBookmarked={progress.toggleBookmarked}
                 onToggleRevision={progress.toggleRevision}
                 onSaveNotes={progress.saveNotes}
+                difficultyFilter={collectionFilters.difficulty}
+                selectedTopics={collectionFilters.selectedTopics}
+                searchTerm={collectionFilters.searchTerm}
+                statusFilter={collectionFilters.statusFilter}
+                onDifficultySelect={collectionFilters.setDifficulty}
+                onTopicSelect={collectionFilters.setSelectedTopics}
+                onSearchChange={collectionFilters.setSearchTerm}
+                onStatusSelect={collectionFilters.setStatusFilter}
+                onResetFilters={collectionFilters.resetFilters}
+                hasActiveFilters={collectionFilters.hasActiveFilters}
+                companyFilter={collectionFilters.companyFilter}
+                onCompanySelect={collectionFilters.setCompanyFilter}
+                frequencyFilter={collectionFilters.frequencyFilter}
+                onFrequencyFilter={collectionFilters.setFrequencyFilter}
+                notesFilter={collectionFilters.notesFilter}
+                onNotesFilter={collectionFilters.setNotesFilter}
+                revisionFilter={collectionFilters.revisionFilter}
+                onRevisionFilter={collectionFilters.setRevisionFilter}
               />
             </main>
           </div>

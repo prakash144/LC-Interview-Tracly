@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import TopicSelector from "./TopicSelector";
 import CompanySelector from "./CompanySelector";
 import type { ProblemStatusFilter } from "@/features/problems/hooks/useFilteredProblems";
+import type { Collection } from "@/hooks/useCollections";
 
 import {
     DropdownMenu,
@@ -30,6 +31,9 @@ interface FilterBarProps {
     onResetFilters: () => void;
     hasActiveFilters: boolean;
     lastUpdated?: string | null;
+    selectedCollectionId?: string;
+    onCollectionFilterChange?: (collectionId: string) => void;
+    collections?: Collection[];
 }
 
 const FilterBar = ({
@@ -48,6 +52,9 @@ const FilterBar = ({
                        onResetFilters,
                        hasActiveFilters,
                        lastUpdated,
+                       selectedCollectionId = "",
+                       onCollectionFilterChange,
+                       collections = [],
                    }: FilterBarProps) => {
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onSearchChange(e.target.value);
@@ -72,6 +79,8 @@ const FilterBar = ({
     ];
     const selectedStatusLabel =
         statusOptions.find((option) => option.value === selectedStatus)?.label ?? "Status";
+
+    const selectedCollection = collections.find((c) => c.id === selectedCollectionId);
 
     return (
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-3 sm:px-6 lg:px-8 bg-background border-y border-border lg:flex-row lg:items-center lg:justify-between">
@@ -160,6 +169,49 @@ const FilterBar = ({
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
+
+                {/* Collection Filter Dropdown */}
+                {collections.length > 0 && onCollectionFilterChange && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className="text-sm text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md"
+                            >
+                                {selectedCollection ? (
+                                    <><span className="mr-1">{selectedCollection.icon}</span>{selectedCollection.name}</>
+                                ) : "Collection"} <ChevronDown size={16} className="ml-1" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="bg-card border-border text-foreground max-h-60 overflow-y-auto">
+                            <DropdownMenuItem
+                                className={`hover:bg-accent cursor-pointer ${
+                                    !selectedCollectionId ? "bg-secondary font-semibold text-success" : ""
+                                }`}
+                                onClick={() => onCollectionFilterChange("")}
+                            >
+                                {!selectedCollectionId && <span className="mr-2">✅</span>}
+                                All Collections
+                            </DropdownMenuItem>
+                            {collections.map((c) => (
+                                <DropdownMenuItem
+                                    key={c.id}
+                                    className={`hover:bg-accent cursor-pointer ${
+                                        selectedCollectionId === c.id ? "bg-secondary font-semibold text-success" : ""
+                                    }`}
+                                    onClick={() => onCollectionFilterChange(
+                                        selectedCollectionId === c.id ? "" : c.id
+                                    )}
+                                >
+                                    {selectedCollectionId === c.id && <span className="mr-2">✅</span>}
+                                    <span className="mr-1.5">{c.icon}</span>
+                                    {c.name}
+                                    <span className="ml-1 text-muted-foreground/50 text-[10px]">{c.count}</span>
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
 
                 <Button
                     type="button"

@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BarChart3, CheckCircle2, Flame, FolderKanban, Play, Shuffle } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, CheckCircle2, Flame, FolderKanban, Play, Layers } from "lucide-react";
 import dynamic from "next/dynamic";
 import Footer from "@/app/components/Footer";
 import AppShell from "@/components/layout/AppShell";
@@ -17,6 +17,9 @@ import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useResources } from "@/hooks/useResources";
+import { useResourceProgress } from "@/hooks/useResourceProgress";
+import { INTERVIEW_TRACKS } from "@/lib/interviewTracks";
 import type { Problem, UserProblemProgress } from "@/lib/progressTypes";
 
 const Heatmap = dynamic(() => import("@/app/components/Heatmap"), {
@@ -64,6 +67,8 @@ const DashboardPage = () => {
   const router = useRouter();
   const { auth, progress, questionsState } = useProblemWorkspaceData();
   const stats = useDashboardStats(questionsState.questions, progress.progressMap);
+  const { resources: allResources } = useResources(auth.user?.uid);
+  const { progressMap: resourceProgress } = useResourceProgress(auth.user?.uid);
 
   const solvedPercent = useMemo(() => {
     if (!stats || stats.total === 0) return 0;
@@ -144,7 +149,7 @@ const DashboardPage = () => {
 
   const quickActions = [
     { title: "Continue Solving", description: "Resume your last problem", href: "/problems", icon: Play },
-    { title: "Random Problem", description: "Get a random challenge", href: "/problems", icon: Shuffle },
+    { title: "Interview Tracks", description: "System design, backend, behavioral prep", href: "/tracks", icon: Layers },
     { title: "Collections", description: "Organize problems into collections", href: "/collections", icon: FolderKanban },
     { title: "Progress", description: "Detailed stats and history", href: "/progress", icon: BarChart3 },
   ];
@@ -454,7 +459,46 @@ const DashboardPage = () => {
               </section>
             </div>
 
-            {/* Row 5: Quick Actions */}
+            {/* Row 5: Track Progress */}
+            {allResources.length > 0 && (
+              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                    <BookOpen className="size-3.5" />
+                    Track Progress
+                  </h3>
+                  <Link href="/tracks" className="text-xs text-muted-foreground hover:text-foreground transition-colors">View all</Link>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {INTERVIEW_TRACKS.map((track) => {
+                    const trackResources = allResources.filter((r) => r.track === track.id);
+                    const total = trackResources.length;
+                    if (total === 0) return null;
+                    const completed = trackResources.filter((r) => resourceProgress[r.id]?.status === "completed").length;
+                    const pct = Math.round((completed / total) * 100);
+                    return (
+                      <Link
+                        key={track.id}
+                        href={`/tracks/${track.id}`}
+                        className="group rounded-lg border border-border bg-background p-3 hover:bg-accent transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 mb-2">
+                          <span className="text-lg">{track.icon}</span>
+                          <span className={`text-sm font-medium ${track.color}`}>{track.name}</span>
+                          <span className="ml-auto text-xs text-muted-foreground">{completed}/{total}</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                          <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${pct}%` }} />
+                        </div>
+                        <div className="mt-1 text-[10px] text-muted-foreground">{pct}% complete</div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* Row 6: Quick Actions */}
             <section className="grid gap-3 grid-cols-2 sm:grid-cols-4">
               {quickActions.map((action) => {
                 const Icon = action.icon;
