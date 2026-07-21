@@ -749,6 +749,129 @@ export const INTERVIEW_EXPERIENCE_SAMPLE: KnowledgeResourceInput[] = [
   },
 ];
 
+export const AI_ML_SAMPLE: KnowledgeResourceInput[] = [
+  {
+    title: "ML System Design — Recommendation System",
+    company: "Netflix",
+    track: "ai-ml",
+    difficulty: "Hard",
+    tags: ["ML System Design", "Recommendation", "Collaborative Filtering", "Embeddings"],
+    resourceLinks: [
+      { type: "youtube", url: "https://youtube.com/watch?v=ml-rec-sys", label: "ML RecSys Design" },
+      { type: "blog", url: "https://blog.example.com/netflix-recommendation", label: "Netflix Recommendation Architecture" },
+    ],
+    askedAt: "2024-06",
+    notes: "Two-tower model for user/item embeddings, candidate generation via ANN (HNSW), ranking with deep neural network, real-time features with Kafka, A/B testing framework, cold start handling with content-based features.",
+  },
+  {
+    title: "LLM Application Design — RAG Pipeline",
+    company: "OpenAI",
+    track: "ai-ml",
+    difficulty: "Hard",
+    tags: ["LLM", "RAG", "Vector Search", "Prompt Engineering"],
+    resourceLinks: [
+      { type: "article", url: "https://blog.example.com/rag-pipeline-design", label: "Designing RAG Systems" },
+    ],
+    askedAt: "2024-07",
+    notes: "Document chunking strategies, embedding model selection, vector DB (Pinecone/Weaviate), hybrid search (dense + sparse), reranking, prompt template management, caching with Redis, evaluation with LLM-as-judge.",
+  },
+  {
+    title: "ML Feature Store Design",
+    company: "Uber",
+    track: "ai-ml",
+    difficulty: "Medium",
+    tags: ["Feature Store", "ML Infrastructure", "Real-time Features", "Feature Engineering"],
+    resourceLinks: [
+      { type: "youtube", url: "https://youtube.com/watch?v=feature-store", label: "Feature Store Deep Dive" },
+    ],
+    askedAt: "2024-05",
+    notes: "Online vs offline feature serving, point-in-time correctness, feature validation, feature registry, serving with low-latency KV stores, batch features via Spark, streaming features via Flink, feature drift monitoring.",
+  },
+  {
+    title: "ML Model Training & Serving Infrastructure",
+    company: "Meta",
+    track: "ai-ml",
+    difficulty: "Hard",
+    tags: ["ML Infrastructure", "Training", "Serving", "Distributed Training"],
+    resourceLinks: [
+      { type: "blog", url: "https://blog.example.com/ml-infra-meta", label: "Meta's ML Infrastructure" },
+    ],
+    askedAt: "2024-04",
+    notes: "Distributed training with PyTorch DDP/FSDP, GPU cluster scheduling, data parallelism vs model parallelism, model versioning, A/B testing framework, canary deployments, monitoring with prediction drift detection.",
+  },
+  {
+    title: "Prompt Engineering & LLMOps",
+    company: "Anthropic",
+    track: "ai-ml",
+    difficulty: "Easy",
+    tags: ["Prompt Engineering", "LLM", "LLMOps", "Evaluation"],
+    resourceLinks: [
+      { type: "youtube", url: "https://youtube.com/watch?v=prompt-engineering", label: "Advanced Prompt Engineering" },
+      { type: "article", url: "https://blog.example.com/llmops-guide", label: "LLMOps Best Practices" },
+    ],
+    askedAt: "2024-08",
+    notes: "Chain-of-thought prompting, few-shot examples, structured output (JSON mode), prompt versioning, evaluation datasets, regression testing prompts, cost optimization with prompt compression, caching strategies.",
+  },
+  {
+    title: "ML Model Monitoring & Observability",
+    company: "DoorDash",
+    track: "ai-ml",
+    difficulty: "Medium",
+    tags: ["ML Monitoring", "Observability", "Drift Detection", "Data Quality"],
+    resourceLinks: [
+      { type: "blog", url: "https://blog.example.com/ml-monitoring", label: "ML Monitoring at Scale" },
+    ],
+    askedAt: "2024-03",
+    notes: "Data drift vs concept drift detection, statistical tests (KS, PSI), prediction monitoring, feature importance tracking, model degradation alerts, golden dataset evaluation, retraining triggers, data quality dashboards.",
+  },
+  {
+    title: "Design a Real-time Fraud Detection System",
+    company: "Stripe",
+    track: "ai-ml",
+    difficulty: "Hard",
+    tags: ["ML System Design", "Fraud Detection", "Real-time", "Risk"],
+    resourceLinks: [
+      { type: "youtube", url: "https://youtube.com/watch?v=fraud-detection", label: "Fraud Detection ML Design" },
+    ],
+    askedAt: "2024-02",
+    notes: "Real-time feature computation with Flink, gradient-boosted tree models, graph neural networks for merchant-user relationships, ensemble of models, decision latency <100ms, explainable AI for compliance, simulated adversarial training.",
+  },
+  {
+    title: "AI Product Sense — Evaluating Model Quality",
+    company: "Google",
+    track: "ai-ml",
+    difficulty: "Medium",
+    tags: ["AI Product", "Evaluation", "Metrics", "A/B Testing"],
+    resourceLinks: [],
+    askedAt: "2024-06",
+    notes: "Offline metrics (precision, recall, NDCG) vs online metrics (user engagement, revenue). Population stability index, counterfactual evaluation, interleaved experiments, guardrail metrics, statistical significance with sequential testing. Know when NOT to use ML.",
+  },
+  {
+    title: "Deep Learning at Scale — Distributed Training",
+    company: "Nvidia",
+    track: "ai-ml",
+    difficulty: "Hard",
+    tags: ["Deep Learning", "Distributed Training", "GPU", "HPC"],
+    resourceLinks: [
+      { type: "article", url: "https://blog.example.com/distributed-training", label: "Distributed Deep Learning Guide" },
+    ],
+    askedAt: "2024-01",
+    notes: "Data parallel, model parallel, pipeline parallel, tensor parallel. All-reduce vs all-gather, gradient accumulation, mixed precision training (FP16/BF16), activation checkpointing, sequence parallelism for LLMs, 3D parallelism used in Megatron-LM.",
+  },
+  {
+    title: "ML Platform Design — End to End",
+    company: "Airbnb",
+    track: "ai-ml",
+    difficulty: "Hard",
+    tags: ["ML Platform", "MLOps", "Infrastructure", "Feature Engineering"],
+    resourceLinks: [
+      { type: "blog", url: "https://blog.example.com/ml-platform", label: "Building an ML Platform" },
+    ],
+    askedAt: "2024-05",
+    notes: "Feature platform, training platform, serving platform, model registry, experiment tracking (MLflow), orchestration (Airflow), CI/CD for ML pipelines, data versioning (DVC), model governance, lineage tracking, cost attribution per model.",
+  },
+];
+
 export const SAMPLE_RESOURCES_BY_TRACK: Record<TrackId, KnowledgeResourceInput[]> = {
   "dsa": DSA_SAMPLE,
   "system-design": SYSTEM_DESIGN_SAMPLE,
@@ -756,4 +879,5 @@ export const SAMPLE_RESOURCES_BY_TRACK: Record<TrackId, KnowledgeResourceInput[]
   "behavioral": BEHAVIORAL_SAMPLE,
   "leadership": LEADERSHIP_SAMPLE,
   "interview-experience": INTERVIEW_EXPERIENCE_SAMPLE,
+  "ai-ml": AI_ML_SAMPLE,
 };

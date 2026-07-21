@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BarChart3, BookOpen, CheckCircle2, Flame, FolderKanban, Play, Layers } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, CheckCircle2, Flame, FolderKanban, Kanban, Play, Layers } from "lucide-react";
 import dynamic from "next/dynamic";
 import Footer from "@/app/components/Footer";
 import AppShell from "@/components/layout/AppShell";
@@ -19,6 +19,7 @@ import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWor
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useResources } from "@/hooks/useResources";
 import { useResourceProgress } from "@/hooks/useResourceProgress";
+import { useSprints, useSprintTasks } from "@/hooks/useSprints";
 import { INTERVIEW_TRACKS } from "@/lib/interviewTracks";
 import type { Problem, UserProblemProgress } from "@/lib/progressTypes";
 
@@ -69,6 +70,8 @@ const DashboardPage = () => {
   const stats = useDashboardStats(questionsState.questions, progress.progressMap);
   const { resources: allResources } = useResources(auth.user?.uid);
   const { progressMap: resourceProgress } = useResourceProgress(auth.user?.uid);
+  const { sprints } = useSprints(auth.user?.uid);
+  const activeSprint = sprints.find((s) => s.status === "active");
 
   const solvedPercent = useMemo(() => {
     if (!stats || stats.total === 0) return 0;
@@ -459,7 +462,12 @@ const DashboardPage = () => {
               </section>
             </div>
 
-            {/* Row 5: Track Progress */}
+            {/* Row 5: Active Sprint */}
+            {activeSprint && (
+              <ActiveSprintWidget sprintId={activeSprint.id} uid={auth.user?.uid} />
+            )}
+
+            {/* Row 6: Track Progress */}
             {allResources.length > 0 && (
               <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <div className="flex items-center justify-between mb-4">
@@ -523,6 +531,55 @@ const DashboardPage = () => {
         )}
       </div>
     </AppShell>
+  );
+};
+
+const ActiveSprintWidget = ({ sprintId, uid }: { sprintId: string; uid?: string | null }) => {
+  const { todoTasks, inProgressTasks, doneTasks, taskStats } = useSprintTasks(uid, sprintId);
+  const total = taskStats.total;
+  const pct = taskStats.completion;
+
+  return (
+    <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+          <Kanban className="size-3.5 text-success" />
+          Active Sprint
+        </h3>
+        <Link href="/sprints" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          View Sprint
+        </Link>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-1">
+          <div className="relative size-12 shrink-0">
+            <svg className="size-12 -rotate-90" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" strokeWidth="3" className="text-secondary" />
+              <circle
+                cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" strokeWidth="3"
+                strokeDasharray={`${pct * 0.873} 87.3`}
+                className="text-success"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-foreground">{pct}%</span>
+          </div>
+          <div className="flex gap-3 text-xs">
+            <div><span className="font-medium text-muted-foreground">{todoTasks.length}</span><span className="text-muted-foreground/60 ml-1">todo</span></div>
+            <div><span className="font-medium text-warning">{inProgressTasks.length}</span><span className="text-muted-foreground/60 ml-1">active</span></div>
+            <div><span className="font-medium text-success">{doneTasks.length}</span><span className="text-muted-foreground/60 ml-1">done</span></div>
+          </div>
+        </div>
+        <div className="h-8 w-px bg-border" />
+        <div className="text-right text-xs">
+          <div className="text-lg font-bold text-foreground">{doneTasks.length}/{total}</div>
+          <div className="text-muted-foreground">tasks done</div>
+        </div>
+      </div>
+      <div className="mt-3 h-1.5 rounded-full bg-secondary overflow-hidden">
+        <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${pct}%` }} />
+      </div>
+    </section>
   );
 };
 

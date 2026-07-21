@@ -6,7 +6,7 @@ import { memo, useState, useCallback, useEffect } from "react";
 import type { User } from "firebase/auth";
 import {
   BarChart3, CalendarDays, Crosshair, LayoutDashboard,
-  LibraryBig, ListChecks, Menu, Moon, Search, Sun, Layers,
+  LibraryBig, ListChecks, Menu, Moon, Search, Sun, Layers, Kanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ interface TopNavProps {
 const navItems = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Problems", href: "/problems", icon: ListChecks },
+  { label: "Sprints", href: "/sprints", icon: Kanban },
   { label: "Tracks", href: "/tracks", icon: Layers },
   { label: "Progress", href: "/progress", icon: BarChart3 },
   { label: "Activity", href: "/activity", icon: CalendarDays },

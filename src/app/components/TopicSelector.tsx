@@ -83,15 +83,15 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ selectedTopics, onTopicCh
             <Dialog.Trigger asChild>
                 <Button
                     variant="outline"
-                    className="max-w-[14rem] justify-between truncate text-sm text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md sm:max-w-xs"
+                    className="h-7 text-xs text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md"
                     aria-label="Open topic selector"
                 >
-                    <span className="truncate">
+                    <span className="truncate max-w-20">
                         {selectedTopic.size > 0
-                            ? Array.from(selectedTopic).join(", ")
+                            ? `${selectedTopic.size} topic${selectedTopic.size > 1 ? "s" : ""}`
                             : "Topic"}
-                    </span>{" "}
-                    <ChevronDown size={16} />
+                    </span>
+                    <ChevronDown size={12} className="ml-1" />
                 </Button>
             </Dialog.Trigger>
 

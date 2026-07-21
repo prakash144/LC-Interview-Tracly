@@ -62,11 +62,11 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
             <Dialog.Trigger asChild>
                 <Button
                     variant="outline"
-                    className="max-w-[12rem] justify-between truncate text-sm text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md sm:max-w-xs"
+                    className="h-7 text-xs text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md"
                     aria-label="Open company selector"
                 >
-                    <span className="truncate">{selectedCompany || "Select Company"}</span>
-                    <ChevronDown size={16} />
+                    <span className="truncate max-w-20">{selectedCompany || "Company"}</span>
+                    <ChevronDown size={12} className="ml-1" />
                 </Button>
             </Dialog.Trigger>
 
