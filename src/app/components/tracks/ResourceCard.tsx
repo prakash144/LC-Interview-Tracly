@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, PencilLine, Trash2, Calendar } from "lucide-react";
+import { Star, Heart, PencilLine, Trash2, Calendar } from "lucide-react";
 import type { KnowledgeResource, ResourceStatus, UserResourceProgress } from "@/lib/knowledgeBase";
 import { STATUS_COLORS, STATUS_LABELS, LINK_TYPE_ICONS, LINK_LABELS } from "@/lib/knowledgeBase";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
@@ -14,6 +14,7 @@ interface ResourceCardProps {
   onRequireAuth?: () => void;
   onStatusChange?: (resourceId: string, status: ResourceStatus) => void;
   onToggleRevision?: (resourceId: string) => void;
+  onToggleFavorite?: (resourceId: string) => void;
   onSaveNotes?: (resourceId: string, notes: string) => void;
   onEdit?: (resource: KnowledgeResource) => void;
   onDelete?: (resourceId: string) => void;
@@ -32,12 +33,14 @@ const ResourceCard = ({
   onRequireAuth,
   onStatusChange,
   onToggleRevision,
+  onToggleFavorite,
   onSaveNotes,
   onEdit,
   onDelete,
 }: ResourceCardProps) => {
   const currentStatus = progress?.status ?? "not-started";
   const inRevision = Boolean(progress?.inRevisionList);
+  const isFavorited = Boolean(progress?.favorited);
   const personalNotes = progress?.personalNotes ?? "";
 
   const handleStatusClick = () => {
@@ -48,14 +51,14 @@ const ResourceCard = ({
   };
 
   return (
-    <div className="group rounded-xl border border-border bg-card hover:shadow-sm hover:border-foreground/20 transition-all">
+    <div className="group rounded-lg border border-border/70 bg-card/90 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md">
       {/* Header */}
       <div className="p-4 pb-3">
         <div className="flex items-start gap-3">
           <CompanyBadge company={resource.company} size="md" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h4 className="text-sm font-semibold text-foreground truncate">{resource.title}</h4>
+              <h4 className="text-sm font-semibold leading-5 text-foreground truncate">{resource.title}</h4>
               {onEdit && (
                 <button
                   type="button"
@@ -101,7 +104,7 @@ const ResourceCard = ({
       {/* Notes */}
       {resource.notes && (
         <div className="px-4 pb-2">
-          <p className="text-[11px] text-muted-foreground/70 leading-relaxed line-clamp-2 border-l-2 border-border/50 pl-2.5">
+          <p className="rounded-md border-l-2 border-info/30 bg-secondary/35 py-1.5 pr-2 pl-2.5 text-[11px] leading-relaxed text-muted-foreground/75 line-clamp-2">
             {resource.notes}
           </p>
         </div>
@@ -127,7 +130,7 @@ const ResourceCard = ({
       )}
 
       {/* Actions Bar */}
-      <div className="flex items-center gap-1 border-t border-border/50 px-4 py-2 bg-secondary/30 rounded-b-xl">
+      <div className="flex items-center gap-1 border-t border-border/60 bg-secondary/35 px-4 py-2 rounded-b-lg">
         <button
           type="button"
           onClick={handleStatusClick}
@@ -141,16 +144,29 @@ const ResourceCard = ({
 
         <button
           type="button"
+          onClick={() => { if (!progressEnabled) { onRequireAuth?.(); return; } onToggleFavorite?.(resource.id); }}
+          className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
+            isFavorited
+              ? "bg-rose-500/20 text-rose-400"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent"
+          }`}
+          title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+        >
+          <Heart className={`size-3 ${isFavorited ? "fill-rose-400" : ""}`} />
+          {isFavorited ? "Favorited" : "Favorite"}
+        </button>
+
+        <button
+          type="button"
           onClick={() => { if (!progressEnabled) { onRequireAuth?.(); return; } onToggleRevision?.(resource.id); }}
           className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
             inRevision
               ? "bg-amber-500/20 text-amber-400"
               : "text-muted-foreground hover:text-foreground hover:bg-accent"
           }`}
-          title={inRevision ? "Remove from bookmarks" : "Bookmark for quick access"}
+          title={inRevision ? "Remove from review list" : "Add to review list"}
         >
           <Star className={`size-3 ${inRevision ? "fill-amber-400" : ""}`} />
-          {inRevision ? "Bookmarked" : "Bookmark"}
         </button>
 
         <ResourceNotesDialog

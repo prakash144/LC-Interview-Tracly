@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BarChart3, BookOpen, CheckCircle2, Flame, FolderKanban, Kanban, Play, Layers } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, CheckCircle2, Flame, FolderKanban, Kanban, Layers, Play, RotateCcw, Sparkles, Target, Trophy } from "lucide-react";
 import dynamic from "next/dynamic";
 import Footer from "@/app/components/Footer";
 import AppShell from "@/components/layout/AppShell";
@@ -15,6 +15,7 @@ import LoadingState from "@/components/states/LoadingState";
 import { ProgressRingChart } from "@/app/components/ProgressRingChart";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CommandLink, MetricCard, PremiumSurface, SectionHeader } from "@/components/ui/premium";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useResources } from "@/hooks/useResources";
@@ -165,6 +166,53 @@ const DashboardPage = () => {
     [revisionTracker.buckets]
   );
 
+  const resourceCompletion = useMemo(() => {
+    if (allResources.length === 0) return 0;
+    const completed = allResources.filter((resource) => resourceProgress[resource.id]?.status === "completed").length;
+    return Math.round((completed / allResources.length) * 100);
+  }, [allResources, resourceProgress]);
+
+  const nextFocus = useMemo(() => {
+    if (revisionItems.length > 0) {
+      return {
+        label: "Review due",
+        title: revisionItems[0].title,
+        description: `${revisionItems.length} item${revisionItems.length === 1 ? "" : "s"} waiting in revision`,
+        href: "/activity",
+        icon: RotateCcw,
+        tone: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+      };
+    }
+    if (lastAttempted) {
+      return {
+        label: "Continue solving",
+        title: lastAttempted.problem.title,
+        description: "Resume the most recent attempted problem",
+        href: "/problems",
+        icon: Play,
+        tone: "text-success bg-success/10 border-success/20",
+      };
+    }
+    if (activeSprint) {
+      return {
+        label: "Active sprint",
+        title: activeSprint.name,
+        description: activeSprint.goal || "Keep the current sprint moving",
+        href: "/sprints",
+        icon: Kanban,
+        tone: "text-info bg-info/10 border-info/20",
+      };
+    }
+    return {
+      label: "Start strong",
+      title: "Choose your next problem",
+      description: "Build momentum from the problem workspace",
+      href: "/problems",
+      icon: Target,
+      tone: "text-success bg-success/10 border-success/20",
+    };
+  }, [activeSprint, lastAttempted, revisionItems]);
+
   const quickActions = [
     { title: "Continue Solving", description: "Resume your last problem", href: "/problems", icon: Play },
     { title: "Interview Tracks", description: "System design, backend, behavioral prep", href: "/tracks", icon: Layers },
@@ -180,8 +228,8 @@ const DashboardPage = () => {
     <AppShell footer={<Footer />}>
       <PageHeader
         eyebrow="Dashboard"
-        title="Progress Overview"
-        description="Track your journey. Crack your dream company. 🚀"
+        title="Interview Command Center"
+        description="A focused cockpit for practice momentum, revision, tracks, and sprint execution."
       />
 
       <div className="mx-auto max-w-7xl space-y-6 p-4 sm:px-6 lg:px-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -190,48 +238,73 @@ const DashboardPage = () => {
 
         {!isLoading && !hasError && (
           <>
-            {/* Row 1: Profile Summary + Overall Progress */}
-            <div className="grid gap-4 lg:grid-cols-3">
-              <section className="lg:col-span-2 rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md transition-shadow duration-200 hover:shadow-md">
-                <div className="flex flex-wrap items-center gap-5">
+            <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+              <PremiumSurface className="relative overflow-hidden p-5 sm:p-6">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_0%,rgba(34,197,94,0.14),transparent_28%),radial-gradient(circle_at_95%_10%,rgba(59,130,246,0.12),transparent_24%)]" />
+                <div className="relative flex flex-col gap-6">
+                  <div className="flex flex-wrap items-start gap-5">
                   {auth.user ? (
                     <>
-                      <Avatar className="size-14 border-2 border-success/30 shrink-0">
+                      <Avatar className="size-14 shrink-0 border-2 border-success/30 shadow-sm">
                         {auth.user.photoURL && <AvatarImage src={auth.user.photoURL} alt={auth.user.displayName ?? "User"} referrerPolicy="no-referrer" />}
                         <AvatarFallback className="bg-secondary text-lg text-success">
                           {(auth.user.displayName || auth.user.email || "U").charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-lg font-semibold text-foreground truncate">{auth.user.displayName || "User"}</h3>
-                        <p className="text-sm text-muted-foreground">{stats.total} problems in current dataset</p>
+                        <div className="inline-flex items-center gap-1.5 rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
+                          <Sparkles className="size-3" />
+                          Smart prep overview
+                        </div>
+                        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                          {auth.user.displayName ? `Welcome back, ${auth.user.displayName}` : "Welcome back"}
+                        </h2>
+                        <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+                          {stats.total} coding problems, {allResources.length} track resources, and your most important next action in one place.
+                        </p>
                         {streak > 0 && (
-                          <div className="inline-flex items-center gap-1.5 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1 mt-1.5">
+                          <div className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1">
                             <Flame className="size-4 text-warning" />
                             <span className="text-sm font-bold text-warning">{streak}</span>
                             <span className="text-xs text-muted-foreground">day streak</span>
                           </div>
                         )}
                       </div>
-                      <div className="flex flex-wrap gap-6 text-center">
-                        <div><div className="text-2xl font-bold text-success">{stats.solved}</div><div className="text-xs text-muted-foreground">Solved</div></div>
-                        <div><div className="text-2xl font-bold text-info">{stats.attempted}</div><div className="text-xs text-muted-foreground">Attempted</div></div>
-                        <div><div className="text-2xl font-bold text-warning">{stats.bookmarked}</div><div className="text-xs text-muted-foreground">Bookmarked</div></div>
-                      </div>
                     </>
                   ) : (
                     <>
-                      <div className="flex size-14 items-center justify-center rounded-full border-2 border-dashed border-border bg-secondary text-2xl">🎯</div>
+                      <div className="flex size-14 items-center justify-center rounded-md border border-success/20 bg-success/10 text-success">
+                        <Target className="size-6" />
+                      </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-foreground">Welcome to Interview Tracly</h3>
-                        <p className="text-sm text-muted-foreground">Sign in to track your progress and unlock insights.</p>
+                        <div className="inline-flex items-center gap-1.5 rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
+                          <Sparkles className="size-3" />
+                          Smart prep overview
+                        </div>
+                        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Welcome to Interview Tracly</h2>
+                        <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">Sign in to unlock personalized progress, revision signals, and sprint planning.</p>
                       </div>
                     </>
                   )}
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg border border-border/70 bg-background/65 p-3">
+                      <div className="text-2xl font-semibold tracking-tight text-success">{stats.solved}</div>
+                      <div className="text-xs text-muted-foreground">Solved problems</div>
+                    </div>
+                    <div className="rounded-lg border border-border/70 bg-background/65 p-3">
+                      <div className="text-2xl font-semibold tracking-tight text-info">{stats.attempted}</div>
+                      <div className="text-xs text-muted-foreground">Attempted</div>
+                    </div>
+                    <div className="rounded-lg border border-border/70 bg-background/65 p-3">
+                      <div className="text-2xl font-semibold tracking-tight text-warning">{stats.bookmarked}</div>
+                      <div className="text-xs text-muted-foreground">Bookmarked</div>
+                    </div>
+                  </div>
                 </div>
                 {stats.total > 0 && (
-                  <div className="mt-4">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                  <div className="relative mt-5">
+                    <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
                       <span>Overall Progress</span>
                       <span>{solvedPercent}%</span>
                     </div>
@@ -243,13 +316,28 @@ const DashboardPage = () => {
                       aria-valuemax={100}
                       aria-label="Overall progress"
                     >
-                      <div className="h-full rounded-full bg-gradient-to-r from-success to-success/60 transition-all duration-500" style={{ width: `${solvedPercent}%` }} />
+                      <div className="h-full rounded-full bg-gradient-to-r from-success via-info to-warning transition-all duration-500" style={{ width: `${solvedPercent}%` }} />
                     </div>
                   </div>
                 )}
-              </section>
+              </PremiumSurface>
 
-              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+              <PremiumSurface className="p-5">
+                <SectionHeader
+                  eyebrow={nextFocus.label}
+                  title={nextFocus.title}
+                  description={nextFocus.description}
+                  icon={nextFocus.icon}
+                  action={<CommandLink href={nextFocus.href}>Open</CommandLink>}
+                  className="mb-5"
+                />
+                <div className={`mb-5 flex items-center gap-3 rounded-lg border p-3 ${nextFocus.tone}`}>
+                  <nextFocus.icon className="size-5" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium">Recommended next action</p>
+                    <p className="truncate text-[11px] opacity-80">{nextFocus.description}</p>
+                  </div>
+                </div>
                 <div className="flex items-start gap-5">
                   <div className="relative shrink-0">
                     <ProgressRingChart
@@ -288,12 +376,17 @@ const DashboardPage = () => {
                         );
                       })}
                     </div>
-                    <Link href="/progress" className="inline-flex items-center gap-1 text-xs text-success hover:text-success mt-2">
-                      Full stats <ArrowRight className="size-3" />
-                    </Link>
+                    <CommandLink href="/progress" className="mt-2">Full stats</CommandLink>
                   </div>
                 </div>
-              </section>
+              </PremiumSurface>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <MetricCard label="Problem mastery" value={`${solvedPercent}%`} detail={`${stats.solved} of ${stats.total} solved`} icon={Trophy} tone="success" />
+              <MetricCard label="Learning tracks" value={`${resourceCompletion}%`} detail={`${allResources.length} resources mapped`} icon={BookOpen} tone="info" />
+              <MetricCard label="Revision queue" value={revisionItems.length} detail="Due, overdue, and upcoming" icon={RotateCcw} tone="warning" />
+              <MetricCard label="Active sprint" value={activeSprint ? "Live" : "None"} detail={activeSprint?.name ?? "Create a focused sprint"} icon={Kanban} tone={activeSprint ? "success" : "rose"} />
             </div>
 
             {/* Row 2: Activity Heatmap */}
@@ -310,8 +403,8 @@ const DashboardPage = () => {
 
             {/* Row 3: Continue Solving + Recent Activity */}
             <div className="grid gap-4 lg:grid-cols-2">
-              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Continue Solving</h3>
+              <PremiumSurface interactive className="p-5">
+                <SectionHeader eyebrow="Momentum" title="Continue Solving" icon={Play} className="mb-3" />
                 {lastAttempted ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
@@ -324,9 +417,7 @@ const DashboardPage = () => {
                       </div>
                       <DifficultyBadge difficulty={lastAttempted.problem.difficulty} />
                     </div>
-                    <Link href="/problems" className="inline-flex items-center gap-1 text-xs text-success hover:text-success">
-                      Resume <ArrowRight className="size-3" />
-                    </Link>
+                    <CommandLink href="/problems">Resume</CommandLink>
                   </div>
                 ) : lastSolved ? (
                   <div className="space-y-3">
@@ -340,9 +431,7 @@ const DashboardPage = () => {
                       </div>
                       <DifficultyBadge difficulty={lastSolved.problem.difficulty} />
                     </div>
-                    <Link href="/problems" className="inline-flex items-center gap-1 text-xs text-success hover:text-success">
-                      Solve another <ArrowRight className="size-3" />
-                    </Link>
+                    <CommandLink href="/problems">Solve another</CommandLink>
                   </div>
                 ) : (
                   <Link href="/problems" className="group block">
@@ -362,15 +451,16 @@ const DashboardPage = () => {
                     </div>
                   </div>
                 )}
-              </section>
+              </PremiumSurface>
 
-              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Recent Activity</h3>
-                  {recentSolved.length > 0 && (
-                    <Link href="/progress" className="text-xs text-muted-foreground hover:text-foreground transition-colors">View all</Link>
-                  )}
-                </div>
+              <PremiumSurface interactive className="p-5">
+                <SectionHeader
+                  eyebrow="Signal"
+                  title="Recent Activity"
+                  icon={CheckCircle2}
+                  action={recentSolved.length > 0 ? <CommandLink href="/progress" className="text-muted-foreground hover:text-foreground">View all</CommandLink> : null}
+                  className="mb-3"
+                />
                 {recentSolved.length > 0 ? (
                   <ul className="space-y-2">
                     {recentSolved.map((entry) => (
@@ -398,13 +488,13 @@ const DashboardPage = () => {
                     </Link>
                   </div>
                 )}
-              </section>
+              </PremiumSurface>
             </div>
 
             {/* Row 4: Difficulty Breakdown + Company Progress */}
             <div className="grid gap-4 lg:grid-cols-2">
-              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Difficulty Breakdown</h3>
+              <PremiumSurface interactive className="p-5">
+                <SectionHeader eyebrow="Coverage" title="Difficulty Breakdown" icon={BarChart3} className="mb-3" />
                 {ringSegments.some((s) => s.solved > 0) ? (
                   <div className="space-y-3">
                     {ringSegments.map((seg) => {
@@ -432,10 +522,10 @@ const DashboardPage = () => {
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">No solved problems yet</p>
                 )}
-              </section>
+              </PremiumSurface>
 
-              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Company Progress</h3>
+              <PremiumSurface interactive className="p-5">
+                <SectionHeader eyebrow="Readiness" title="Company Progress" icon={Target} className="mb-3" />
                 {topCompanies.length > 0 ? (
                   <div className="space-y-3">
                     {topCompanies.map((company) => {
@@ -474,7 +564,7 @@ const DashboardPage = () => {
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">No company data available</p>
                 )}
-              </section>
+              </PremiumSurface>
             </div>
 
             {/* Row 5: Active Sprint */}
@@ -495,14 +585,15 @@ const DashboardPage = () => {
 
             {/* Row 7: Track Progress */}
             {allResources.length > 0 && (
-              <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
-                    <BookOpen className="size-3.5" />
-                    Track Progress
-                  </h3>
-                  <Link href="/tracks" className="text-xs text-muted-foreground hover:text-foreground transition-colors">View all</Link>
-                </div>
+              <PremiumSurface interactive className="p-5">
+                <SectionHeader
+                  eyebrow="Learning system"
+                  title="Track Progress"
+                  description="Knowledge resources organized by preparation track."
+                  icon={BookOpen}
+                  action={<CommandLink href="/tracks" className="text-muted-foreground hover:text-foreground">View all</CommandLink>}
+                  className="mb-4"
+                />
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {tracks.map((track) => {
                     const trackResources = allResources.filter((r) => r.track === track.id);
@@ -529,7 +620,7 @@ const DashboardPage = () => {
                     );
                   })}
                 </div>
-              </section>
+              </PremiumSurface>
             )}
 
             {/* Row 7: Bookmarks */}
@@ -543,9 +634,9 @@ const DashboardPage = () => {
                   <Link
                     key={action.title}
                     href={action.href}
-                    className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card/80 p-4 text-center transition-all duration-200 hover:border-border hover:bg-accent hover:shadow-md active:scale-[0.98]"
+                    className="flex flex-col items-center gap-2 rounded-lg border border-border/70 bg-card/85 p-4 text-center shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/15 hover:bg-card hover:shadow-md active:scale-[0.98]"
                   >
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-success/10 text-success">
+                    <div className="flex size-10 items-center justify-center rounded-md border border-success/20 bg-success/10 text-success">
                       <Icon className="size-5" />
                     </div>
                     <div>
@@ -573,21 +664,15 @@ const ActiveSprintWidget = ({ sprint, uid }: { sprint: Sprint; uid?: string | nu
   }, [tasks]);
 
   return (
-    <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Kanban className="size-3.5 text-success" />
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{sprint.name}</h3>
-            {sprint.goal && (
-              <p className="text-[10px] text-muted-foreground/50 truncate max-w-48">{sprint.goal}</p>
-            )}
-          </div>
-        </div>
-        <Link href="/sprints" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-          View Sprint
-        </Link>
-      </div>
+    <PremiumSurface interactive className="p-5">
+      <SectionHeader
+        eyebrow="Active sprint"
+        title={sprint.name}
+        description={sprint.goal || "Current focused preparation sprint"}
+        icon={Kanban}
+        action={<CommandLink href="/sprints" className="text-muted-foreground hover:text-foreground">View Sprint</CommandLink>}
+        className="mb-3"
+      />
 
       {todayDue.length > 0 && (
         <div className="mb-3 rounded-lg border border-warning/20 bg-warning/5 px-3 py-2">
@@ -666,7 +751,7 @@ const ActiveSprintWidget = ({ sprint, uid }: { sprint: Sprint; uid?: string | nu
           )}
         </div>
       )}
-    </section>
+    </PremiumSurface>
   );
 };
 

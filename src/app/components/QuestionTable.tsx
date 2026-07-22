@@ -1,9 +1,10 @@
 import dynamic from "next/dynamic";
-import { RotateCcw, Star } from "lucide-react";
+import { BarChart3, CheckCircle2, Database, Eye, ListChecks, RotateCcw, Star } from "lucide-react";
 import type { Problem, ProgressMap, CustomList } from "@/lib/progressTypes";
 import EmptyState from "@/components/states/EmptyState";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
 import TopicBadge from "@/components/data-display/TopicBadge";
+import { PremiumSurface, SectionHeader } from "@/components/ui/premium";
 import {
     type ProblemStatusFilter,
     useFilteredProblems,
@@ -97,35 +98,45 @@ const QuestionTable = ({
         action();
     };
 
+    const summaryItems = [
+        { label: "Dataset", value: questions.length, icon: Database, tone: "text-info bg-info/10 border-info/20" },
+        { label: "Filtered", value: filteredQuestions.length, icon: BarChart3, tone: "text-success bg-success/10 border-success/20" },
+        { label: "Solved", value: filteredSolved.length, icon: CheckCircle2, tone: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" },
+        { label: "Revision", value: filteredRevision.length, icon: RotateCcw, tone: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20" },
+    ];
+
     return (
         <div className="space-y-4">
-            {/* ✅ Count Summary Section */}
-            <div className="flex flex-wrap gap-4 text-sm font-medium text-foreground">
-                <div className="bg-secondary px-3 py-1.5 rounded-lg border border-border">
-                    Dataset: {questions.length}
-                </div>
-                <div className="bg-secondary px-3 py-1.5 rounded-lg border border-border">
-                    Filtered: {filteredQuestions.length}
-                </div>
-                <div className="bg-secondary px-3 py-1.5 rounded-lg border border-border">
-                    Page: {range.from}-{range.to}
-                </div>
-                <div className="bg-secondary px-3 py-1.5 rounded-lg border border-border">
-                    Solved: {filteredSolved.length}
-                </div>
-                <div className="bg-secondary px-3 py-1.5 rounded-lg border border-border">
-                    Attempted: {filteredAttempted.length}
-                </div>
-                <div className="bg-secondary px-3 py-1.5 rounded-lg border border-border">
-                    Bookmarked: {filteredBookmarked.length}
-                </div>
-                <div className="bg-secondary px-3 py-1.5 rounded-lg border border-border">
-                    Revision: {filteredRevision.length}
-                </div>
-                {progressLoading && (
-                    <div className="bg-secondary px-3 py-1.5 rounded-lg border border-border">
-                        Syncing...
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {summaryItems.map((item) => (
+                    <div key={item.label} className="rounded-lg border border-border/70 bg-card/85 p-3 shadow-sm backdrop-blur">
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{item.label}</p>
+                                <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{item.value}</p>
+                            </div>
+                            <span className={`flex size-9 items-center justify-center rounded-md border ${item.tone}`}>
+                                <item.icon className="size-4" />
+                            </span>
+                        </div>
                     </div>
+                ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1">
+                    Page {range.from}-{range.to}
+                </span>
+                <span className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1">
+                    Attempted {filteredAttempted.length}
+                </span>
+                <span className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1">
+                    Saved {filteredBookmarked.length}
+                </span>
+                {progressLoading && (
+                    <span className="rounded-md border border-info/20 bg-info/10 px-2.5 py-1 text-info">
+                        Syncing...
+                    </span>
                 )}
             </div>
 
@@ -154,10 +165,19 @@ const QuestionTable = ({
             {/* 🔽 Desktop Question Table */}
             <div className="hidden lg:block">
             {sortedProblems.length > 0 && (
-            <>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <PremiumSurface className="overflow-hidden">
+            <div className="border-b border-border/70 p-4">
+                <SectionHeader
+                    eyebrow="Question queue"
+                    title={`${sortedProblems.length} matching problems`}
+                    description="Sort by acceptance and frequency, then mark solved, attempted, saved, or revision in place."
+                    icon={ListChecks}
+                    action={<span className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-background/70 px-2.5 py-1 text-[11px] text-muted-foreground"><Eye className="size-3" />{pageSize} per page</span>}
+                />
+            </div>
+            <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-foreground" aria-label="Problems table">
-                <thead className="sticky top-0 z-10 text-xs uppercase bg-card text-muted-foreground border-b border-border">
+                <thead className="sticky top-0 z-10 border-b border-border/70 bg-card/95 text-xs uppercase text-muted-foreground backdrop-blur">
                 <tr>
                     <th className="px-4 py-3">#</th>
                     <th className="px-4 py-3">Problem</th>
@@ -200,7 +220,7 @@ const QuestionTable = ({
                     const progress = progressMap[q.problemId];
 
                     return (
-                    <tr key={`${q.company}-${q.list}-${q.problemId}`} className="bg-secondary border-b border-border transition-colors duration-150 hover:bg-accent/40">
+                    <tr key={`${q.company}-${q.list}-${q.problemId}`} className="border-b border-border/60 bg-background/45 transition-colors duration-150 hover:bg-accent/45">
                         <td className="px-4 py-3 text-muted-foreground">{range.from + index}</td>
                         <td className="px-4 py-3 font-medium">
                             <a href={q.link} target="_blank" rel="noopener noreferrer" title={q.title} className="text-foreground hover:text-info transition-colors">
@@ -304,7 +324,7 @@ const QuestionTable = ({
                 </tbody>
             </table>
             </div>
-            </>
+            </PremiumSurface>
             )}
             </div>
             <ProblemPagination

@@ -1,12 +1,13 @@
 "use client";
 
-import { ChevronDown, RotateCcw } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, Database, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import TopicSelector from "./TopicSelector";
 import CompanySelector from "./CompanySelector";
 import type { ProblemStatusFilter } from "@/features/problems/hooks/useFilteredProblems";
 import type { Collection } from "@/hooks/useCollections";
+import { cn } from "@/lib/utils";
 
 import {
     DropdownMenu,
@@ -81,17 +82,41 @@ const FilterBar = ({
         statusOptions.find((option) => option.value === selectedStatus)?.label ?? "Status";
 
     const selectedCollection = collections.find((c) => c.id === selectedCollectionId);
+    const triggerClass = "h-8 rounded-md border-border/70 bg-card/80 px-2.5 text-xs text-foreground shadow-sm transition-all hover:border-foreground/15 hover:bg-accent";
+    const quickStatuses: { label: string; value: ProblemStatusFilter }[] = [
+        { label: "All", value: "all" },
+        { label: "Unsolved", value: "unsolved" },
+        { label: "Attempted", value: "attempted" },
+        { label: "Solved", value: "solved" },
+        { label: "Revision", value: "revision" },
+    ];
 
     return (
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-background border-y border-border">
-            <div className="flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex flex-wrap items-center gap-1.5">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="rounded-lg border border-border/70 bg-card/85 p-3 shadow-sm backdrop-blur">
+                <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                    <div className="flex min-w-0 flex-1 flex-col gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="inline-flex items-center gap-1.5 rounded-md border border-success/20 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
+                                <SlidersHorizontal className="size-3" />
+                                Smart filters
+                            </div>
+                            <div className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/65 px-2.5 py-1 text-[11px] text-muted-foreground">
+                                <Database className="size-3" />
+                                {selectedCompany}
+                            </div>
+                            <div className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/65 px-2.5 py-1 text-[11px] text-muted-foreground">
+                                <CalendarDays className="size-3" />
+                                Updated {lastUpdated ?? "Loading..."}
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5">
                     {/* List Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="outline"
-                                className="h-7 text-xs text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md"
+                                className={triggerClass}
                             >
                                 {selectedList ? listOptions.find(o => o.value === selectedList)?.label : "Lists"} <ChevronDown size={12} className="ml-1" />
                             </Button>
@@ -105,7 +130,7 @@ const FilterBar = ({
                                     }`}
                                     onClick={() => onListSelect(value)}
                                 >
-                                    {selectedList === value && <span className="mr-2">✅</span>}
+                                    {selectedList === value && <Check className="mr-2 size-3 text-success" />}
                                     {label}
                                 </DropdownMenuItem>
                             ))}
@@ -117,7 +142,7 @@ const FilterBar = ({
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="outline"
-                                className="h-7 text-xs text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md"
+                                className={triggerClass}
                             >
                                 {selectedDifficulty || "Difficulty"} <ChevronDown size={12} className="ml-1" />
                             </Button>
@@ -133,7 +158,7 @@ const FilterBar = ({
                                         onDifficultySelect(selectedDifficulty === item ? '' : item)
                                     }
                                 >
-                                    {selectedDifficulty === item && <span className="mr-2">✅</span>}
+                                    {selectedDifficulty === item && <Check className="mr-2 size-3 text-success" />}
                                     {item}
                                 </DropdownMenuItem>
                             ))}
@@ -148,7 +173,7 @@ const FilterBar = ({
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="outline"
-                                className="h-7 text-xs text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md"
+                                className={triggerClass}
                             >
                                 {selectedStatusLabel} <ChevronDown size={12} className="ml-1" />
                             </Button>
@@ -162,7 +187,7 @@ const FilterBar = ({
                                     }`}
                                     onClick={() => onStatusSelect(item.value)}
                                 >
-                                    {selectedStatus === item.value && <span className="mr-2">✅</span>}
+                                    {selectedStatus === item.value && <Check className="mr-2 size-3 text-success" />}
                                     {item.label}
                                 </DropdownMenuItem>
                             ))}
@@ -175,7 +200,7 @@ const FilterBar = ({
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="outline"
-                                    className="h-7 text-xs text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md"
+                                    className={triggerClass}
                                 >
                                     {selectedCollection ? (
                                         <><span className="mr-1">{selectedCollection.icon}</span>{selectedCollection.name}</>
@@ -189,7 +214,7 @@ const FilterBar = ({
                                     }`}
                                     onClick={() => onCollectionFilterChange("")}
                                 >
-                                    {!selectedCollectionId && <span className="mr-2">✅</span>}
+                                    {!selectedCollectionId && <Check className="mr-2 size-3 text-success" />}
                                     All Collections
                                 </DropdownMenuItem>
                                 {collections.map((c) => (
@@ -202,7 +227,7 @@ const FilterBar = ({
                                             selectedCollectionId === c.id ? "" : c.id
                                         )}
                                     >
-                                        {selectedCollectionId === c.id && <span className="mr-2">✅</span>}
+                                        {selectedCollectionId === c.id && <Check className="mr-2 size-3 text-success" />}
                                         <span className="mr-1.5">{c.icon}</span>
                                         {c.name}
                                         <span className="ml-1 text-muted-foreground/50 text-[10px]">{c.count}</span>
@@ -223,25 +248,42 @@ const FilterBar = ({
                         variant="outline"
                         disabled={!hasActiveFilters}
                         onClick={onResetFilters}
-                        className="h-7 text-xs text-foreground hover:text-foreground border border-border bg-secondary hover:bg-accent cursor-pointer transition-colors duration-150 rounded-md"
+                        className={triggerClass}
                     >
                         <RotateCcw size={12} className="mr-1" />
                         Reset
                     </Button>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1">
+                            {quickStatuses.map((item) => (
+                                <button
+                                    key={item.value}
+                                    type="button"
+                                    onClick={() => onStatusSelect(item.value)}
+                                    className={cn(
+                                        "h-7 rounded-md border px-2.5 text-[11px] font-medium transition-all",
+                                        selectedStatus === item.value
+                                            ? "border-success/40 bg-success/15 text-success shadow-sm"
+                                            : "border-border/60 bg-background/55 text-muted-foreground hover:border-foreground/15 hover:text-foreground"
+                                    )}
+                                >
+                                    {item.label}
+                                </button>
+                            ))}
+                        </div>
                 </div>
 
                 {/* Search + Updated */}
-                <div className="flex items-center gap-3">
-                    <div className="text-success font-bold text-[11px] whitespace-nowrap">
-                        <span aria-hidden="true">🧠</span> Updated {lastUpdated ?? "Loading..."}
-                    </div>
+                <div className="relative w-full xl:w-72">
+                    <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         placeholder="Search questions"
                         aria-label="Search questions"
                         value={searchTerm}
                         onChange={handleSearchChange}
-                        className="h-7 w-44 text-xs bg-secondary border-border text-foreground placeholder:text-muted-foreground lg:w-56"
+                        className="h-9 w-full border-border/70 bg-background/70 pl-8 text-xs text-foreground shadow-sm placeholder:text-muted-foreground"
                     />
+                </div>
                 </div>
             </div>
         </div>

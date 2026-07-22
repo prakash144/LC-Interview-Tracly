@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
+import { BookOpen, CheckCircle2, RotateCcw, Star, Target } from "lucide-react";
 import FilterBar from "@/app/components/FilterBar";
 import QuestionTable from "@/app/components/QuestionTable";
 import ErrorState from "@/components/states/ErrorState";
 import LoadingState from "@/components/states/LoadingState";
+import { CommandLink, PremiumSurface, SectionHeader } from "@/components/ui/premium";
 import { useCustomLists } from "@/hooks/useCustomLists";
 import { useCollections } from "@/hooks/useCollections";
 import type { ProblemWorkspaceData } from "../hooks/useProblemWorkspaceData";
@@ -56,8 +58,60 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
     return new Set(col.problemIds);
   }, [filters.selectedCollectionId, collections, progressMap]);
 
+  const workspaceStats = useMemo(() => {
+    const solved = questionsState.questions.filter((q) => progressMap[q.problemId]?.solved).length;
+    const attempted = questionsState.questions.filter((q) => progressMap[q.problemId]?.attempted).length;
+    const bookmarked = questionsState.questions.filter((q) => progressMap[q.problemId]?.bookmarked).length;
+    const revision = questionsState.questions.filter((q) => progressMap[q.problemId]?.inRevisionList).length;
+    const completion = questionsState.questions.length > 0 ? Math.round((solved / questionsState.questions.length) * 100) : 0;
+    return { solved, attempted, bookmarked, revision, completion };
+  }, [questionsState.questions, progressMap]);
+
   return (
     <>
+      <div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
+        <PremiumSurface className="overflow-hidden p-5">
+          <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+            <SectionHeader
+              eyebrow="Practice briefing"
+              title={`${selectedCompany} ${selectedList.includes("All") ? "all-time" : "focused"} queue`}
+              description="Use filters as a control panel, then work the resulting queue without leaving the table."
+              icon={Target}
+              action={<CommandLink href="/progress">View progress</CommandLink>}
+            />
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+              {[
+                { label: "Solved", value: workspaceStats.solved, icon: CheckCircle2, tone: "text-success bg-success/10 border-success/20" },
+                { label: "Attempted", value: workspaceStats.attempted, icon: BookOpen, tone: "text-info bg-info/10 border-info/20" },
+                { label: "Saved", value: workspaceStats.bookmarked, icon: Star, tone: "text-warning bg-warning/10 border-warning/20" },
+                { label: "Revision", value: workspaceStats.revision, icon: RotateCcw, tone: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-md border border-border/70 bg-background/65 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{item.label}</p>
+                      <p className="mt-1 text-xl font-semibold tracking-tight text-foreground">{item.value}</p>
+                    </div>
+                    <span className={`flex size-8 items-center justify-center rounded-md border ${item.tone}`}>
+                      <item.icon className="size-3.5" />
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
+              <span>Current queue completion</span>
+              <span>{workspaceStats.completion}%</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-secondary">
+              <div className="h-full rounded-full bg-gradient-to-r from-success via-info to-warning transition-all duration-500" style={{ width: `${workspaceStats.completion}%` }} />
+            </div>
+          </div>
+        </PremiumSurface>
+      </div>
+
       {lastUpdated && (
         <FilterBar
           selectedCompany={selectedCompany}

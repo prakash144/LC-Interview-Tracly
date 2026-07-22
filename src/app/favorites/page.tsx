@@ -1,24 +1,28 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Star, ExternalLink, ArrowLeft } from "lucide-react";
+import { Heart, Plus, ArrowLeft } from "lucide-react";
 import AppShell from "@/components/layout/AppShell";
 import Footer from "@/app/components/Footer";
 import PageHeader from "@/components/layout/PageHeader";
+import ResourceCard from "@/app/components/tracks/ResourceCard";
+import ResourceDialog from "@/app/components/tracks/ResourceDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useResources } from "@/hooks/useResources";
 import { useResourceProgress } from "@/hooks/useResourceProgress";
 import { useTracks } from "@/hooks/useTracks";
-import DifficultyBadge from "@/components/data-display/DifficultyBadge";
-import CompanyBadge from "@/components/data-display/CompanyBadge";
-import { LINK_TYPE_ICONS, LINK_LABELS } from "@/lib/knowledgeBase";
+import { Button } from "@/components/ui/button";
+import type { KnowledgeResource, DifficultyLevel, ResourceLink } from "@/lib/knowledgeBase";
 
 export default function FavoritesPage() {
   const auth = useAuth();
-  const { resources } = useResources(auth.user?.uid);
-  const { progressMap } = useResourceProgress(auth.user?.uid);
+  const { resources, addResource, updateResource, deleteResource } = useResources(auth.user?.uid);
+  const { progressMap, setStatus, toggleRevision, toggleFavorite, savePersonalNotes } = useResourceProgress(auth.user?.uid);
   const { tracks } = useTracks(auth.user?.uid);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingResource, setEditingResource] = useState<KnowledgeResource | null>(null);
+  const [addToTrack, setAddToTrack] = useState<string | null>(null);
 
   const trackIcons = useMemo(() => {
     const icons: Record<string, string> = {};
@@ -27,7 +31,7 @@ export default function FavoritesPage() {
   }, [tracks]);
 
   const favorites = useMemo(
-    () => resources.filter((r) => progressMap[r.id]?.inRevisionList),
+    () => resources.filter((r) => progressMap[r.id]?.favorited),
     [resources, progressMap]
   );
 
@@ -41,6 +45,41 @@ export default function FavoritesPage() {
     return g;
   }, [favorites]);
 
+  const handleAdd = (trackId: string) => {
+    setAddToTrack(trackId);
+    setEditingResource(null);
+    setDialogOpen(true);
+  };
+
+  const handleEdit = (resource: KnowledgeResource) => {
+    setAddToTrack(null);
+    setEditingResource(resource);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = (resourceId: string) => {
+    deleteResource(resourceId);
+  };
+
+  const handleSave = (data: {
+    title: string;
+    company: string;
+    difficulty: DifficultyLevel;
+    tags: string[];
+    resourceLinks: ResourceLink[];
+    askedAt: string;
+    notes: string;
+  }) => {
+    if (editingResource) {
+      updateResource(editingResource.id, data);
+    } else if (addToTrack) {
+      addResource({ ...data, track: addToTrack });
+    }
+    setDialogOpen(false);
+    setEditingResource(null);
+    setAddToTrack(null);
+  };
+
   return (
     <AppShell footer={<Footer />}>
       <PageHeader
@@ -50,17 +89,17 @@ export default function FavoritesPage() {
             Dashboard
           </Link>
         }
-        title="Bookmarks"
-        description={`${favorites.length} bookmarked resources`}
+        title="Favorites"
+        description={`${favorites.length} favorited resources`}
       />
 
       <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
         {favorites.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-card/50 px-4 py-16 text-center">
-            <Star className="mx-auto size-10 text-muted-foreground/30 mb-3" />
-            <p className="text-sm text-muted-foreground">No bookmarked resources yet</p>
+            <Heart className="mx-auto size-10 text-muted-foreground/30 mb-3" />
+            <p className="text-sm text-muted-foreground">No favorites yet</p>
             <p className="text-xs text-muted-foreground/50 mt-1">
-              Click the <Star className="size-3 inline" /> icon on any resource to bookmark it for quick access
+              Click the <Heart className="size-3 inline" /> icon on any resource to favorite it for quick access
             </p>
           </div>
         ) : (
@@ -73,38 +112,33 @@ export default function FavoritesPage() {
                     {tracks.find((t) => t.id === trackId)?.name ?? trackId}
                   </h3>
                   <span className="text-[10px] text-muted-foreground/60">{items.length}</span>
+                  <div className="flex-1" />
+                  {auth.user && (
+                    <Button
+                      onClick={() => handleAdd(trackId)}
+                      variant="outline"
+                      className="h-7 text-[10px] border-border bg-secondary hover:bg-accent cursor-pointer rounded-md"
+                    >
+                      <Plus className="size-3 mr-1" />
+                      Add
+                    </Button>
+                  )}
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {items.map((r) => (
-                    <div key={r.id} className="rounded-xl border border-border bg-card/60 p-4 hover:shadow-sm hover:border-foreground/20 transition-all group">
-                      <div className="flex items-start gap-3 mb-3">
-                        <CompanyBadge company={r.company} size="md" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{r.title}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <DifficultyBadge difficulty={r.difficulty} size="sm" />
-                            <span className="text-[10px] text-muted-foreground/60">{r.company}</span>
-                          </div>
-                        </div>
-                      </div>
-                      {r.resourceLinks.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {r.resourceLinks.map((link, i) => (
-                            <a
-                              key={i}
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 bg-secondary/80 hover:bg-accent text-[10px] text-muted-foreground hover:text-foreground transition-colors border border-border/50"
-                            >
-                              <span>{LINK_TYPE_ICONS[link.type]}</span>
-                              <span>{link.label || LINK_LABELS[link.type]}</span>
-                              <ExternalLink className="size-2.5 ml-0.5" />
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <ResourceCard
+                      key={r.id}
+                      resource={r}
+                      progress={progressMap[r.id]}
+                      progressEnabled={Boolean(auth.user)}
+                      onRequireAuth={auth.login}
+                      onStatusChange={setStatus}
+                      onToggleFavorite={(id) => toggleFavorite(id)}
+                      onToggleRevision={(id) => toggleRevision(id)}
+                      onSaveNotes={(id, notes) => savePersonalNotes(id, notes)}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
                   ))}
                 </div>
               </div>
@@ -112,6 +146,13 @@ export default function FavoritesPage() {
           </div>
         )}
       </div>
+
+      <ResourceDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        initialData={editingResource ? { id: editingResource.id, title: editingResource.title, company: editingResource.company, difficulty: editingResource.difficulty, tags: editingResource.tags, resourceLinks: editingResource.resourceLinks, askedAt: editingResource.askedAt, notes: editingResource.notes } : undefined}
+        onSave={handleSave}
+      />
     </AppShell>
   );
 }
