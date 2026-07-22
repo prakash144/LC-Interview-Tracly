@@ -338,7 +338,7 @@ const TracksPage = () => {
               <Button
                 onClick={() => setShowArchived(!showArchived)}
                 variant="outline"
-                className={`h-8 text-xs cursor-pointer rounded-md ${showArchived ? "bg-muted text-foreground border-foreground/20" : "border-border bg-secondary hover:bg-accent text-muted-foreground"}`}
+                className={`h-8 rounded-md text-xs cursor-pointer ${showArchived ? "bg-muted text-foreground border-foreground/20" : "border-border/70 bg-background/75 hover:bg-accent text-muted-foreground"}`}
               >
                 <Archive className="size-3 mr-1" />
                 {showArchived ? "Hide Archived" : `${archivedCount} Archived`}
@@ -347,7 +347,7 @@ const TracksPage = () => {
             <Button
               onClick={() => setManageOpen(true)}
               variant="outline"
-              className="h-8 text-xs border-border bg-secondary hover:bg-accent cursor-pointer rounded-md"
+              className="h-8 rounded-md border-border/70 bg-background/75 text-xs hover:bg-accent cursor-pointer"
             >
               <Settings2 className="size-3 mr-1" />
               Manage
@@ -375,13 +375,13 @@ const TracksPage = () => {
             { label: "Completed", value: `${overviewStats.completionRate}%`, icon: CheckCircle2, tone: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" },
             { label: "In review", value: overviewStats.inRevision, icon: Clock3, tone: "text-amber-500 bg-amber-500/10 border-amber-500/20" },
           ].map((item) => (
-            <div key={item.label} className="rounded-lg border border-border/70 bg-card/80 p-4 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-foreground/15 hover:shadow-md">
+            <div key={item.label} className="rounded-lg border border-border/70 bg-card/90 p-4 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-foreground/15 hover:shadow-md">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{item.label}</p>
                   <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{item.value}</p>
                 </div>
-                <div className={`flex size-10 items-center justify-center rounded-md border ${item.tone}`}>
+                <div className={`flex size-10 items-center justify-center rounded-md border shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${item.tone}`}>
                   <item.icon className="size-4" />
                 </div>
               </div>
@@ -391,7 +391,7 @@ const TracksPage = () => {
 
         {/* Favorites Section */}
         {favoriteResources.length > 0 && (
-          <section className="mb-7 overflow-hidden rounded-lg border border-rose-500/20 bg-card/85 shadow-sm backdrop-blur">
+          <section className="mb-7 overflow-hidden rounded-lg border border-rose-500/20 bg-card/90 shadow-sm backdrop-blur">
             <div className="flex flex-wrap items-center gap-2 border-b border-border/70 bg-gradient-to-r from-rose-500/10 via-card/60 to-amber-500/10 px-4 py-3">
               <div className="flex size-8 items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/15">
                 <Heart className="size-3 text-rose-400 fill-rose-400" />
@@ -450,7 +450,7 @@ const TracksPage = () => {
         </div>
 
         {visibleTracks.length === 0 && !loading && (
-          <div className="mt-8 rounded-xl border border-dashed border-border bg-card/40 px-4 py-16 text-center">
+          <div className="mt-8 rounded-lg border border-dashed border-border bg-card/60 px-4 py-16 text-center shadow-sm">
             <BookOpen className="mx-auto size-10 text-muted-foreground/30 mb-3" />
             <p className="text-sm text-muted-foreground">
               {showArchived ? "No archived tracks" : "No tracks yet"}

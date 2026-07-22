@@ -71,7 +71,7 @@ const CollectionsPage = () => {
         ) : (
           <div className="flex gap-6">
             <aside className="hidden sm:block w-64 shrink-0">
-              <div className="sticky top-[66px] rounded-xl border border-border bg-card p-3">
+              <div className="sticky top-[72px] rounded-lg border border-border/70 bg-card/90 p-3 shadow-sm">
                 <CollectionSidebar
                   collections={collections}
                   selectedId={selectedId}
@@ -91,10 +91,10 @@ const CollectionsPage = () => {
                     key={c.id}
                     type="button"
                     onClick={() => setSelectedId(c.id)}
-                    className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                       selectedId === c.id
                         ? "bg-accent text-foreground"
-                        : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                        : "border border-border/70 bg-card text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {c.icon && <span className="mr-1">{c.icon}</span>}
@@ -108,7 +108,7 @@ const CollectionsPage = () => {
                     const name = window.prompt("Collection name:");
                     if (name?.trim()) await actions.createCollection(name.trim());
                   }}
-                  className="whitespace-nowrap rounded-lg border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  className="whitespace-nowrap rounded-md border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
                 >
                   + New
                 </button>

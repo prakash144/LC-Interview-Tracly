@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { BarChart3, CheckCircle2, Database, Eye, ListChecks, RotateCcw, Star } from "lucide-react";
+import { BarChart3, Database, Eye, ListChecks, RotateCcw, Star } from "lucide-react";
 import type { Problem, ProgressMap, CustomList } from "@/lib/progressTypes";
 import EmptyState from "@/components/states/EmptyState";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
@@ -84,10 +84,8 @@ const QuestionTable = ({
         currentPage * pageSize
     );
 
-    const filteredSolved = filteredQuestions.filter((q) => progressMap[q.problemId]?.solved);
     const filteredAttempted = filteredQuestions.filter((q) => progressMap[q.problemId]?.attempted);
     const filteredBookmarked = filteredQuestions.filter((q) => progressMap[q.problemId]?.bookmarked);
-    const filteredRevision = filteredQuestions.filter((q) => progressMap[q.problemId]?.inRevisionList);
 
     const requireProgressOrRun = (action: () => void) => {
         if (!progressEnabled) {
@@ -101,21 +99,19 @@ const QuestionTable = ({
     const summaryItems = [
         { label: "Dataset", value: questions.length, icon: Database, tone: "text-info bg-info/10 border-info/20" },
         { label: "Filtered", value: filteredQuestions.length, icon: BarChart3, tone: "text-success bg-success/10 border-success/20" },
-        { label: "Solved", value: filteredSolved.length, icon: CheckCircle2, tone: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" },
-        { label: "Revision", value: filteredRevision.length, icon: RotateCcw, tone: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20" },
     ];
 
     return (
         <div className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2">
                 {summaryItems.map((item) => (
-                    <div key={item.label} className="rounded-lg border border-border/70 bg-card/85 p-3 shadow-sm backdrop-blur">
+                    <div key={item.label} className="rounded-lg border border-border/70 bg-card/90 p-3 shadow-sm backdrop-blur transition-colors hover:border-foreground/15">
                         <div className="flex items-center justify-between gap-3">
                             <div>
                                 <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{item.label}</p>
                                 <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{item.value}</p>
                             </div>
-                            <span className={`flex size-9 items-center justify-center rounded-md border ${item.tone}`}>
+                            <span className={`flex size-9 items-center justify-center rounded-md border shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${item.tone}`}>
                                 <item.icon className="size-4" />
                             </span>
                         </div>
@@ -124,13 +120,13 @@ const QuestionTable = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1">
+                <span className="rounded-md border border-border/70 bg-card/80 px-2.5 py-1 shadow-sm">
                     Page {range.from}-{range.to}
                 </span>
-                <span className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1">
+                <span className="rounded-md border border-border/70 bg-card/80 px-2.5 py-1 shadow-sm">
                     Attempted {filteredAttempted.length}
                 </span>
-                <span className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1">
+                <span className="rounded-md border border-border/70 bg-card/80 px-2.5 py-1 shadow-sm">
                     Saved {filteredBookmarked.length}
                 </span>
                 {progressLoading && (
@@ -166,7 +162,7 @@ const QuestionTable = ({
             <div className="hidden lg:block">
             {sortedProblems.length > 0 && (
             <PremiumSurface className="overflow-hidden">
-            <div className="border-b border-border/70 p-4">
+            <div className="border-b border-border/70 bg-card/70 p-4">
                 <SectionHeader
                     eyebrow="Question queue"
                     title={`${sortedProblems.length} matching problems`}
@@ -176,13 +172,13 @@ const QuestionTable = ({
                 />
             </div>
             <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-foreground" aria-label="Problems table">
-                <thead className="sticky top-0 z-10 border-b border-border/70 bg-card/95 text-xs uppercase text-muted-foreground backdrop-blur">
+            <table className="w-full text-left text-sm text-foreground" aria-label="Problems table">
+                <thead className="sticky top-0 z-10 border-b border-border/70 bg-card/95 text-xs uppercase tracking-wide text-muted-foreground backdrop-blur">
                 <tr>
-                    <th className="px-4 py-3">#</th>
-                    <th className="px-4 py-3">Problem</th>
+                    <th className="w-14 px-4 py-3">#</th>
+                    <th className="sticky left-0 z-20 min-w-72 bg-card/95 px-4 py-3 backdrop-blur">Problem</th>
                     <th
-                        className="px-4 py-3 cursor-pointer"
+                        className="cursor-pointer px-4 py-3 transition-colors hover:text-foreground"
                         onClick={() => handleSort("acceptanceRate")}
                         aria-sort={sortBy === "acceptanceRate" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
                     >
@@ -195,7 +191,7 @@ const QuestionTable = ({
                     </th>
                     <th className="px-4 py-3">Difficulty</th>
                     <th
-                        className="px-4 py-3 cursor-pointer"
+                        className="cursor-pointer px-4 py-3 transition-colors hover:text-foreground"
                         onClick={() => handleSort("frequency")}
                         aria-sort={sortBy === "frequency" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
                     >
@@ -220,20 +216,20 @@ const QuestionTable = ({
                     const progress = progressMap[q.problemId];
 
                     return (
-                    <tr key={`${q.company}-${q.list}-${q.problemId}`} className="border-b border-border/60 bg-background/45 transition-colors duration-150 hover:bg-accent/45">
-                        <td className="px-4 py-3 text-muted-foreground">{range.from + index}</td>
-                        <td className="px-4 py-3 font-medium">
-                            <a href={q.link} target="_blank" rel="noopener noreferrer" title={q.title} className="text-foreground hover:text-info transition-colors">
+                    <tr key={`${q.company}-${q.list}-${q.problemId}`} className="border-b border-border/60 bg-background/35 transition-colors duration-150 hover:bg-accent/45">
+                        <td className="px-4 py-3 text-xs tabular-nums text-muted-foreground">{range.from + index}</td>
+                        <td className="sticky left-0 z-10 bg-background/95 px-4 py-3 font-medium backdrop-blur">
+                            <a href={q.link} target="_blank" rel="noopener noreferrer" title={q.title} className="line-clamp-2 text-foreground transition-colors hover:text-info">
                                 {q.title}
                             </a>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 tabular-nums text-muted-foreground">
                             {typeof q.acceptanceRate === "number" ? q.acceptanceRate.toFixed(2) : q.acceptanceRate}
                         </td>
                         <td className="px-4 py-3">
                             <DifficultyBadge difficulty={q.difficulty} />
                         </td>
-                        <td className="px-4 py-3">{q.frequency}</td>
+                        <td className="px-4 py-3 tabular-nums text-muted-foreground">{q.frequency}</td>
                         <td className="px-4 py-3">
                             {q.topicTag.split(",").map((topic) => {
                                 const trimmed = topic.trim();
@@ -250,7 +246,7 @@ const QuestionTable = ({
                                 aria-label={progress?.solved ? "Mark as unsolved" : "Mark as solved"}
                                 checked={Boolean(progress?.solved)}
                                 onChange={() => requireProgressOrRun(() => onToggleSolved(q))}
-                                className="form-checkbox rounded-full bg-muted border-border text-success cursor-pointer"
+                                className="form-checkbox size-4 cursor-pointer rounded border-border bg-muted text-success"
                             />
                         </td>
                         <td className="px-4 py-3 text-center">
@@ -260,7 +256,7 @@ const QuestionTable = ({
                                 aria-label={progress?.attempted ? "Remove attempt" : "Mark as attempted"}
                                 checked={Boolean(progress?.attempted)}
                                 onChange={() => requireProgressOrRun(() => onToggleAttempted(q))}
-                                className="form-checkbox rounded-full bg-muted border-border text-info cursor-pointer"
+                                className="form-checkbox size-4 cursor-pointer rounded border-border bg-muted text-info"
                             />
                         </td>
                         <td className="px-4 py-3 text-center">
@@ -272,7 +268,7 @@ const QuestionTable = ({
                                 aria-pressed={Boolean(progress?.bookmarked)}
                                 className={`inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
                                     progress?.bookmarked
-                                        ? "bg-yellow-400/10 text-warning"
+                                        ? "border border-warning/25 bg-yellow-400/10 text-warning"
                                         : "text-muted-foreground hover:bg-accent hover:text-warning"
                                 }`}
                             >
@@ -289,7 +285,7 @@ const QuestionTable = ({
                                 aria-label={progress?.inRevisionList ? "Remove from revision list" : "Add to revision list"}
                                 className={`cursor-pointer inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
                                     progress?.inRevisionList
-                                        ? "bg-cyan-500/20 text-cyan-400"
+                                        ? "border border-cyan-500/25 bg-cyan-500/15 text-cyan-400"
                                         : "text-muted-foreground hover:bg-accent hover:text-cyan-400"
                                 }`}
                             >

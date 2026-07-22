@@ -240,7 +240,7 @@ const DashboardPage = () => {
           <>
             <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
               <PremiumSurface className="relative overflow-hidden p-5 sm:p-6">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_0%,rgba(34,197,94,0.14),transparent_28%),radial-gradient(circle_at_95%_10%,rgba(59,130,246,0.12),transparent_24%)]" />
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(34,197,94,0.14),transparent_38%),linear-gradient(45deg,transparent_55%,rgba(59,130,246,0.10))]" />
                 <div className="relative flex flex-col gap-6">
                   <div className="flex flex-wrap items-start gap-5">
                   {auth.user ? (
@@ -252,7 +252,7 @@ const DashboardPage = () => {
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <div className="inline-flex items-center gap-1.5 rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
+                        <div className="inline-flex items-center gap-1.5 rounded-md border border-success/20 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
                           <Sparkles className="size-3" />
                           Smart prep overview
                         </div>
@@ -263,7 +263,7 @@ const DashboardPage = () => {
                           {stats.total} coding problems, {allResources.length} track resources, and your most important next action in one place.
                         </p>
                         {streak > 0 && (
-                          <div className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1">
+                          <div className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1 shadow-sm">
                             <Flame className="size-4 text-warning" />
                             <span className="text-sm font-bold text-warning">{streak}</span>
                             <span className="text-xs text-muted-foreground">day streak</span>
@@ -277,7 +277,7 @@ const DashboardPage = () => {
                         <Target className="size-6" />
                       </div>
                       <div>
-                        <div className="inline-flex items-center gap-1.5 rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
+                        <div className="inline-flex items-center gap-1.5 rounded-md border border-success/20 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
                           <Sparkles className="size-3" />
                           Smart prep overview
                         </div>
@@ -288,16 +288,16 @@ const DashboardPage = () => {
                   )}
                   </div>
                   <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-lg border border-border/70 bg-background/65 p-3">
-                      <div className="text-2xl font-semibold tracking-tight text-success">{stats.solved}</div>
+                    <div className="rounded-lg border border-border/70 bg-background/70 p-3 shadow-sm">
+                      <div className="text-2xl font-semibold tracking-tight text-success tabular-nums">{stats.solved}</div>
                       <div className="text-xs text-muted-foreground">Solved problems</div>
                     </div>
-                    <div className="rounded-lg border border-border/70 bg-background/65 p-3">
-                      <div className="text-2xl font-semibold tracking-tight text-info">{stats.attempted}</div>
+                    <div className="rounded-lg border border-border/70 bg-background/70 p-3 shadow-sm">
+                      <div className="text-2xl font-semibold tracking-tight text-info tabular-nums">{stats.attempted}</div>
                       <div className="text-xs text-muted-foreground">Attempted</div>
                     </div>
-                    <div className="rounded-lg border border-border/70 bg-background/65 p-3">
-                      <div className="text-2xl font-semibold tracking-tight text-warning">{stats.bookmarked}</div>
+                    <div className="rounded-lg border border-border/70 bg-background/70 p-3 shadow-sm">
+                      <div className="text-2xl font-semibold tracking-tight text-warning tabular-nums">{stats.bookmarked}</div>
                       <div className="text-xs text-muted-foreground">Bookmarked</div>
                     </div>
                   </div>
@@ -309,7 +309,7 @@ const DashboardPage = () => {
                       <span>{solvedPercent}%</span>
                     </div>
                     <div
-                      className="h-2 rounded-full bg-secondary overflow-hidden"
+                      className="h-2 overflow-hidden rounded-full bg-secondary/80"
                       role="progressbar"
                       aria-valuenow={solvedPercent}
                       aria-valuemin={0}
@@ -331,8 +331,8 @@ const DashboardPage = () => {
                   action={<CommandLink href={nextFocus.href}>Open</CommandLink>}
                   className="mb-5"
                 />
-                <div className={`mb-5 flex items-center gap-3 rounded-lg border p-3 ${nextFocus.tone}`}>
-                  <nextFocus.icon className="size-5" />
+                <div className={`mb-5 flex items-center gap-3 rounded-lg border p-3 shadow-sm ${nextFocus.tone}`}>
+                  <nextFocus.icon className="size-5 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-xs font-medium">Recommended next action</p>
                     <p className="truncate text-[11px] opacity-80">{nextFocus.description}</p>
@@ -363,7 +363,7 @@ const DashboardPage = () => {
                               <span className="text-card-foreground font-medium tabular-nums">{s.solved}/{s.total}</span>
                             </div>
                             <div
-                              className="h-1.5 rounded-full bg-secondary overflow-hidden"
+                              className="h-1.5 overflow-hidden rounded-full bg-secondary/80"
                               role="progressbar"
                               aria-valuenow={pct}
                               aria-valuemin={0}
@@ -408,7 +408,7 @@ const DashboardPage = () => {
                 {lastAttempted ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-success/15 text-success">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-success/20 bg-success/15 text-success">
                         <Play className="size-5" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -422,7 +422,7 @@ const DashboardPage = () => {
                 ) : lastSolved ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-success/15 text-success">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-success/20 bg-success/15 text-success">
                         <Play className="size-5" />
                       </div>
                       <div className="min-w-0 flex-1">

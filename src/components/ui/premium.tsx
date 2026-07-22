@@ -16,8 +16,8 @@ export const PremiumSurface = ({
 }) => (
   <section
     className={cn(
-      "rounded-lg border border-border/70 bg-card/85 shadow-sm backdrop-blur",
-      interactive && "transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/15 hover:bg-card hover:shadow-md",
+      "rounded-lg border border-border/70 bg-card/90 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_rgba(15,23,42,0.05)] backdrop-blur",
+      interactive && "transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/15 hover:bg-card hover:shadow-[0_16px_40px_rgba(15,23,42,0.08)]",
       className
     )}
   >
@@ -53,7 +53,7 @@ export const SectionHeader = ({
           <h2 className="text-base font-semibold tracking-tight text-foreground">{title}</h2>
         </div>
       </div>
-      {description && <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>}
+      {description && <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">{description}</p>}
     </div>
     {action && <div className="shrink-0">{action}</div>}
   </div>
@@ -86,7 +86,7 @@ export const MetricCard = ({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-          <div className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{value}</div>
+          <div className="mt-1 text-2xl font-semibold tracking-tight text-foreground tabular-nums">{value}</div>
           {detail && <p className="mt-1 text-xs text-muted-foreground">{detail}</p>}
         </div>
         <span className={cn("flex size-10 items-center justify-center rounded-md border", toneClass)}>
@@ -108,7 +108,7 @@ export const CommandLink = ({
 }) => (
   <Link
     href={href}
-    className={cn("inline-flex items-center gap-1 text-xs font-medium text-success transition-colors hover:text-success/80", className)}
+    className={cn("inline-flex items-center gap-1 rounded-md text-xs font-medium text-success transition-colors hover:text-success/80 focus-visible:ring-2 focus-visible:ring-success/40", className)}
   >
     {children}
     <ArrowRight className="size-3" />

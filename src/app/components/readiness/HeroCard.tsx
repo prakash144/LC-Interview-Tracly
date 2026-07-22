@@ -31,7 +31,7 @@ const ScoreRing = ({ score }: { score: number }) => {
 
   return (
     <svg width={radius * 2 + stroke + 4} height={radius * 2 + stroke + 4} className="size-28 shrink-0">
-      <circle cx={radius + stroke / 2 + 2} cy={radius + stroke / 2 + 2} r={radius} fill="none" stroke="hsl(var(--secondary))" strokeWidth={stroke} />
+      <circle cx={radius + stroke / 2 + 2} cy={radius + stroke / 2 + 2} r={radius} fill="none" stroke="var(--secondary)" strokeWidth={stroke} />
       <circle
         cx={radius + stroke / 2 + 2}
         cy={radius + stroke / 2 + 2}
@@ -55,8 +55,8 @@ const HeroCard = ({ overallScore, level, remainingProblems, estimatedTime, selec
   const cfg = getLevelConfig(level);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-card via-card/95 to-card/90 p-5 sm:p-6 transition-shadow duration-200 hover:shadow-md">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-success/5 via-success/3 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+    <div className="relative overflow-hidden rounded-lg border border-border/70 bg-card/90 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md sm:p-6">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(34,197,94,0.12),transparent_38%),linear-gradient(45deg,transparent_60%,rgba(59,130,246,0.10))]" />
       <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
         <ScoreRing score={overallScore} />
         <div className="flex-1 min-w-0">
@@ -73,7 +73,7 @@ const HeroCard = ({ overallScore, level, remainingProblems, estimatedTime, selec
           </p>
           <div className="flex flex-wrap gap-4 sm:gap-6">
             <div className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex size-8 items-center justify-center rounded-md border border-primary/15 bg-primary/10">
                 <ListChecks className="size-4 text-primary" />
               </div>
               <div>
@@ -82,8 +82,8 @@ const HeroCard = ({ overallScore, level, remainingProblems, estimatedTime, selec
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-zap/10">
-                <Clock className="size-4 text-zap" />
+              <div className="flex size-8 items-center justify-center rounded-md border border-warning/20 bg-warning/10">
+                <Clock className="size-4 text-warning" />
               </div>
               <div>
                 <div className="text-lg font-bold text-foreground">{estimatedTime}</div>
@@ -91,7 +91,7 @@ const HeroCard = ({ overallScore, level, remainingProblems, estimatedTime, selec
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-info/10">
+              <div className="flex size-8 items-center justify-center rounded-md border border-info/20 bg-info/10">
                 <Target className="size-4 text-info" />
               </div>
               <div>

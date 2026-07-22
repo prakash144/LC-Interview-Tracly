@@ -1,3 +1,5 @@
+import { Inbox } from "lucide-react";
+
 interface EmptyStateProps {
   message: string;
 }
@@ -5,9 +7,10 @@ interface EmptyStateProps {
 const EmptyState = ({ message }: EmptyStateProps) => (
   <div
     role="status"
-    className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-8 text-center text-sm text-muted-foreground"
+    className="rounded-lg border border-dashed border-border/80 bg-card/70 px-4 py-10 text-center text-sm text-muted-foreground"
   >
-    {message}
+    <Inbox className="mx-auto mb-3 size-8 text-muted-foreground/40" />
+    <p>{message}</p>
   </div>
 );
 

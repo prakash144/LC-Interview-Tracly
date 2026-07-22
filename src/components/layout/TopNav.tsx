@@ -6,13 +6,25 @@ import { memo, useState, useCallback, useEffect } from "react";
 import type { User } from "firebase/auth";
 import {
   BarChart3, CalendarDays, Crosshair, LayoutDashboard,
-  LibraryBig, ListChecks, Menu, Moon, Search, Sun, Layers, Kanban,
+  LibraryBig, ListChecks, Menu, Moon, Search, Sun, Layers, Kanban, Bell,
+  CheckCircle2, Clock3, RotateCcw, Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
+import { useResources } from "@/hooks/useResources";
+import { useResourceProgress } from "@/hooks/useResourceProgress";
+import { useSprints } from "@/hooks/useSprints";
 import { Logo } from "@/components/ui/logo";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import UserMenu from "./UserMenu";
 import GlobalSearch from "./GlobalSearch";
 
@@ -50,15 +62,15 @@ const NavLink = memo(function NavLink({
     <Link
       href={href}
       className={cn(
-        "relative inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-all",
+        "relative inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium transition-all",
         isActive
           ? "text-foreground shadow-sm"
-          : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+          : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
       )}
       aria-current={isActive ? "page" : undefined}
     >
       {isActive && (
-        <span className="absolute inset-0 rounded-md border border-border/70 bg-card/90 shadow-[0_8px_24px_rgba(15,23,42,0.08)] dark:bg-secondary/80" />
+        <span className="absolute inset-0 rounded-md border border-border/70 bg-card/95 shadow-[0_8px_24px_rgba(15,23,42,0.08)] dark:bg-secondary/80" />
       )}
       <Icon className="relative z-10 size-4" />
       <span className="relative z-10 whitespace-nowrap">{label}</span>
@@ -88,13 +100,122 @@ function SearchTrigger({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="hidden sm:inline-flex items-center gap-2 h-8 rounded-md border border-border bg-secondary/50 px-2.5 text-xs text-muted-foreground/60 hover:text-foreground hover:border-foreground/20 transition-all w-40 lg:w-48"
+      className="hidden h-8 w-40 items-center gap-2 rounded-md border border-border/70 bg-card/75 px-2.5 text-xs text-muted-foreground/70 shadow-sm transition-all hover:border-foreground/20 hover:bg-card hover:text-foreground sm:inline-flex lg:w-48"
       aria-label="Search all resources"
     >
       <Search className="size-3.5" />
-      <span className="flex-1 text-left">Search resources...</span>
-      <kbd className="hidden lg:inline-flex h-4 items-center rounded border border-border bg-background px-1 text-[10px] text-muted-foreground/40 font-mono">⌘K</kbd>
+      <span className="flex-1 text-left">Search...</span>
+      <kbd className="hidden h-4 items-center rounded border border-border/80 bg-background px-1 font-mono text-[10px] text-muted-foreground/50 lg:inline-flex">⌘K</kbd>
     </button>
+  );
+}
+
+function NotificationContent({ uid }: { uid?: string | null }) {
+  const { resources } = useResources(uid ?? undefined);
+  const { progressMap } = useResourceProgress(uid ?? undefined);
+  const { sprints } = useSprints(uid ?? undefined);
+
+  const activeSprint = sprints.find((sprint) => sprint.status === "active");
+  const revisionCount = resources.filter((resource) => progressMap[resource.id]?.inRevisionList).length;
+  const favoriteCount = resources.filter((resource) => progressMap[resource.id]?.favorited).length;
+  const inProgressCount = resources.filter((resource) => progressMap[resource.id]?.status === "in-progress").length;
+  const signalCount = Number(Boolean(activeSprint)) + Number(revisionCount > 0) + Number(inProgressCount > 0);
+
+  return (
+    <DropdownMenuContent align="end" className="w-80 border-border bg-card p-1 text-foreground shadow-lg">
+        <DropdownMenuLabel className="px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold">Prep Signals</div>
+              <div className="text-xs font-normal text-muted-foreground">
+                {uid ? "Smart reminders from your workspace" : "Sign in to enable live reminders"}
+              </div>
+            </div>
+            {uid && signalCount > 0 && (
+              <span className="rounded-md border border-success/20 bg-success/10 px-2 py-1 text-[10px] font-medium text-success">
+                {signalCount} active
+              </span>
+            )}
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-border" />
+        {!uid ? (
+          <DropdownMenuItem disabled className="items-start gap-3 px-3 py-3">
+            <Clock3 className="mt-0.5 size-4" />
+            <span className="text-xs text-muted-foreground">Your sprint, revision, and resource reminders will appear here after sign in.</span>
+          </DropdownMenuItem>
+        ) : (
+          <>
+            <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5">
+              <Link href="/sprints" className="flex items-start gap-3">
+                <Kanban className="mt-0.5 size-4 text-success" />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium">{activeSprint ? activeSprint.name : "No active sprint"}</span>
+                  <span className="block text-xs text-muted-foreground">{activeSprint ? "Keep your current sprint moving" : "Create a sprint to focus this week"}</span>
+                </span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5">
+              <Link href="/tracks" className="flex items-start gap-3">
+                <RotateCcw className="mt-0.5 size-4 text-cyan-400" />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium">{revisionCount} resources in revision</span>
+                  <span className="block text-xs text-muted-foreground">Review saved learning items before they go cold</span>
+                </span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5">
+              <Link href="/tracks" className="flex items-start gap-3">
+                <Clock3 className="mt-0.5 size-4 text-warning" />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium">{inProgressCount} resources in progress</span>
+                  <span className="block text-xs text-muted-foreground">Finish active learning items to improve readiness</span>
+                </span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5">
+              <Link href="/tracks" className="flex items-start gap-3">
+                <Star className="mt-0.5 size-4 text-warning" />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium">{favoriteCount} favorite resources</span>
+                  <span className="block text-xs text-muted-foreground">Pinned items are ready for quick practice</span>
+                </span>
+              </Link>
+            </DropdownMenuItem>
+            {signalCount === 0 && (
+              <>
+                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuItem disabled className="items-start gap-3 px-3 py-3">
+                  <CheckCircle2 className="mt-0.5 size-4 text-success" />
+                  <span className="text-xs text-muted-foreground">No urgent signals right now. Your workspace is clear.</span>
+                </DropdownMenuItem>
+              </>
+            )}
+          </>
+        )}
+    </DropdownMenuContent>
+  );
+}
+
+function NotificationMenu({ uid }: { uid?: string | null }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="relative hidden size-8 text-muted-foreground hover:text-foreground sm:inline-flex"
+          aria-label="Open notifications"
+        >
+          <Bell className="size-4" />
+          {open && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-success ring-2 ring-background" />}
+        </Button>
+      </DropdownMenuTrigger>
+      {open && <NotificationContent uid={uid} />}
+    </DropdownMenu>
   );
 }
 
@@ -116,7 +237,7 @@ function MobileNavItem({
         className={cn(
           "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
           isActive
-            ? "bg-accent/50 text-foreground"
+            ? "bg-accent/70 text-foreground"
             : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
         )}
         aria-current={isActive ? "page" : undefined}
@@ -154,8 +275,8 @@ const TopNav = ({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 shadow-[0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
-      <div className="mx-auto flex h-[50px] max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/88 shadow-[0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/74">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
         {/* Left: Brand */}
         <Logo showTagline={false} />
 
@@ -182,30 +303,7 @@ const TopNav = ({
 
           <ThemeToggle />
 
-          {/* Notifications placeholder */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="hidden sm:inline-flex size-8 text-muted-foreground hover:text-foreground"
-            aria-label="Notifications"
-            title="Notifications — coming soon"
-            disabled
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-4"
-              aria-hidden="true"
-            >
-              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-            </svg>
-          </Button>
+          <NotificationMenu uid={user?.uid} />
 
           <UserMenu
             user={user}

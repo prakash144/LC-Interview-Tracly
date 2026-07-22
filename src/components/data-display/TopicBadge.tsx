@@ -14,8 +14,8 @@ const TopicBadge = ({ topic, active = false, size = "sm", className = "" }: Topi
   <span
     className={`inline-flex items-center rounded-md font-medium transition-colors ${
       active
-        ? "bg-success/20 text-success border border-success/30"
-        : "bg-secondary text-foreground"
+        ? "bg-success/15 text-success border border-success/30"
+        : "border border-border/60 bg-secondary/70 text-foreground"
     } ${sizeMap[size]} ${className}`}
   >
     {topic}

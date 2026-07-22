@@ -103,7 +103,7 @@ const CollectionView = ({
 
   if (!collection) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-16 text-center">
+      <div className="rounded-lg border border-dashed border-border/80 bg-card/70 px-4 py-16 text-center shadow-sm">
         <div className="flex justify-center mb-3">
           <FolderKanban className="size-10 text-muted-foreground/30" />
         </div>
@@ -116,10 +116,10 @@ const CollectionView = ({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-card/80 p-4">
+      <div className="rounded-lg border border-border/70 bg-card/90 p-4 shadow-sm">
         <div className="flex items-center gap-2 mb-1">
           <Icon className="size-4 text-foreground" />
-          <h2 className="text-sm font-bold text-foreground">{collection.name}</h2>
+          <h2 className="text-sm font-semibold text-foreground">{collection.name}</h2>
           <span className="text-xs text-muted-foreground/50 tabular-nums">· {collection.count} problems</span>
         </div>
         {collection.description && (
@@ -171,7 +171,7 @@ const CollectionView = ({
           onSaveNotes={onSaveNotes}
         />
       ) : (
-        <div className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-12 text-center">
+        <div className="rounded-lg border border-dashed border-border/80 bg-card/70 px-4 py-12 text-center shadow-sm">
           <p className="text-sm text-muted-foreground">
             {collection.type === "favorites"
               ? "No favorites yet. Star a problem from the Problems page to add it here."

@@ -31,7 +31,7 @@ const SprintCard = ({ sprint, tasks = [], onClick, onStart, onComplete, onDelete
     <div
       onClick={() => onClick?.(sprint.id)}
       className={cn(
-        "group relative rounded-xl border bg-card transition-all duration-200 p-4 cursor-pointer",
+        "group relative rounded-lg border border-border/70 bg-card/90 p-4 shadow-sm transition-all duration-200 cursor-pointer",
         "hover:border-foreground/15 hover:shadow-md hover:shadow-foreground/[0.02] hover:-translate-y-0.5",
         sprint.status === "active" && "border-success/20 bg-success/[0.02]"
       )}
@@ -47,7 +47,7 @@ const SprintCard = ({ sprint, tasks = [], onClick, onStart, onComplete, onDelete
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-sm font-semibold text-foreground truncate">{sprint.name}</h3>
-            <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full", cfg.color, cfg.bg)}>
+            <span className={cn("rounded-md px-1.5 py-0.5 text-[10px] font-medium", cfg.color, cfg.bg)}>
               {cfg.label}
             </span>
           </div>
@@ -95,7 +95,7 @@ const SprintCard = ({ sprint, tasks = [], onClick, onStart, onComplete, onDelete
               {pct}%
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+          <div className="h-1.5 overflow-hidden rounded-full bg-secondary/80">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-500 ease-out",

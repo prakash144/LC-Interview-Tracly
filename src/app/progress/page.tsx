@@ -304,7 +304,7 @@ const ProgressPage = () => {
         {isLoading && <LoadingState message="Loading progress data..." />}
 
         {!auth.user && !isLoading && (
-          <div className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-12 text-center">
+          <div className="rounded-lg border border-dashed border-border/80 bg-card/70 px-4 py-12 text-center shadow-sm">
             <Clock className="mx-auto size-10 text-muted-foreground mb-3" />
             <p className="text-sm text-muted-foreground">Sign in to track your practice history and progress.</p>
           </div>
@@ -321,7 +321,7 @@ const ProgressPage = () => {
                     placeholder="Search problems..."
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                    className="w-full rounded-lg border border-border bg-secondary pl-8 pr-8 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-success/50 focus:outline-none"
+                    className="w-full rounded-md border border-border/70 bg-background/75 py-1.5 pl-8 pr-8 text-xs text-foreground shadow-sm placeholder:text-muted-foreground focus:border-success/50 focus:outline-none"
                   />
                   {search && (
                     <button
@@ -337,7 +337,7 @@ const ProgressPage = () => {
                 <select
                   value={difficultyFilter}
                   onChange={(e) => { setDifficultyFilter(e.target.value); setCurrentPage(1); }}
-                  className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-xs text-foreground focus:border-success/50 focus:outline-none"
+                  className="rounded-md border border-border/70 bg-background/75 px-2.5 py-1.5 text-xs text-foreground shadow-sm focus:border-success/50 focus:outline-none"
                 >
                   <option value="all">All Difficulties</option>
                   <option value="Easy">Easy</option>
@@ -347,7 +347,7 @@ const ProgressPage = () => {
                 <select
                   value={statusFilter}
                   onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                  className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-xs text-foreground focus:border-success/50 focus:outline-none"
+                  className="rounded-md border border-border/70 bg-background/75 px-2.5 py-1.5 text-xs text-foreground shadow-sm focus:border-success/50 focus:outline-none"
                 >
                   <option value="all">All Status</option>
                   <option value="solved">Solved</option>
@@ -357,7 +357,7 @@ const ProgressPage = () => {
                 <select
                   value={companyFilter}
                   onChange={(e) => { setCompanyFilter(e.target.value); setCurrentPage(1); }}
-                  className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-xs text-foreground max-w-[140px] focus:border-success/50 focus:outline-none"
+                  className="max-w-[140px] rounded-md border border-border/70 bg-background/75 px-2.5 py-1.5 text-xs text-foreground shadow-sm focus:border-success/50 focus:outline-none"
                 >
                   <option value="all">All Companies</option>
                   {companies.map((c) => (<option key={c} value={c}>{c}</option>))}
@@ -365,7 +365,7 @@ const ProgressPage = () => {
                 <select
                   value={topicFilter}
                   onChange={(e) => { setTopicFilter(e.target.value); setCurrentPage(1); }}
-                  className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-xs text-foreground max-w-[140px] focus:border-success/50 focus:outline-none"
+                  className="max-w-[140px] rounded-md border border-border/70 bg-background/75 px-2.5 py-1.5 text-xs text-foreground shadow-sm focus:border-success/50 focus:outline-none"
                 >
                   <option value="all">All Topics</option>
                   {topics.slice(0, 30).map((t) => (<option key={t} value={t}>{t}</option>))}
@@ -375,9 +375,9 @@ const ProgressPage = () => {
               </div>
 
               {hasFilteredResults ? (
-                <div className="overflow-x-auto rounded-xl border border-border">
-                  <table className="w-full text-sm text-left text-foreground" aria-label="Practice history">
-                    <thead className="sticky top-0 bg-card text-xs uppercase text-muted-foreground border-b border-border z-10">
+                <div className="overflow-x-auto rounded-lg border border-border/70 bg-card/90 shadow-sm">
+                  <table className="w-full text-left text-sm text-foreground" aria-label="Practice history">
+                    <thead className="sticky top-0 z-10 border-b border-border/70 bg-card/95 text-xs uppercase tracking-wide text-muted-foreground">
                       <tr>
                         <th className="px-4 py-3">
                           <button type="button" onClick={() => toggleSort("lastSubmitted")} className="inline-flex items-center hover:text-foreground transition-colors">
@@ -400,7 +400,7 @@ const ProgressPage = () => {
                     </thead>
                     <tbody>
                       {paginated.map((entry) => (
-                        <tr key={entry.problem.problemId} className="border-b border-border bg-card/30 transition-colors duration-150 hover:bg-accent/40">
+                        <tr key={entry.problem.problemId} className="border-b border-border/60 bg-background/35 transition-colors duration-150 hover:bg-accent/40">
                           <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{formatRelativeTime(entry.lastDate)}</td>
                           <td className="px-4 py-3 font-medium">
                             <a href={entry.problem.link} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-info transition-colors">
@@ -428,7 +428,7 @@ const ProgressPage = () => {
                   </table>
                 </div>
               ) : (
-                <div className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-12 text-center">
+                <div className="rounded-lg border border-dashed border-border/80 bg-card/70 px-4 py-12 text-center shadow-sm">
                   <p className="text-sm text-muted-foreground">
                     {!hasEntries ? "No practice history yet. Solve or attempt a problem to start tracking." : "No entries match the current filters."}
                   </p>
@@ -439,29 +439,29 @@ const ProgressPage = () => {
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <span>Rows per page:</span>
-                    <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }} className="rounded border border-border bg-secondary px-2 py-1 text-foreground focus:outline-none">
+                    <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }} className="rounded-md border border-border/70 bg-background px-2 py-1 text-foreground focus:outline-none">
                       {PAGE_SIZES.map((s) => (<option key={s} value={s}>{s}</option>))}
                     </select>
                     <span>Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, sorted.length)} of {sorted.length}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button type="button" disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="rounded border border-border bg-secondary px-2 py-1 text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
+                    <button type="button" disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="rounded-md border border-border/70 bg-background px-2 py-1 text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                       let pageNum: number;
                       if (totalPages <= 5) { pageNum = i + 1; }
                       else if (currentPage <= 3) { pageNum = i + 1; }
                       else if (currentPage >= totalPages - 2) { pageNum = totalPages - 4 + i; }
                       else { pageNum = currentPage - 2 + i; }
-                      return (<button key={pageNum} type="button" onClick={() => setCurrentPage(pageNum)} className={`rounded px-2 py-1 ${currentPage === pageNum ? "bg-success/15 text-success" : "border border-border bg-secondary text-muted-foreground hover:bg-accent"}`}>{pageNum}</button>);
+                      return (<button key={pageNum} type="button" onClick={() => setCurrentPage(pageNum)} className={`rounded-md px-2 py-1 ${currentPage === pageNum ? "bg-success/15 text-success" : "border border-border/70 bg-background text-muted-foreground hover:bg-accent"}`}>{pageNum}</button>);
                     })}
-                    <button type="button" disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="rounded border border-border bg-secondary px-2 py-1 text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+                    <button type="button" disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="rounded-md border border-border/70 bg-background px-2 py-1 text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
                   </div>
                 </div>
               )}
             </div>
 
             <aside className="w-full lg:w-80 shrink-0 space-y-4">
-              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+              <div className="rounded-lg border border-border/70 bg-card/90 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Overall Progress</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm"><span className="text-muted-foreground">Solved</span><span className="text-card-foreground font-medium">{acceptedCount}</span></div>
@@ -471,7 +471,7 @@ const ProgressPage = () => {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+              <div className="rounded-lg border border-border/70 bg-card/90 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Difficulty Breakdown</h3>
                 {ringSegments.some((s) => s.solved > 0) ? (
                   <div className="flex flex-col items-center">
@@ -489,7 +489,7 @@ const ProgressPage = () => {
                 ) : (<p className="text-sm text-muted-foreground text-center py-4">No solved problems yet</p>)}
               </div>
 
-              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+              <div className="rounded-lg border border-border/70 bg-card/90 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Monthly Submissions</h3>
                 {monthlyTrend.length > 0 ? (
                   <div className="flex items-end gap-1.5 h-20">
@@ -516,7 +516,7 @@ const ProgressPage = () => {
                 ) : (<p className="text-sm text-muted-foreground text-center py-4">No data yet</p>)}
               </div>
 
-              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+              <div className="rounded-lg border border-border/70 bg-card/90 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Recent Statistics</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div><div className="text-lg font-bold text-success">{solvedThisWeek}</div><div className="text-xs text-muted-foreground">This Week</div></div>
@@ -529,7 +529,7 @@ const ProgressPage = () => {
               </div>
 
               {resourceStats.total > 0 && (
-                <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+                <div className="rounded-lg border border-border/70 bg-card/90 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
                   <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Knowledge Base</h3>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm">
@@ -577,7 +577,7 @@ const ProgressPage = () => {
                 </div>
               )}
 
-              <div className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
+              <div className="rounded-lg border border-border/70 bg-card/90 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Practice Insights</h3>
                 {entries.length > 0 ? (
                   <div className="space-y-3 text-xs">
