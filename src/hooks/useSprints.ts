@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Sprint, SprintTask, TaskStatus, TaskType } from "@/lib/sprints";
+import { toast } from "sonner";
+import type { Sprint, SprintTaskV2, TaskType } from "@/lib/sprints";
+import { createDefaultTaskV2, migrateTask } from "@/lib/sprints";
 import * as sprintService from "@/services/firebase/sprintService";
+import { addActivityEvent } from "@/services/firebase/activityService";
 
 let idCounter = 0;
 const genId = () => `sprint_${Date.now()}_${++idCounter}`;
@@ -21,25 +24,24 @@ export const useSprints = (uid?: string | null) => {
   useEffect(() => {
     if (!uid) {
       setSprints([]);
+      sprintsRef.current = [];
+      setLoading(false);
       return;
     }
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const data = await sprintService.getSprints(uid);
-        if (!cancelled) {
-          sprintsRef.current = data;
-          setSprints(data);
-        }
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load sprints");
-      } finally {
-        if (!cancelled) setLoading(false);
+    setLoading(true);
+    setError(null);
+    const unsub = sprintService.subscribeSprints(uid,
+      (data) => {
+        sprintsRef.current = data;
+        setSprints(data);
+        setLoading(false);
+      },
+      (error) => {
+        setError(error.message);
+        setLoading(false);
       }
-    };
-    load();
-    return () => { cancelled = true; };
+    );
+    return unsub;
   }, [uid]);
 
   const addSprint = useCallback(
@@ -61,10 +63,12 @@ export const useSprints = (uid?: string | null) => {
       if (uid) {
         try {
           await sprintService.addSprint(uid, sprint);
+          toast.success("Sprint created");
         } catch {
           const rolled = sprintsRef.current.filter((s) => s.id !== sprint.id);
           sprintsRef.current = rolled;
           setSprints(rolled);
+          toast.error("Failed to create sprint");
         }
       }
     },
@@ -73,7 +77,9 @@ export const useSprints = (uid?: string | null) => {
 
   const updateSprint = useCallback(
     async (sprintId: string, data: Partial<Sprint>) => {
-      const optimistic = sprintsRef.current.map((s) =>
+      const prev = sprintsRef.current.find((s) => s.id === sprintId);
+      const prevSnapshot = [...sprintsRef.current];
+      const optimistic = prevSnapshot.map((s) =>
         s.id === sprintId ? { ...s, ...data, updatedAt: Date.now() } : s
       );
       sprintsRef.current = optimistic;
@@ -81,10 +87,17 @@ export const useSprints = (uid?: string | null) => {
       if (uid) {
         try {
           await sprintService.updateSprint(uid, sprintId, data);
+          if (prev && data.status === "active" && prev.status !== "active") {
+            addActivityEvent(uid, { type: "sprint_started", sprintId, sprintName: prev.name, message: `Started Sprint: ${prev.name}` }).catch(() => {});
+          }
+          if (prev && data.status === "completed" && prev.status !== "completed") {
+            addActivityEvent(uid, { type: "sprint_completed", sprintId, sprintName: prev.name, message: `Completed Sprint: ${prev.name}` }).catch(() => {});
+          }
+          toast.success("Sprint updated");
         } catch {
-          const rolled = await sprintService.getSprints(uid);
-          sprintsRef.current = rolled;
-          setSprints(rolled);
+          sprintsRef.current = prevSnapshot;
+          setSprints(prevSnapshot);
+          toast.error("Failed to update sprint");
         }
       }
     },
@@ -93,16 +106,18 @@ export const useSprints = (uid?: string | null) => {
 
   const deleteSprint = useCallback(
     async (sprintId: string) => {
-      const optimistic = sprintsRef.current.filter((s) => s.id !== sprintId);
+      const prevSnapshot = [...sprintsRef.current];
+      const optimistic = prevSnapshot.filter((s) => s.id !== sprintId);
       sprintsRef.current = optimistic;
       setSprints(optimistic);
       if (uid) {
         try {
           await sprintService.deleteSprint(uid, sprintId);
+          toast.success("Sprint deleted");
         } catch {
-          const rolled = await sprintService.getSprints(uid);
-          sprintsRef.current = rolled;
-          setSprints(rolled);
+          sprintsRef.current = prevSnapshot;
+          setSprints(prevSnapshot);
+          toast.error("Failed to delete sprint");
         }
       }
     },
@@ -121,8 +136,8 @@ export const useSprints = (uid?: string | null) => {
 };
 
 export const useSprintTasks = (uid?: string | null, sprintId?: string) => {
-  const [tasks, setTasks] = useState<SprintTask[]>([]);
-  const tasksRef = useRef<SprintTask[]>([]);
+  const [tasks, setTasks] = useState<SprintTaskV2[]>([]);
+  const tasksRef = useRef<SprintTaskV2[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -133,51 +148,50 @@ export const useSprintTasks = (uid?: string | null, sprintId?: string) => {
   useEffect(() => {
     if (!uid || !sprintId) {
       setTasks([]);
+      tasksRef.current = [];
+      setLoading(false);
       return;
     }
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const data = await sprintService.getSprintTasks(uid, sprintId);
-        if (!cancelled) {
-          tasksRef.current = data;
-          setTasks(data);
-        }
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load tasks");
-      } finally {
-        if (!cancelled) setLoading(false);
+    setLoading(true);
+    setError(null);
+    const unsub = sprintService.subscribeTasks(uid, sprintId,
+      (raw) => {
+        const migrated = raw.map((t) => migrateTask(t as unknown as Record<string, unknown>));
+        tasksRef.current = migrated;
+        setTasks(migrated);
+        setLoading(false);
+      },
+      (error) => {
+        setError(error.message);
+        setLoading(false);
       }
-    };
-    load();
-    return () => { cancelled = true; };
+    );
+    return unsub;
   }, [uid, sprintId]);
 
   const addTask = useCallback(
     async (data: { type: TaskType; itemId: string; title: string }) => {
       if (!sprintId) return;
-      const now = Date.now();
-      const task: SprintTask = {
+      const task = createDefaultTaskV2({
         id: genTaskId(),
         sprintId,
         type: data.type,
         itemId: data.itemId,
         title: data.title,
-        status: "todo",
-        addedAt: now,
-        updatedAt: now,
-      };
+      });
       const optimistic = [...tasksRef.current, task];
       tasksRef.current = optimistic;
       setTasks(optimistic);
       if (uid) {
         try {
           await sprintService.addTask(uid, sprintId, task);
+          addActivityEvent(uid, { type: "task_added", sprintId, sprintName: "", message: `Added task: ${task.title}` }).catch(() => {});
+          toast.success("Task added");
         } catch {
           const rolled = tasksRef.current.filter((t) => t.id !== task.id);
           tasksRef.current = rolled;
-          setTasks(rolled);
+          setTasks([...rolled]);
+          toast.error("Failed to add task");
         }
       }
     },
@@ -185,8 +199,10 @@ export const useSprintTasks = (uid?: string | null, sprintId?: string) => {
   );
 
   const updateTaskStatus = useCallback(
-    async (taskId: string, status: TaskStatus) => {
-      const optimistic = tasksRef.current.map((t) =>
+    async (taskId: string, status: SprintTaskV2["status"]) => {
+      const prev = tasksRef.current.find((t) => t.id === taskId);
+      const prevSnapshot = [...tasksRef.current];
+      const optimistic = prevSnapshot.map((t) =>
         t.id === taskId ? { ...t, status, updatedAt: Date.now() } : t
       );
       tasksRef.current = optimistic;
@@ -194,10 +210,35 @@ export const useSprintTasks = (uid?: string | null, sprintId?: string) => {
       if (uid && sprintId) {
         try {
           await sprintService.updateTask(uid, sprintId, taskId, { status, updatedAt: Date.now() });
+          if (prev && status === "done" && prev.status !== "done") {
+            addActivityEvent(uid, { type: "task_status_changed", sprintId, sprintName: "", message: `Completed task: ${prev.title}` }).catch(() => {});
+          }
         } catch {
-          const rolled = await sprintService.getSprintTasks(uid, sprintId);
-          tasksRef.current = rolled;
-          setTasks(rolled);
+          tasksRef.current = prevSnapshot;
+          setTasks(prevSnapshot);
+          toast.error("Failed to update task status");
+        }
+      }
+    },
+    [uid, sprintId]
+  );
+
+  const updateTask = useCallback(
+    async (taskId: string, data: Partial<SprintTaskV2>) => {
+      const prevSnapshot = [...tasksRef.current];
+      const optimistic = prevSnapshot.map((t) =>
+        t.id === taskId ? { ...t, ...data, updatedAt: Date.now() } : t
+      );
+      tasksRef.current = optimistic;
+      setTasks(optimistic);
+      if (uid && sprintId) {
+        try {
+          await sprintService.updateTask(uid, sprintId, taskId, data);
+          toast.success("Task updated");
+        } catch {
+          tasksRef.current = prevSnapshot;
+          setTasks(prevSnapshot);
+          toast.error("Failed to update task");
         }
       }
     },
@@ -206,35 +247,43 @@ export const useSprintTasks = (uid?: string | null, sprintId?: string) => {
 
   const removeTask = useCallback(
     async (taskId: string) => {
-      const optimistic = tasksRef.current.filter((t) => t.id !== taskId);
+      const prevSnapshot = [...tasksRef.current];
+      const optimistic = prevSnapshot.filter((t) => t.id !== taskId);
       tasksRef.current = optimistic;
       setTasks(optimistic);
       if (uid && sprintId) {
         try {
           await sprintService.deleteTask(uid, sprintId, taskId);
+          toast.success("Task removed");
         } catch {
-          const rolled = await sprintService.getSprintTasks(uid, sprintId);
-          tasksRef.current = rolled;
-          setTasks(rolled);
+          tasksRef.current = prevSnapshot;
+          setTasks(prevSnapshot);
+          toast.error("Failed to remove task");
         }
       }
     },
     [uid, sprintId]
   );
 
+  const backlogTasks = useMemo(() => tasks.filter((t) => t.status === "backlog"), [tasks]);
   const todoTasks = useMemo(() => tasks.filter((t) => t.status === "todo"), [tasks]);
   const inProgressTasks = useMemo(() => tasks.filter((t) => t.status === "in-progress"), [tasks]);
+  const reviewTasks = useMemo(() => tasks.filter((t) => t.status === "review"), [tasks]);
   const doneTasks = useMemo(() => tasks.filter((t) => t.status === "done"), [tasks]);
 
   const taskStats = useMemo(
     () => ({
       total: tasks.length,
+      backlog: backlogTasks.length,
       todo: todoTasks.length,
       inProgress: inProgressTasks.length,
+      review: reviewTasks.length,
       done: doneTasks.length,
       completion: tasks.length > 0 ? Math.round((doneTasks.length / tasks.length) * 100) : 0,
+      estimatedHours: tasks.reduce((sum, t) => sum + (t.estimatedHours || 0), 0),
+      actualHours: tasks.reduce((sum, t) => sum + (t.actualHours || 0), 0),
     }),
-    [tasks, todoTasks, inProgressTasks, doneTasks]
+    [tasks, backlogTasks, todoTasks, inProgressTasks, reviewTasks, doneTasks]
   );
 
   return useMemo(
@@ -244,12 +293,15 @@ export const useSprintTasks = (uid?: string | null, sprintId?: string) => {
       error,
       addTask,
       updateTaskStatus,
+      updateTask,
       removeTask,
+      backlogTasks,
       todoTasks,
       inProgressTasks,
+      reviewTasks,
       doneTasks,
       taskStats,
     }),
-    [tasks, loading, error, addTask, updateTaskStatus, removeTask, todoTasks, inProgressTasks, doneTasks, taskStats]
+    [tasks, loading, error, addTask, updateTaskStatus, updateTask, removeTask, backlogTasks, todoTasks, inProgressTasks, reviewTasks, doneTasks, taskStats]
   );
 };

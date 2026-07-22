@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw, PencilLine, Trash2, Calendar } from "lucide-react";
+import { Star, PencilLine, Trash2, Calendar } from "lucide-react";
 import type { KnowledgeResource, ResourceStatus, UserResourceProgress } from "@/lib/knowledgeBase";
 import { STATUS_COLORS, STATUS_LABELS, LINK_TYPE_ICONS, LINK_LABELS } from "@/lib/knowledgeBase";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
@@ -144,13 +144,13 @@ const ResourceCard = ({
           onClick={() => { if (!progressEnabled) { onRequireAuth?.(); return; } onToggleRevision?.(resource.id); }}
           className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
             inRevision
-              ? "bg-cyan-500/20 text-cyan-400"
+              ? "bg-amber-500/20 text-amber-400"
               : "text-muted-foreground hover:text-foreground hover:bg-accent"
           }`}
-          title={inRevision ? "Remove from revision" : "Mark for revision"}
+          title={inRevision ? "Remove from bookmarks" : "Bookmark for quick access"}
         >
-          <RotateCcw className="size-3" />
-          {inRevision ? "Revision" : "Revise"}
+          <Star className={`size-3 ${inRevision ? "fill-amber-400" : ""}`} />
+          {inRevision ? "Bookmarked" : "Bookmark"}
         </button>
 
         <ResourceNotesDialog

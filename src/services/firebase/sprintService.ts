@@ -7,10 +7,11 @@ import {
   setDoc,
   query,
   orderBy,
+  onSnapshot,
   writeBatch,
 } from "firebase/firestore";
 import { requireDb } from "@/lib/firebase";
-import type { Sprint, SprintTask, SprintWithTasks } from "@/lib/sprints";
+import type { Sprint, SprintTask, SprintTaskV2, SprintWithTasks } from "@/lib/sprints";
 import { SPRINTS_COLLECTION, SPRINT_TASKS_SUBCOLLECTION } from "@/lib/sprints";
 
 const sprintCollection = (uid: string) =>
@@ -24,6 +25,33 @@ const tasksSubcollection = (uid: string, sprintId: string) =>
 
 const taskDoc = (uid: string, sprintId: string, taskId: string) =>
   doc(requireDb(), "users", uid, SPRINTS_COLLECTION, sprintId, SPRINT_TASKS_SUBCOLLECTION, taskId);
+
+export const subscribeSprints = (
+  uid: string,
+  callback: (sprints: Sprint[]) => void,
+  onError?: (error: Error) => void
+): (() => void) => {
+  const q = query(sprintCollection(uid), orderBy("createdAt", "desc"));
+  const unsub = onSnapshot(q,
+    (snapshot) => callback(snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Sprint))),
+    (error) => { if (onError) onError(error); }
+  );
+  return unsub;
+};
+
+export const subscribeTasks = (
+  uid: string,
+  sprintId: string,
+  callback: (tasks: SprintTask[]) => void,
+  onError?: (error: Error) => void
+): (() => void) => {
+  const q = query(tasksSubcollection(uid, sprintId), orderBy("order", "asc"));
+  const unsub = onSnapshot(q,
+    (snapshot) => callback(snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as SprintTask))),
+    (error) => { if (onError) onError(error); }
+  );
+  return unsub;
+};
 
 export const getSprints = async (uid: string): Promise<Sprint[]> => {
   const q = query(sprintCollection(uid), orderBy("createdAt", "desc"));
@@ -39,7 +67,7 @@ export const getSprint = async (uid: string, sprintId: string): Promise<SprintWi
 };
 
 export const getSprintTasks = async (uid: string, sprintId: string): Promise<SprintTask[]> => {
-  const q = query(tasksSubcollection(uid, sprintId), orderBy("addedAt", "asc"));
+  const q = query(tasksSubcollection(uid, sprintId), orderBy("order", "asc"));
   const snapshot = await getDocs(q);
   return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as SprintTask));
 };
@@ -66,7 +94,7 @@ export const deleteSprint = async (uid: string, sprintId: string): Promise<void>
   await batch.commit();
 };
 
-export const addTask = async (uid: string, sprintId: string, task: SprintTask): Promise<void> => {
+export const addTask = async (uid: string, sprintId: string, task: SprintTask | SprintTaskV2): Promise<void> => {
   await setDoc(taskDoc(uid, sprintId, task.id), task);
 };
 
@@ -74,7 +102,7 @@ export const updateTask = async (
   uid: string,
   sprintId: string,
   taskId: string,
-  data: Partial<SprintTask>
+  data: Partial<SprintTask> | Partial<SprintTaskV2>
 ): Promise<void> => {
   await setDoc(taskDoc(uid, sprintId, taskId), data, { merge: true });
 };

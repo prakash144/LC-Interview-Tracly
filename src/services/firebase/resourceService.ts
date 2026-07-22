@@ -7,6 +7,7 @@ import {
   setDoc,
   query,
   where,
+  onSnapshot,
 } from "firebase/firestore";
 import { requireDb } from "@/lib/firebase";
 import type { KnowledgeResource, UserResourceProgress, ResourceProgressMap } from "@/lib/knowledgeBase";
@@ -24,6 +25,36 @@ const resourceProgressCollection = (uid: string) =>
 
 const resourceProgressDoc = (uid: string, resourceId: string) =>
   doc(requireDb(), "users", uid, "resourceProgress", resourceId);
+
+export const subscribeResources = (
+  uid: string,
+  callback: (resources: KnowledgeResource[]) => void,
+  onError?: (error: Error) => void
+): (() => void) => {
+  const unsub = onSnapshot(resourceCollection(uid),
+    (snapshot) => callback(snapshot.docs.map((d) => d.data() as KnowledgeResource)),
+    (error) => { if (onError) onError(error); }
+  );
+  return unsub;
+};
+
+export const subscribeResourceProgress = (
+  uid: string,
+  callback: (progress: ResourceProgressMap) => void,
+  onError?: (error: Error) => void
+): (() => void) => {
+  const unsub = onSnapshot(resourceProgressCollection(uid),
+    (snapshot) => {
+      const progress: ResourceProgressMap = {};
+      snapshot.forEach((d) => {
+        progress[d.id] = d.data() as UserResourceProgress;
+      });
+      callback(progress);
+    },
+    (error) => { if (onError) onError(error); }
+  );
+  return unsub;
+};
 
 export const getUserResources = async (uid: string, trackId?: TrackId): Promise<KnowledgeResource[]> => {
   const ref = resourceCollection(uid);
@@ -55,6 +86,11 @@ export const updateResource = async (
 export const deleteResource = async (uid: string, resourceId: string): Promise<void> => {
   await deleteDoc(resourceDoc(uid, resourceId));
   await deleteDoc(resourceProgressDoc(uid, resourceId)).catch(() => {});
+};
+
+export const deleteResourcesByTrack = async (uid: string, trackId: string): Promise<void> => {
+  const resources = await getUserResources(uid, trackId);
+  await Promise.all(resources.map((r) => deleteResource(uid, r.id)));
 };
 
 // Progress CRUD

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Plus, ChevronLeft, CalendarDays, Target, Play, CheckCircle2, Trash2, X, Star, Sparkles, Lightbulb, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, ChevronLeft, Target, Play, CheckCircle2, Trash2, X, Star, Sparkles, Lightbulb, TrendingUp, TrendingDown, Kanban as KanbanIcon } from "lucide-react";
 import AppShell from "@/components/layout/AppShell";
 import Footer from "@/app/components/Footer";
 import PageHeader from "@/components/layout/PageHeader";
@@ -10,12 +10,16 @@ import SprintCard from "@/app/components/sprints/SprintCard";
 import SprintDialog from "@/app/components/sprints/SprintDialog";
 import SprintRetroDialog from "@/app/components/sprints/SprintRetroDialog";
 import SprintBoard from "@/app/components/sprints/SprintBoard";
+import SprintDashboardHeader from "@/app/components/sprints/SprintDashboardHeader";
+import SprintAnalytics from "@/app/components/sprints/SprintAnalytics";
+import TaskDetailDialog from "@/app/components/sprints/TaskDetailDialog";
 import AddTaskToSprintDialog from "@/app/components/sprints/AddTaskToSprintDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useSprints } from "@/hooks/useSprints";
 import { useSprintTasks } from "@/hooks/useSprints";
+import { useTracks } from "@/hooks/useTracks";
 import { Button } from "@/components/ui/button";
-import type { Sprint, SprintRetro } from "@/lib/sprints";
+import type { Sprint, SprintRetro, SprintTaskV2 } from "@/lib/sprints";
 
 const SprintsPage = () => {
   const auth = useAuth();
@@ -101,7 +105,7 @@ const SprintsPage = () => {
         }
       />
 
-      <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10">
+      <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
         {loading && <LoadingState />}
 
         {!auth.user && !loading && (
@@ -113,7 +117,7 @@ const SprintsPage = () => {
         {auth.user && !loading && (
           <div className="space-y-8">
             {activeSprints.length > 0 && (
-              <section>
+              <section className="animate-in fade-in slide-in-from-bottom-1 duration-500">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-success mb-3">Active Sprint</h2>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {activeSprints.map((s) => (
@@ -128,7 +132,7 @@ const SprintsPage = () => {
             )}
 
             {plannedSprints.length > 0 && (
-              <section>
+              <section className="animate-in fade-in slide-in-from-bottom-1 duration-500 delay-75">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Planned</h2>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {plannedSprints.map((s) => (
@@ -143,11 +147,15 @@ const SprintsPage = () => {
             )}
 
             {sprints.length === 0 && (
-              <div className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-16 text-center">
-                <p className="text-sm text-muted-foreground">No sprints yet. Create your first sprint to start planning!</p>
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 rounded-xl border border-dashed border-border bg-card/40 px-4 py-20 text-center">
+                <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-success/20 to-info/20 border border-success/10">
+                  <KanbanIcon className="size-6 text-success/60" />
+                </div>
+                <p className="text-sm text-muted-foreground/80">No sprints yet</p>
+                <p className="text-xs text-muted-foreground/50 mt-1">Plan your interview preparation in focused timeboxes</p>
                 <Button
                   onClick={() => setDialogOpen(true)}
-                  className="mt-4 h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/80 cursor-pointer rounded-md"
+                  className="mt-6 h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/80 cursor-pointer rounded-md"
                 >
                   <Plus className="size-3 mr-1" />
                   Create Sprint
@@ -156,7 +164,7 @@ const SprintsPage = () => {
             )}
 
             {completedSprints.length > 0 && (
-              <section>
+              <section className="animate-in fade-in slide-in-from-bottom-1 duration-500 delay-100">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Completed</h2>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {completedSprints.slice(0, 6).map((s) => (
@@ -269,7 +277,7 @@ const RetroView = ({ retro }: { retro: SprintRetro }) => {
 const SprintDetailView = ({
   sprint, uid, onBack, onStart, onComplete, onDelete, onAddTask, addTaskOpen, onAddTaskOpenChange,
 }: {
-  sprint: Sprint;
+  sprint: Sprint & { capacityHours?: number };
   uid?: string | null;
   onBack: () => void;
   onStart: () => void;
@@ -279,14 +287,10 @@ const SprintDetailView = ({
   addTaskOpen: boolean;
   onAddTaskOpenChange: (open: boolean) => void;
 }) => {
-  const { addTask, updateTaskStatus, removeTask, todoTasks, inProgressTasks, doneTasks, taskStats } = useSprintTasks(uid, sprint.id);
-
-  const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-    planned: { label: "Planned", color: "text-muted-foreground", bg: "bg-secondary" },
-    active: { label: "Active", color: "text-success", bg: "bg-success/15" },
-    completed: { label: "Completed", color: "text-info", bg: "bg-info/15" },
-  };
-  const cfg = statusConfig[sprint.status];
+  const { addTask, updateTaskStatus, updateTask, removeTask, backlogTasks, todoTasks, inProgressTasks, reviewTasks, doneTasks, tasks, taskStats } = useSprintTasks(uid, sprint.id);
+  const { tracks } = useTracks(uid);
+  const [editingTask, setEditingTask] = useState<SprintTaskV2 | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   return (
     <AppShell footer={<Footer />}>
@@ -323,47 +327,50 @@ const SprintDetailView = ({
         }
       />
 
-      <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10">
-        <div className="flex flex-wrap items-center gap-4 mb-6 text-xs text-muted-foreground">
-          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${cfg.color} ${cfg.bg}`}>
-            {cfg.label}
-          </span>
-          <span className="flex items-center gap-1">
-            <CalendarDays className="size-3" />
-            {sprint.startDate} → {sprint.endDate}
-          </span>
-          {sprint.goal && (
-            <span className="flex items-center gap-1">
-              <Target className="size-3" />
-              {sprint.goal}
-            </span>
-          )}
-          {taskStats.total > 0 && (
-            <span className="text-muted-foreground/60">
-              {taskStats.done}/{taskStats.total} tasks · {taskStats.completion}% complete
-            </span>
-          )}
-        </div>
+      <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10 animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-4">
+        <SprintDashboardHeader
+          name={sprint.name}
+          goal={sprint.goal}
+          startDate={sprint.startDate}
+          endDate={sprint.endDate}
+          tasks={tasks}
+          capacityHours={sprint.capacityHours}
+        />
 
-        {sprint.status !== "completed" && (
-          <SprintBoard
-            todoTasks={todoTasks}
-            inProgressTasks={inProgressTasks}
-            doneTasks={doneTasks}
-            taskStats={taskStats}
-            onUpdateStatus={updateTaskStatus}
-            onRemoveTask={removeTask}
-            onAddTask={onAddTask}
-          />
+        <SprintBoard
+          backlogTasks={backlogTasks}
+          todoTasks={todoTasks}
+          inProgressTasks={inProgressTasks}
+          reviewTasks={reviewTasks}
+          doneTasks={doneTasks}
+          taskStats={taskStats}
+          onUpdateStatus={updateTaskStatus}
+          onRemoveTask={removeTask}
+          onAddTask={onAddTask}
+          onEditTask={(task) => { setEditingTask(task); setDetailOpen(true); }}
+          readOnly={sprint.status === "completed"}
+        />
+
+        {(sprint.status === "active" || sprint.status === "completed") && (
+          <SprintAnalytics tasks={tasks} />
         )}
 
-        {sprint.status === "completed" && sprint.retro && (
-          <RetroView retro={sprint.retro} />
-        )}
-
-        {sprint.status === "completed" && !sprint.retro && (
-          <div className="text-center py-12 text-xs text-muted-foreground">
-            Sprint completed. No retrospective recorded.
+        {sprint.status === "completed" && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-border/50" />
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/40 font-medium">
+                Sprint Retrospective
+              </span>
+              <div className="h-px flex-1 bg-border/50" />
+            </div>
+            {sprint.retro ? (
+              <RetroView retro={sprint.retro} />
+            ) : (
+              <div className="rounded-xl border border-dashed border-border bg-card/50 px-4 py-8 text-center">
+                <p className="text-xs text-muted-foreground">No retrospective recorded for this sprint.</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -372,6 +379,14 @@ const SprintDetailView = ({
           onOpenChange={onAddTaskOpenChange}
           onAdd={addTask}
           uid={uid}
+        />
+
+        <TaskDetailDialog
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          task={editingTask}
+          onSave={updateTask}
+          tracks={tracks}
         />
       </div>
     </AppShell>

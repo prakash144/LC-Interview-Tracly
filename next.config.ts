@@ -1,16 +1,15 @@
 import type { NextConfig } from "next";
 
-const isProd = process.env.NODE_ENV === "production";
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || (process.env.NODE_ENV === "production" ? '/Interview-Tracly' : '');
 
 const nextConfig: NextConfig = {
     output: 'export',
 
-    // GitHub Pages deploys to a subpath; local dev stays at root
-    basePath: isProd ? '/Interview-Tracly' : '',
-    assetPrefix: isProd ? '/Interview-Tracly' : '',
+    basePath,
+    assetPrefix: basePath,
 
     images: {
-        unoptimized: true, // disable image optimization for static hosting
+        unoptimized: true,
     },
 };
 

@@ -20,8 +20,12 @@ import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useResources } from "@/hooks/useResources";
 import { useResourceProgress } from "@/hooks/useResourceProgress";
 import { useSprints, useSprintTasks } from "@/hooks/useSprints";
-import { INTERVIEW_TRACKS } from "@/lib/interviewTracks";
+import FavoriteResourcesWidget from "@/app/components/FavoriteResourcesWidget";
+import DailyMissionWidget from "@/app/components/DailyMission";
+import { useTracks } from "@/hooks/useTracks";
+import { useRevisionTracker } from "@/hooks/useRevisionTracker";
 import type { Problem, UserProblemProgress } from "@/lib/progressTypes";
+import type { Sprint } from "@/lib/sprints";
 
 const Heatmap = dynamic(() => import("@/app/components/Heatmap"), {
   ssr: false,
@@ -71,6 +75,8 @@ const DashboardPage = () => {
   const { resources: allResources } = useResources(auth.user?.uid);
   const { progressMap: resourceProgress } = useResourceProgress(auth.user?.uid);
   const { sprints } = useSprints(auth.user?.uid);
+  const { tracks } = useTracks(auth.user?.uid);
+  const revisionTracker = useRevisionTracker(progress.progressMap, questionsState.questions);
   const activeSprint = sprints.find((s) => s.status === "active");
 
   const solvedPercent = useMemo(() => {
@@ -150,6 +156,15 @@ const DashboardPage = () => {
   const isLoading = questionsState.loading || progress.loading;
   const hasError = questionsState.error || auth.error || progress.error;
 
+  const revisionItems = useMemo(
+    () => [
+      ...revisionTracker.buckets.overdue,
+      ...revisionTracker.buckets.reviewToday,
+      ...revisionTracker.buckets.reviewThisWeek,
+    ],
+    [revisionTracker.buckets]
+  );
+
   const quickActions = [
     { title: "Continue Solving", description: "Resume your last problem", href: "/problems", icon: Play },
     { title: "Interview Tracks", description: "System design, backend, behavioral prep", href: "/tracks", icon: Layers },
@@ -169,7 +184,7 @@ const DashboardPage = () => {
         description="Track your journey. Crack your dream company. 🚀"
       />
 
-      <div className="mx-auto max-w-7xl space-y-6 p-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 sm:px-6 lg:px-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
         {isLoading && <LoadingState />}
         {hasError && typeof hasError === "string" && <ErrorState message={hasError} />}
 
@@ -464,10 +479,21 @@ const DashboardPage = () => {
 
             {/* Row 5: Active Sprint */}
             {activeSprint && (
-              <ActiveSprintWidget sprintId={activeSprint.id} uid={auth.user?.uid} />
+              <ActiveSprintWidget sprint={activeSprint} uid={auth.user?.uid} />
             )}
 
-            {/* Row 6: Track Progress */}
+            {/* Row 6: Daily Mission */}
+            <DailyMissionWidget
+              uid={auth.user?.uid}
+              sprintId={activeSprint?.id}
+              revisionItems={revisionItems}
+              onRevisionAction={(problemId, action) => {
+                if (action === "review") revisionTracker.markReviewed(problemId);
+                else revisionTracker.markSkipped(problemId);
+              }}
+            />
+
+            {/* Row 7: Track Progress */}
             {allResources.length > 0 && (
               <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
                 <div className="flex items-center justify-between mb-4">
@@ -478,7 +504,7 @@ const DashboardPage = () => {
                   <Link href="/tracks" className="text-xs text-muted-foreground hover:text-foreground transition-colors">View all</Link>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {INTERVIEW_TRACKS.map((track) => {
+                  {tracks.map((track) => {
                     const trackResources = allResources.filter((r) => r.track === track.id);
                     const total = trackResources.length;
                     if (total === 0) return null;
@@ -506,7 +532,10 @@ const DashboardPage = () => {
               </section>
             )}
 
-            {/* Row 6: Quick Actions */}
+            {/* Row 7: Bookmarks */}
+            <FavoriteResourcesWidget />
+
+            {/* Row 8: Quick Actions */}
             <section className="grid gap-3 grid-cols-2 sm:grid-cols-4">
               {quickActions.map((action) => {
                 const Icon = action.icon;
@@ -534,22 +563,56 @@ const DashboardPage = () => {
   );
 };
 
-const ActiveSprintWidget = ({ sprintId, uid }: { sprintId: string; uid?: string | null }) => {
-  const { todoTasks, inProgressTasks, doneTasks, taskStats } = useSprintTasks(uid, sprintId);
-  const total = taskStats.total;
+const ActiveSprintWidget = ({ sprint, uid }: { sprint: Sprint; uid?: string | null }) => {
+  const { tasks, todoTasks, inProgressTasks, doneTasks, taskStats, updateTaskStatus } = useSprintTasks(uid, sprint.id);
   const pct = taskStats.completion;
+
+  const todayDue = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return tasks.filter((t) => t.dueDate && t.dueDate <= today && t.status !== "done");
+  }, [tasks]);
 
   return (
     <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <Kanban className="size-3.5 text-success" />
-          Active Sprint
-        </h3>
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{sprint.name}</h3>
+            {sprint.goal && (
+              <p className="text-[10px] text-muted-foreground/50 truncate max-w-48">{sprint.goal}</p>
+            )}
+          </div>
+        </div>
         <Link href="/sprints" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
           View Sprint
         </Link>
       </div>
+
+      {todayDue.length > 0 && (
+        <div className="mb-3 rounded-lg border border-warning/20 bg-warning/5 px-3 py-2">
+          <p className="text-[10px] text-warning font-medium mb-1">
+            {todayDue.length} task{todayDue.length !== 1 ? "s" : ""} due today or overdue
+          </p>
+          <div className="space-y-1">
+            {todayDue.slice(0, 3).map((t) => (
+              <div key={t.id} className="flex items-center gap-2 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => updateTaskStatus(t.id, "done")}
+                  className="size-3.5 rounded border border-muted-foreground/30 hover:border-success hover:bg-success/20 transition-all shrink-0 flex items-center justify-center"
+                  aria-label="Mark as done"
+                />
+                <span className="flex-1 truncate text-muted-foreground">{t.title}</span>
+              </div>
+            ))}
+            {todayDue.length > 3 && (
+              <p className="text-[10px] text-muted-foreground/50">+{todayDue.length - 3} more</p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-4 flex-1">
           <div className="relative size-12 shrink-0">
@@ -572,13 +635,37 @@ const ActiveSprintWidget = ({ sprintId, uid }: { sprintId: string; uid?: string 
         </div>
         <div className="h-8 w-px bg-border" />
         <div className="text-right text-xs">
-          <div className="text-lg font-bold text-foreground">{doneTasks.length}/{total}</div>
+          <div className="text-lg font-bold text-foreground">{doneTasks.length}/{taskStats.total}</div>
           <div className="text-muted-foreground">tasks done</div>
         </div>
       </div>
+
       <div className="mt-3 h-1.5 rounded-full bg-secondary overflow-hidden">
         <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${pct}%` }} />
       </div>
+
+      {inProgressTasks.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-border/50 space-y-1">
+          <p className="text-[10px] text-muted-foreground/50 uppercase tracking-wider font-medium">In Progress</p>
+          {inProgressTasks.slice(0, 3).map((t) => (
+            <div key={t.id} className="flex items-center gap-2 text-[11px]">
+              <button
+                type="button"
+                onClick={() => updateTaskStatus(t.id, "done")}
+                className="size-3.5 rounded border border-muted-foreground/30 hover:border-success hover:bg-success/20 transition-all shrink-0 flex items-center justify-center"
+                aria-label="Mark as done"
+              />
+              <span className="flex-1 truncate text-foreground">{t.title}</span>
+              {t.estimatedHours ? (
+                <span className="text-[10px] text-muted-foreground/50">{t.estimatedHours}h</span>
+              ) : null}
+            </div>
+          ))}
+          {inProgressTasks.length > 3 && (
+            <p className="text-[10px] text-muted-foreground/50">+{inProgressTasks.length - 3} more</p>
+          )}
+        </div>
+      )}
     </section>
   );
 };

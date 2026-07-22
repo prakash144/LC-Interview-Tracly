@@ -1,11 +1,4 @@
-export type TrackId =
-  | "dsa"
-  | "system-design"
-  | "backend"
-  | "behavioral"
-  | "leadership"
-  | "interview-experience"
-  | "ai-ml";
+export type TrackId = string;
 
 export interface InterviewTrack {
   id: TrackId;
