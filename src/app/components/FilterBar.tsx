@@ -82,7 +82,7 @@ const FilterBar = ({
         statusOptions.find((option) => option.value === selectedStatus)?.label ?? "Status";
 
     const selectedCollection = collections.find((c) => c.id === selectedCollectionId);
-    const triggerClass = "h-8 rounded-md border-border/70 bg-card/80 px-2.5 text-xs text-foreground shadow-sm transition-all hover:border-foreground/15 hover:bg-accent";
+    const triggerClass = "h-8 rounded-md border-border/70 bg-background/75 px-2.5 text-xs text-foreground shadow-sm transition-all hover:border-foreground/15 hover:bg-accent";
     const quickStatuses: { label: string; value: ProblemStatusFilter }[] = [
         { label: "All", value: "all" },
         { label: "Unsolved", value: "unsolved" },
@@ -93,7 +93,7 @@ const FilterBar = ({
 
     return (
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-lg border border-border/70 bg-card/85 p-3 shadow-sm backdrop-blur">
+            <div className="rounded-lg border border-border/70 bg-card/90 p-3 shadow-sm backdrop-blur">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                     <div className="flex min-w-0 flex-1 flex-col gap-3">
                         <div className="flex flex-wrap items-center gap-2">
@@ -281,7 +281,7 @@ const FilterBar = ({
                         aria-label="Search questions"
                         value={searchTerm}
                         onChange={handleSearchChange}
-                        className="h-9 w-full border-border/70 bg-background/70 pl-8 text-xs text-foreground shadow-sm placeholder:text-muted-foreground"
+                        className="h-9 w-full border-border/70 bg-background/75 pl-8 text-xs text-foreground shadow-sm placeholder:text-muted-foreground"
                     />
                 </div>
                 </div>

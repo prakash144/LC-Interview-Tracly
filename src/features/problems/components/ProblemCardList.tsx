@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw, Star } from "lucide-react";
+import { BookOpen, CheckCircle2, RotateCcw, Star } from "lucide-react";
 import type { Problem, ProgressMap } from "@/lib/progressTypes";
 import type { Collection } from "@/hooks/useCollections";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
@@ -57,7 +57,7 @@ const ProblemCardList = ({
         return (
           <div
             key={`${q.company}-${q.list}-${q.problemId}`}
-            className="rounded-lg border border-border bg-card p-3 transition-colors hover:border-border"
+            className="rounded-lg border border-border/70 bg-card/90 p-3 shadow-sm transition-all hover:border-foreground/15 hover:bg-card"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
@@ -65,7 +65,7 @@ const ProblemCardList = ({
                   href={q.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-foreground hover:text-info transition-colors"
+                  className="text-sm font-medium leading-5 text-foreground transition-colors hover:text-info"
                 >
                   <span className="text-muted-foreground">{startIndex + idx}.</span>{" "}
                   {q.title}
@@ -104,7 +104,7 @@ const ProblemCardList = ({
               </div>
             )}
 
-            <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-2">
+            <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/70 pt-2">
               <button
                 type="button"
                 onClick={() => requireProgressOrRun(() => onToggleSolved(q))}
@@ -112,10 +112,11 @@ const ProblemCardList = ({
                 aria-pressed={isSolved}
                 className={`inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
                   isSolved
-                    ? "bg-success/20 text-success"
-                    : "bg-secondary text-muted-foreground hover:bg-accent"
+                    ? "bg-success/15 text-success border border-success/25"
+                    : "border border-border/60 bg-secondary/70 text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
               >
+                <CheckCircle2 className="size-3" />
                 {isSolved ? "Solved" : "Solve"}
               </button>
               <button
@@ -125,10 +126,11 @@ const ProblemCardList = ({
                 aria-pressed={isAttempted}
                 className={`inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
                   isAttempted
-                    ? "bg-blue-500/20 text-blue-300"
-                    : "bg-secondary text-muted-foreground hover:bg-accent"
+                    ? "bg-info/15 text-info border border-info/25"
+                    : "border border-border/60 bg-secondary/70 text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
               >
+                <BookOpen className="size-3" />
                 {isAttempted ? "Attempted" : "Attempt"}
               </button>
               <button
@@ -138,8 +140,8 @@ const ProblemCardList = ({
                 aria-pressed={isRevision}
                 className={`inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
                   isRevision
-                    ? "bg-cyan-500/20 text-cyan-300"
-                    : "bg-secondary text-muted-foreground hover:bg-accent"
+                    ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/25"
+                    : "border border-border/60 bg-secondary/70 text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
               >
                 <RotateCcw className="size-3" />

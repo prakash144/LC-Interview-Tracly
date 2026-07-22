@@ -19,7 +19,7 @@ const AppShell = ({ children, footer }: AppShellProps) => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_15%_0%,rgba(20,184,166,0.12),transparent_28%),radial-gradient(circle_at_85%_8%,rgba(245,158,11,0.10),transparent_24%),linear-gradient(180deg,var(--background),var(--background))]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(180deg,rgba(34,197,94,0.055),transparent_22rem),linear-gradient(90deg,rgba(59,130,246,0.035),transparent_32rem),var(--background)]" />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:text-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-success"

@@ -26,8 +26,8 @@ const ProblemPagination = ({
   onPageSizeChange,
 }: ProblemPaginationProps) => {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border bg-card/60 px-4 py-3 text-sm text-foreground sm:flex-row sm:items-center sm:justify-between">
-      <div>
+    <div className="flex flex-col gap-3 rounded-lg border border-border/70 bg-card/85 px-4 py-3 text-sm text-foreground shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="text-muted-foreground">
         Showing <span className="font-semibold text-foreground">{rangeFrom}</span>
         {" - "}
         <span className="font-semibold text-foreground">{rangeTo}</span> of{" "}
@@ -40,7 +40,7 @@ const ProblemPagination = ({
           <select
             value={pageSize}
             onChange={(event) => onPageSizeChange(Number(event.target.value))}
-            className="h-9 rounded-md border border-border bg-secondary px-2 text-foreground outline-none focus:border-success/50"
+            className="h-9 rounded-md border border-border/70 bg-background px-2 text-foreground outline-none focus:border-success/50"
           >
             {PAGE_SIZE_OPTIONS.map((option) => (
               <option key={option} value={option}>
@@ -57,7 +57,7 @@ const ProblemPagination = ({
             size="sm"
             disabled={currentPage === 1}
             onClick={() => onPageChange(currentPage - 1)}
-            className="border-border bg-secondary text-foreground hover:bg-accent"
+            className="border-border/70 bg-background text-foreground hover:bg-accent"
           >
             <ChevronLeft />
             Prev
@@ -71,7 +71,7 @@ const ProblemPagination = ({
             size="sm"
             disabled={currentPage === totalPages}
             onClick={() => onPageChange(currentPage + 1)}
-            className="border-border bg-secondary text-foreground hover:bg-accent"
+            className="border-border/70 bg-background text-foreground hover:bg-accent"
           >
             Next
             <ChevronRight />

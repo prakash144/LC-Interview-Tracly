@@ -109,7 +109,7 @@ const SprintsPage = () => {
         {loading && <LoadingState />}
 
         {!auth.user && !loading && (
-          <div className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-12 text-center">
+          <div className="rounded-lg border border-dashed border-border/80 bg-card/70 px-4 py-12 text-center shadow-sm">
             <p className="text-sm text-muted-foreground">Sign in to plan your interview sprints.</p>
           </div>
         )}
@@ -147,8 +147,8 @@ const SprintsPage = () => {
             )}
 
             {sprints.length === 0 && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 rounded-xl border border-dashed border-border bg-card/40 px-4 py-20 text-center">
-                <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-success/20 to-info/20 border border-success/10">
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 rounded-lg border border-dashed border-border/80 bg-card/60 px-4 py-20 text-center shadow-sm">
+                <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-lg border border-success/10 bg-gradient-to-br from-success/20 to-info/20">
                   <KanbanIcon className="size-6 text-success/60" />
                 </div>
                 <p className="text-sm text-muted-foreground/80">No sprints yet</p>
@@ -212,7 +212,7 @@ const SprintCardWithTasks = ({
 
 const RetroView = ({ retro }: { retro: SprintRetro }) => {
   return (
-    <div className="rounded-xl border border-border bg-card/80 p-5">
+    <div className="rounded-lg border border-border/70 bg-card/90 p-5 shadow-sm">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2 mb-4">
         <Sparkles className="size-3.5 text-warning" />
         Sprint Retrospective
@@ -367,7 +367,7 @@ const SprintDetailView = ({
             {sprint.retro ? (
               <RetroView retro={sprint.retro} />
             ) : (
-              <div className="rounded-xl border border-dashed border-border bg-card/50 px-4 py-8 text-center">
+              <div className="rounded-lg border border-dashed border-border/80 bg-card/60 px-4 py-8 text-center shadow-sm">
                 <p className="text-xs text-muted-foreground">No retrospective recorded for this sprint.</p>
               </div>
             )}

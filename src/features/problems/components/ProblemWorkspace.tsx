@@ -70,12 +70,12 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
   return (
     <>
       <div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
-        <PremiumSurface className="overflow-hidden p-5">
+        <PremiumSurface className="overflow-hidden p-5 sm:p-6">
           <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr] lg:items-center">
             <SectionHeader
               eyebrow="Practice briefing"
               title={`${selectedCompany} ${selectedList.includes("All") ? "all-time" : "focused"} queue`}
-              description="Use filters as a control panel, then work the resulting queue without leaving the table."
+              description="Filter the queue, then mark progress, notes, revision, and saved problems without leaving the workspace."
               icon={Target}
               action={<CommandLink href="/progress">View progress</CommandLink>}
             />
@@ -86,13 +86,13 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
                 { label: "Saved", value: workspaceStats.bookmarked, icon: Star, tone: "text-warning bg-warning/10 border-warning/20" },
                 { label: "Revision", value: workspaceStats.revision, icon: RotateCcw, tone: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20" },
               ].map((item) => (
-                <div key={item.label} className="rounded-md border border-border/70 bg-background/65 p-3">
+                <div key={item.label} className="rounded-lg border border-border/70 bg-background/70 p-3 shadow-sm">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{item.label}</p>
                       <p className="mt-1 text-xl font-semibold tracking-tight text-foreground">{item.value}</p>
                     </div>
-                    <span className={`flex size-8 items-center justify-center rounded-md border ${item.tone}`}>
+                    <span className={`flex size-8 items-center justify-center rounded-md border shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${item.tone}`}>
                       <item.icon className="size-3.5" />
                     </span>
                   </div>
@@ -105,7 +105,7 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
               <span>Current queue completion</span>
               <span>{workspaceStats.completion}%</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-secondary">
+            <div className="h-2 overflow-hidden rounded-full bg-secondary/80">
               <div className="h-full rounded-full bg-gradient-to-r from-success via-info to-warning transition-all duration-500" style={{ width: `${workspaceStats.completion}%` }} />
             </div>
           </div>
