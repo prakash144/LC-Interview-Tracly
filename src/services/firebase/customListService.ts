@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
@@ -16,6 +17,24 @@ const listsCollection = (uid: string) =>
 
 const listDoc = (uid: string, listId: string) =>
   doc(requireDb(), "users", uid, "customLists", listId);
+
+export const subscribeCustomLists = (
+  uid: string,
+  callback: (lists: CustomList[]) => void,
+  onError?: (error: Error) => void
+): (() => void) => {
+  const unsub = onSnapshot(listsCollection(uid),
+    (snapshot) => {
+      const lists: CustomList[] = [];
+      snapshot.forEach((d) => {
+        lists.push({ id: d.id, ...d.data() } as CustomList);
+      });
+      callback(lists);
+    },
+    (error) => { if (onError) onError(error); }
+  );
+  return unsub;
+};
 
 export const getUserCustomLists = async (uid: string): Promise<CustomList[]> => {
   const snapshot = await getDocs(listsCollection(uid));

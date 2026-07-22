@@ -58,12 +58,39 @@ A modern web app to track your coding problem-solving progress. Easily browse, f
 - 🎨 Accent color picker (Green / Blue / Purple / Orange)
 - 🔐 Account and preferences management
 
+### Sprints
+- 🏃 Sprint planning with Kanban board (drag & drop via @dnd-kit)
+- 📊 Sprint analytics (completion %, capacity, track breakdown)
+- 🔄 Sprint retrospective with rating, weaknesses, action items
+- 🔍 Filter + search tasks within sprint
+
+### Interview Tracks
+- 🗂️ 7 built-in tracks (DSA, System Design, Backend, Behavioral, Leadership, Interview Experience, AI/ML)
+- ➕ Fully dynamic — add/edit/delete custom tracks (Book Reading, Gym, Meditation, etc.)
+- 📚 Knowledge resources with status tracking, revision, personal notes
+- 🔎 Global search across all tracks (Cmd+K)
+
+### Collections
+- 📁 Favorites, built-in lists (Blind 75, NeetCode 150), and custom problem lists
+- 🔗 Cross-collection filtering
+
 ### Theme System
 - 🌙 Three modes: Light, Dark, and System (follows OS preference)
 - 💾 Persisted across sessions (refresh, logout, browser restart)
 - 🚫 No flash of incorrect theme — inline script runs before first paint
 - 🎯 Semantic CSS variable system for consistent colors across all components
 - ✅ WCAG AA contrast in both modes
+
+---
+
+---
+
+## 📚 Documentation
+
+| Document | Description |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | High-level architecture, data flow, component tree, gap analysis |
+| [Implementation Plan](docs/IMPLEMENTATION_PLAN.md) | Phased roadmap for features and fixes |
 
 ---
 

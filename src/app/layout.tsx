@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -13,8 +14,7 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
-const isProd = process.env.NODE_ENV === "production";
-const basePath = isProd ? "/Interview-Tracly" : "";
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || (process.env.NODE_ENV === "production" ? "/Interview-Tracly" : "");
 
 export const metadata: Metadata = {
     metadataBase: new URL("https://prakash144.github.io/Interview-Tracly"),
@@ -69,6 +69,7 @@ export default function RootLayout({
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
           {children}
+          <Toaster richColors closeButton position="bottom-right" />
         </AuthProvider>
         </body>
         </html>

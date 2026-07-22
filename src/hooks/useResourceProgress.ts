@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Timestamp } from "firebase/firestore";
 import type { ResourceProgressMap, UserResourceProgress, ResourceStatus } from "@/lib/knowledgeBase";
 import {
-  getUserResourceProgress,
   saveResourceProgress,
+  subscribeResourceProgress,
 } from "@/services/firebase/resourceService";
 
 const emptyProgress = (resourceId: string): UserResourceProgress => ({
@@ -29,39 +30,28 @@ export const useResourceProgress = (uid?: string | null) => {
   }, [progressMap]);
 
   useEffect(() => {
-    let cancelled = false;
+    if (!uid) {
+      progressMapRef.current = {};
+      setProgressMap({});
+      setLoading(false);
+      return;
+    }
 
-    const loadProgress = async () => {
-      if (!uid) {
-        progressMapRef.current = {};
-        setProgressMap({});
+    setLoading(true);
+    setError(null);
+
+    const unsub = subscribeResourceProgress(uid,
+      (progress) => {
+        progressMapRef.current = progress;
+        setProgressMap(progress);
         setLoading(false);
-        return;
+      },
+      (error) => {
+        setError(error.message);
+        setLoading(false);
       }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const progress = await getUserResourceProgress(uid);
-
-        if (!cancelled) {
-          progressMapRef.current = progress;
-          setProgressMap(progress);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Unable to load resource progress."
-          );
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    loadProgress();
-    return () => { cancelled = true; };
+    );
+    return unsub;
   }, [uid]);
 
   const updateProgress = useCallback(
@@ -80,11 +70,13 @@ export const useResourceProgress = (uid?: string | null) => {
 
       try {
         await saveResourceProgress(uid, next);
+        toast.success("Progress saved");
       } catch (err) {
         const reverted = { ...progressMapRef.current, [resourceId]: current };
         progressMapRef.current = reverted;
         setProgressMap(reverted);
         setError(err instanceof Error ? err.message : "Unable to save resource progress.");
+        toast.error("Failed to save progress");
       }
     },
     [uid]

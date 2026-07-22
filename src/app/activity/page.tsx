@@ -22,6 +22,8 @@ import { useRevisionTracker } from "@/hooks/useRevisionTracker";
 import RevisionTracker from "@/app/components/RevisionTracker";
 import { useResources } from "@/hooks/useResources";
 import { useResourceProgress } from "@/hooks/useResourceProgress";
+import { useSprints } from "@/hooks/useSprints";
+import DailyMissionWidget from "@/app/components/DailyMission";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 
 function QuickStat({ icon: Icon, value, label, color }: {
@@ -92,6 +94,18 @@ const ActivityPage = () => {
     }
     return count;
   }, [progress.progressMap]);
+
+  const { sprints } = useSprints(auth.user?.uid);
+  const activeSprint = sprints.find((s) => s.status === "active");
+
+  const revisionItemsForMission = useMemo(
+    () => [
+      ...revisionTracker.buckets.overdue,
+      ...revisionTracker.buckets.reviewToday,
+      ...revisionTracker.buckets.reviewThisWeek,
+    ],
+    [revisionTracker.buckets]
+  );
 
   const resourceActivityEntries = useMemo(() => {
     const entries: { date: Date; icon: typeof BookOpen; label: string; resourceTitle: string; color: string }[] = [];
@@ -168,6 +182,17 @@ const ActivityPage = () => {
               weeklySolved={weeklySolved}
               monthlySolved={monthlySolved}
               onOpenSettings={() => setSettingsOpen(true)}
+            />
+
+            {/* Smart Daily Focus */}
+            <DailyMissionWidget
+              uid={auth.user?.uid}
+              sprintId={activeSprint?.id}
+              revisionItems={revisionItemsForMission}
+              onRevisionAction={(problemId, action) => {
+                if (action === "review") revisionTracker.markReviewed(problemId);
+                else revisionTracker.markSkipped(problemId);
+              }}
             />
 
             <GoalSettingsDialog

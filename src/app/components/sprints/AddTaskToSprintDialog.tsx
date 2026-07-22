@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Search, BookOpen, ListChecks } from "lucide-react";
+import { Plus, Search, BookOpen, ListChecks, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useResources } from "@/hooks/useResources";
@@ -60,11 +60,19 @@ const AddTaskToSprintDialog = ({ open, onOpenChange, onAdd, uid }: AddTaskToSpri
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg p-0 gap-0">
-        <DialogHeader className="px-4 pt-4 pb-0">
-          <DialogTitle className="text-base">Add Task to Sprint</DialogTitle>
+        <DialogHeader className="px-4 pt-4 pb-2">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10">
+              <Zap className="size-3.5 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-base">Add Task to Sprint</DialogTitle>
+              <p className="text-xs text-muted-foreground/70 mt-0.5">Search and add problems or resources</p>
+            </div>
+          </div>
         </DialogHeader>
-        <div className="flex items-center border-b border-border px-4 mt-2">
-          <Search className="size-3.5 text-muted-foreground shrink-0" />
+        <div className="flex items-center border-b border-border px-4 mt-1">
+          <Search className="size-3.5 text-muted-foreground/40 shrink-0" />
           <Input
             placeholder="Search problems or resources..."
             value={query}
@@ -76,59 +84,66 @@ const AddTaskToSprintDialog = ({ open, onOpenChange, onAdd, uid }: AddTaskToSpri
           <button
             type="button"
             onClick={() => setTab("problems")}
-            className={`pb-2 px-3 text-xs font-medium border-b-2 transition-colors ${
+            className={`pb-2 px-3 text-xs font-medium border-b-2 transition-all ${
               tab === "problems"
                 ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                : "border-transparent text-muted-foreground/60 hover:text-foreground"
             }`}
           >
-            <ListChecks className="size-3 inline mr-1" />
+            <ListChecks className="size-3 inline mr-1.5" />
             Problems
           </button>
           <button
             type="button"
             onClick={() => setTab("resources")}
-            className={`pb-2 px-3 text-xs font-medium border-b-2 transition-colors ${
+            className={`pb-2 px-3 text-xs font-medium border-b-2 transition-all ${
               tab === "resources"
                 ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                : "border-transparent text-muted-foreground/60 hover:text-foreground"
             }`}
           >
-            <BookOpen className="size-3 inline mr-1" />
+            <BookOpen className="size-3 inline mr-1.5" />
             Resources
           </button>
         </div>
-        <div className="max-h-72 overflow-y-auto p-2">
-          {tab === "problems" && filteredProblems.map((p) => (
-            <button
-              key={p.problemId}
-              type="button"
-              onClick={() => handleAddProblem(p.title, p.problemId)}
-              className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-xs hover:bg-accent transition-colors group"
-            >
-              <ListChecks className="size-3.5 text-muted-foreground shrink-0" />
-              <span className="flex-1 truncate font-medium text-foreground">{p.title}</span>
-              <span className="text-[10px] text-muted-foreground">{p.difficulty}</span>
-              <Plus className="size-3 text-muted-foreground/30 group-hover:text-foreground/50 shrink-0" />
-            </button>
-          ))}
-          {tab === "resources" && filteredResources.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => handleAddResource(r.title, r.id)}
-              className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-xs hover:bg-accent transition-colors group"
-            >
-              <BookOpen className="size-3.5 text-muted-foreground shrink-0" />
-              <span className="flex-1 truncate font-medium text-foreground">{r.title}</span>
-              <span className="text-[10px] text-muted-foreground">{r.difficulty}</span>
-              <Plus className="size-3 text-muted-foreground/30 group-hover:text-foreground/50 shrink-0" />
-            </button>
-          ))}
-          {(tab === "problems" ? filteredProblems : filteredResources).length === 0 && (
-            <div className="py-8 text-center text-xs text-muted-foreground">
-              No items match your search.
-            </div>
+        <div className="max-h-72 overflow-y-auto p-1.5">
+          {tab === "problems" && (
+            filteredProblems.length > 0 ? filteredProblems.map((p) => (
+              <button
+                key={p.problemId}
+                type="button"
+                onClick={() => handleAddProblem(p.title, p.problemId)}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs hover:bg-accent transition-all group"
+              >
+                <ListChecks className="size-3.5 text-info/60 shrink-0" />
+                <span className="flex-1 truncate font-medium text-foreground">{p.title}</span>
+                <span className="text-[10px] text-muted-foreground/50">{p.difficulty}</span>
+                <div className="size-5 rounded flex items-center justify-center text-muted-foreground/20 group-hover:text-foreground/40 group-hover:bg-accent transition-all">
+                  <Plus className="size-3" />
+                </div>
+              </button>
+            )) : (
+              <div className="py-8 text-center text-xs text-muted-foreground/50">No problems match your search.</div>
+            )
+          )}
+          {tab === "resources" && (
+            filteredResources.length > 0 ? filteredResources.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => handleAddResource(r.title, r.id)}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs hover:bg-accent transition-all group"
+              >
+                <BookOpen className="size-3.5 text-warning/60 shrink-0" />
+                <span className="flex-1 truncate font-medium text-foreground">{r.title}</span>
+                <span className="text-[10px] text-muted-foreground/50">{r.difficulty}</span>
+                <div className="size-5 rounded flex items-center justify-center text-muted-foreground/20 group-hover:text-foreground/40 group-hover:bg-accent transition-all">
+                  <Plus className="size-3" />
+                </div>
+              </button>
+            )) : (
+              <div className="py-8 text-center text-xs text-muted-foreground/50">No resources match your search.</div>
+            )
           )}
         </div>
       </DialogContent>

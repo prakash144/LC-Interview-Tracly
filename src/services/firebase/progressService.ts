@@ -3,6 +3,7 @@ import {
   doc,
   getDocs,
   increment,
+  onSnapshot,
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
@@ -17,6 +18,20 @@ const progressDoc = (uid: string, problemId: string) =>
 
 const activityDoc = (uid: string, date: string) =>
   doc(requireDb(), "users", uid, "activity", date);
+
+export const subscribeProgress = (
+  uid: string,
+  callback: (progress: ProgressMap) => void
+): (() => void) => {
+  const unsub = onSnapshot(progressCollection(uid), (snapshot) => {
+    const progress: ProgressMap = {};
+    snapshot.forEach((d) => {
+      progress[d.id] = d.data() as UserProblemProgress;
+    });
+    callback(progress);
+  });
+  return unsub;
+};
 
 export const getUserProgress = async (uid: string): Promise<ProgressMap> => {
   const snapshot = await getDocs(progressCollection(uid));

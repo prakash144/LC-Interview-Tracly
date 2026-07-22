@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import type { KnowledgeResource, KnowledgeResourceInput } from "@/lib/knowledgeBase";
 import type { TrackId } from "@/lib/interviewTracks";
 import * as resourceService from "@/services/firebase/resourceService";
@@ -8,8 +9,6 @@ import { SAMPLE_RESOURCES_BY_TRACK } from "@/lib/knowledgeBase";
 
 let sampleIdCounter = 0;
 const generateId = () => `res_${Date.now()}_${++sampleIdCounter}`;
-
-const ALL_TRACK_IDS: TrackId[] = ["dsa", "system-design", "backend", "behavioral", "leadership", "interview-experience", "ai-ml"];
 
 export const useResources = (uid?: string | null, trackId?: TrackId) => {
   const [resources, setResources] = useState<KnowledgeResource[]>([]);
@@ -39,51 +38,43 @@ export const useResources = (uid?: string | null, trackId?: TrackId) => {
     ) as KnowledgeResource[];
   }, []);
 
+  const sampleTrackIds = useMemo(() => Object.keys(SAMPLE_RESOURCES_BY_TRACK), []);
   const allSampleResources = useMemo(
-    () => ALL_TRACK_IDS.flatMap((tid) => sampleForTrack(tid)),
-    [sampleForTrack]
+    () => sampleTrackIds.flatMap((tid) => sampleForTrack(tid)),
+    [sampleTrackIds, sampleForTrack]
   );
 
   useEffect(() => {
-    let cancelled = false;
+    if (!uid) {
+      resourcesRef.current = allSampleResources;
+      setResources(allSampleResources);
+      setLoading(false);
+      return;
+    }
 
-    const load = async () => {
-      if (!uid) {
-        if (!cancelled) {
-          resourcesRef.current = allSampleResources;
-          setResources(allSampleResources);
-        }
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await resourceService.getUserResources(uid, trackId);
-        if (!cancelled) {
-          const samples = trackId
-            ? sampleForTrack(trackId)
-            : allSampleResources;
-          const merged = [...data];
-          for (const s of samples) {
-            if (!merged.find((r) => r.id === s.id)) {
-              merged.push(s);
-            }
+    setLoading(true);
+    setError(null);
+    const unsub = resourceService.subscribeResources(uid,
+      (data) => {
+        const samples = trackId
+          ? sampleForTrack(trackId)
+          : allSampleResources;
+        const merged = [...data];
+        for (const s of samples) {
+          if (!merged.find((r) => r.id === s.id)) {
+            merged.push(s);
           }
-          resourcesRef.current = merged;
-          setResources(merged);
         }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load resources");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+        resourcesRef.current = merged;
+        setResources(merged);
+        setLoading(false);
+      },
+      (error) => {
+        setError(error.message);
+        setLoading(false);
       }
-    };
-
-    load();
-    return () => { cancelled = true; };
+    );
+    return unsub;
   }, [uid, trackId, allSampleResources, sampleForTrack]);
 
   const addResource = useCallback(
@@ -110,11 +101,13 @@ export const useResources = (uid?: string | null, trackId?: TrackId) => {
       if (uid) {
         try {
           await resourceService.addResource(uid, resource);
+          toast.success("Resource added");
         } catch (err) {
           const reverted = resourcesRef.current.filter((r) => r.id !== resource.id);
           resourcesRef.current = reverted;
           setResources(reverted);
           setError(err instanceof Error ? err.message : "Failed to add resource");
+          toast.error("Failed to add resource");
         }
       }
     },
@@ -132,38 +125,42 @@ export const useResources = (uid?: string | null, trackId?: TrackId) => {
       setResources(optimistic);
 
       if (uid) {
+        const prevSnapshot = [...resourcesRef.current];
         try {
           await resourceService.updateResource(uid, resourceId, data);
+          toast.success("Resource updated");
         } catch (err) {
-          const reverted = await resourceService.getUserResources(uid, trackId);
-          resourcesRef.current = reverted;
-          setResources(reverted);
+          resourcesRef.current = prevSnapshot;
+          setResources(prevSnapshot);
           setError(err instanceof Error ? err.message : "Failed to update resource");
+          toast.error("Failed to update resource");
         }
       }
     },
-    [uid, trackId]
+    [uid]
   );
 
   const deleteResource = useCallback(
     async (resourceId: string) => {
       if (!resourceId.startsWith("sample-") && !window.confirm("Delete this resource?")) return;
-      const optimistic = resourcesRef.current.filter((r) => r.id !== resourceId);
+      const prevSnapshot = [...resourcesRef.current];
+      const optimistic = prevSnapshot.filter((r) => r.id !== resourceId);
       resourcesRef.current = optimistic;
       setResources(optimistic);
 
       if (uid && !resourceId.startsWith("sample-")) {
         try {
           await resourceService.deleteResource(uid, resourceId);
+          toast.success("Resource deleted");
         } catch (err) {
-          const reverted = await resourceService.getUserResources(uid, trackId);
-          resourcesRef.current = reverted;
-          setResources(reverted);
+          resourcesRef.current = prevSnapshot;
+          setResources(prevSnapshot);
           setError(err instanceof Error ? err.message : "Failed to delete resource");
+          toast.error("Failed to delete resource");
         }
       }
     },
-    [uid, trackId]
+    [uid]
   );
 
   return useMemo(

@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, BookOpen, Layers, ChevronRight } from "lucide-react";
+import { Search, BookOpen, Layers, ListChecks, ChevronRight } from "lucide-react";
 import type { KnowledgeResource } from "@/lib/knowledgeBase";
-import { INTERVIEW_TRACKS } from "@/lib/interviewTracks";
+import type { Problem } from "@/lib/progressTypes";
 import { useResources } from "@/hooks/useResources";
+import { useTracks } from "@/hooks/useTracks";
+import { fetchUnifiedProblems } from "@/app/services/fetchUnifiedProblems";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
@@ -17,14 +19,23 @@ interface GlobalSearchProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const trackIcons: Record<string, string> = {};
-for (const t of INTERVIEW_TRACKS) trackIcons[t.id] = t.icon;
-
 const GlobalSearch = ({ uid, open, onOpenChange }: GlobalSearchProps) => {
   const router = useRouter();
   const { resources } = useResources(uid ?? undefined);
+  const { tracks } = useTracks(uid);
   const [query, setQuery] = useState("");
+  const [problems, setProblems] = useState<Problem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetchUnifiedProblems().then(setProblems).catch(() => {});
+  }, []);
+
+  const trackIcons = useMemo(() => {
+    const icons: Record<string, string> = {};
+    for (const t of tracks) icons[t.id] = t.icon;
+    return icons;
+  }, [tracks]);
 
   useEffect(() => {
     if (open) {
@@ -44,10 +55,26 @@ const GlobalSearch = ({ uid, open, onOpenChange }: GlobalSearchProps) => {
     ).slice(0, 20);
   }, [resources, query]);
 
+  const problemResults = useMemo(() => {
+    if (!query.trim()) return problems.slice(0, 5);
+    const q = query.toLowerCase();
+    return problems.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.company.toLowerCase().includes(q) ||
+        p.topics.some((t) => t.toLowerCase().includes(q)) ||
+        p.difficulty.toLowerCase().includes(q)
+    ).slice(0, 10);
+  }, [problems, query]);
+
   const handleSelect = useCallback(
-    (resource: KnowledgeResource) => {
+    (resource: KnowledgeResource | Problem, isProblem?: boolean) => {
       onOpenChange(false);
-      router.push(`/tracks/${resource.track}`);
+      if (isProblem) {
+        router.push(`/problems`);
+      } else {
+        router.push(`/tracks/${(resource as KnowledgeResource).track}`);
+      }
     },
     [onOpenChange, router]
   );
@@ -62,7 +89,10 @@ const GlobalSearch = ({ uid, open, onOpenChange }: GlobalSearchProps) => {
     return g;
   }, [results]);
 
-  const trackName = (tid: string) => INTERVIEW_TRACKS.find((t) => t.id === tid)?.name ?? tid;
+  const trackName = useCallback(
+    (tid: string) => tracks.find((t) => t.id === tid)?.name ?? tid,
+    [tracks]
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -78,36 +108,64 @@ const GlobalSearch = ({ uid, open, onOpenChange }: GlobalSearchProps) => {
           />
         </div>
         <div className="max-h-80 overflow-y-auto p-2">
-          {results.length === 0 ? (
+          {results.length === 0 && problemResults.length === 0 ? (
             <div className="py-8 text-center text-xs text-muted-foreground">
-              {query ? "No resources match your search." : "Type to search across all tracks."}
+              {query ? "No results match your search." : "Type to search across all tracks and problems."}
             </div>
           ) : (
-            Object.entries(grouped).map(([tid, items]) => (
-              <div key={tid}>
-                <div className="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wider">
-                  <span>{trackIcons[tid] ?? <Layers className="size-3" />}</span>
-                  {trackName(tid)}
-                  <span className="ml-auto">{items.length}</span>
+            <>
+              {Object.entries(grouped).map(([tid, items]) => (
+                <div key={tid}>
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wider">
+                    <span>{trackIcons[tid] ?? <Layers className="size-3" />}</span>
+                    {trackName(tid)}
+                    <span className="ml-auto">{items.length}</span>
+                  </div>
+                  {items.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => handleSelect(r)}
+                      className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-xs hover:bg-accent transition-colors group"
+                    >
+                      <BookOpen className="size-3.5 text-muted-foreground shrink-0" />
+                      <span className="flex-1 truncate font-medium text-foreground">{r.title}</span>
+                      <DifficultyBadge difficulty={r.difficulty} />
+                      {r.company !== "General" && (
+                        <CompanyLogo company={r.company} size="sm" />
+                      )}
+                      <ChevronRight className="size-3 text-muted-foreground/30 group-hover:text-foreground/50 shrink-0" />
+                    </button>
+                  ))}
                 </div>
-                {items.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => handleSelect(r)}
-                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-xs hover:bg-accent transition-colors group"
-                  >
-                    <BookOpen className="size-3.5 text-muted-foreground shrink-0" />
-                    <span className="flex-1 truncate font-medium text-foreground">{r.title}</span>
-                    <DifficultyBadge difficulty={r.difficulty} />
-                    {r.company !== "General" && (
-                      <CompanyLogo company={r.company} size="sm" />
-                    )}
-                    <ChevronRight className="size-3 text-muted-foreground/30 group-hover:text-foreground/50 shrink-0" />
-                  </button>
-                ))}
-              </div>
-            ))
+              ))}
+
+              {problemResults.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wider">
+                    <ListChecks className="size-3" />
+                    Problems
+                    <span className="ml-auto">{problemResults.length}</span>
+                  </div>
+                  {problemResults.map((p) => (
+                    <button
+                      key={p.problemId}
+                      type="button"
+                      onClick={() => handleSelect(p, true)}
+                      className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-xs hover:bg-accent transition-colors group"
+                    >
+                      <ListChecks className="size-3.5 text-muted-foreground shrink-0" />
+                      <span className="flex-1 truncate font-medium text-foreground">{p.title}</span>
+                      <DifficultyBadge difficulty={p.difficulty} />
+                      {p.company && (
+                        <CompanyLogo company={p.company} size="sm" />
+                      )}
+                      <ChevronRight className="size-3 text-muted-foreground/30 group-hover:text-foreground/50 shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
         <div className="border-t border-border px-4 py-2 text-[10px] text-muted-foreground/50 flex items-center gap-3">
