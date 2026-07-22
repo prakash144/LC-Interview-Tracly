@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { Star, ExternalLink } from "lucide-react";
+import { Heart, ExternalLink } from "lucide-react";
 import { useResources } from "@/hooks/useResources";
 import { useResourceProgress } from "@/hooks/useResourceProgress";
 import { useTracks } from "@/hooks/useTracks";
@@ -23,7 +23,7 @@ const FavoriteResourcesWidget = () => {
   }, [tracks]);
 
   const favorites = useMemo(
-    () => resources.filter((r) => progressMap[r.id]?.inRevisionList),
+    () => resources.filter((r) => progressMap[r.id]?.favorited),
     [resources, progressMap]
   );
 
@@ -33,8 +33,8 @@ const FavoriteResourcesWidget = () => {
     <section className="rounded-xl border border-border bg-card/80 p-5 transition-shadow duration-200 hover:shadow-md">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
-          <Star className="size-3.5 text-amber-400 fill-amber-400" />
-          Bookmarks & Quick Access
+          <Heart className="size-3.5 text-rose-400 fill-rose-400" />
+          Favorites
         </h3>
         <Link href="/favorites" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
           View all
@@ -47,7 +47,7 @@ const FavoriteResourcesWidget = () => {
       </div>
       {favorites.length > 6 && (
         <p className="text-[10px] text-muted-foreground/50 mt-2 text-center">
-          +{favorites.length - 6} more bookmarks
+          +{favorites.length - 6} more favorites
         </p>
       )}
     </section>

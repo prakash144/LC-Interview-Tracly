@@ -13,8 +13,8 @@ const ProblemsPage = () => {
     <AppShell footer={<Footer />}>
       <PageHeader
         eyebrow="Problems"
-        title="Problem Workspace"
-        description="Master coding interviews one problem at a time. Browse, filter, and track your progress."
+        title="Problem Intelligence Workspace"
+        description="Filter company questions, capture progress, and turn raw problem lists into a focused practice workflow."
       />
       <ProblemWorkspace workspace={workspace} />
     </AppShell>

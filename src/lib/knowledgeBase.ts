@@ -74,9 +74,11 @@ export interface UserResourceProgress {
   resourceId: string;
   status: ResourceStatus;
   inRevisionList: boolean;
+  favorited: boolean;
   personalNotes: string;
   statusChangedAt: Timestamp | null;
   revisionAddedAt: Timestamp | null;
+  favoritedAt: Timestamp | null;
   updatedAt: Timestamp;
 }
 

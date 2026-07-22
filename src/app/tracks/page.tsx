@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Plus, ChevronLeft, Settings2, BookOpen, Search, RotateCcw, ArrowUpDown, ChevronDown, Star, Archive } from "lucide-react";
+import { Plus, ChevronLeft, Settings2, BookOpen, Search, RotateCcw, ArrowUpDown, ChevronDown, Archive, Heart, Sparkles, Target, CheckCircle2, Clock3 } from "lucide-react";
 import AppShell from "@/components/layout/AppShell";
 import Footer from "@/app/components/Footer";
 import PageHeader from "@/components/layout/PageHeader";
@@ -41,7 +41,7 @@ const TrackDetailView = ({
   const auth = useAuth();
   const track = tracks.find((t) => t.id === trackId);
   const { resources, addResource, updateResource, deleteResource } = useResources(auth.user?.uid, trackId);
-  const { progressMap, setStatus, toggleRevision, savePersonalNotes } = useResourceProgress(auth.user?.uid);
+  const { progressMap, setStatus, toggleRevision, toggleFavorite, savePersonalNotes } = useResourceProgress(auth.user?.uid);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<"" | DifficultyLevel>("");
@@ -233,7 +233,7 @@ const TrackDetailView = ({
           {filteredResources.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {filteredResources.map((resource) => (
-                <ResourceCard key={resource.id} resource={resource} progress={progressMap[resource.id]} progressEnabled={Boolean(auth.user)} onRequireAuth={auth.login} onStatusChange={setStatus} onToggleRevision={toggleRevision} onSaveNotes={savePersonalNotes} onEdit={handleEdit} onDelete={handleDelete} />
+                <ResourceCard key={resource.id} resource={resource} progress={progressMap[resource.id]} progressEnabled={Boolean(auth.user)} onRequireAuth={auth.login} onStatusChange={setStatus} onToggleFavorite={toggleFavorite} onToggleRevision={toggleRevision} onSaveNotes={savePersonalNotes} onEdit={handleEdit} onDelete={handleDelete} />
               ))}
             </div>
           ) : (
@@ -255,12 +255,12 @@ const TracksPage = () => {
   const auth = useAuth();
   const { tracks, loading, addTrack, updateTrack, deleteTrack, archiveTrack, mergeTracks } = useTracks(auth.user?.uid);
   const { resources } = useResources(auth.user?.uid);
-  const { progressMap, setStatus, toggleRevision, savePersonalNotes } = useResourceProgress(auth.user?.uid);
+  const { progressMap, setStatus, toggleRevision, toggleFavorite, savePersonalNotes } = useResourceProgress(auth.user?.uid);
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
 
-  const bookmarkedResources = useMemo(
-    () => resources.filter((r) => progressMap[r.id]?.inRevisionList),
+  const favoriteResources = useMemo(
+    () => resources.filter((r) => progressMap[r.id]?.favorited),
     [resources, progressMap]
   );
   const [manageOpen, setManageOpen] = useState(false);
@@ -300,6 +300,15 @@ const TracksPage = () => {
     return stats;
   }, [tracks, resources, progressMap]);
 
+  const overviewStats = useMemo(() => {
+    const completed = resources.filter((r) => progressMap[r.id]?.status === "completed").length;
+    const inProgress = resources.filter((r) => progressMap[r.id]?.status === "in-progress").length;
+    const inRevision = resources.filter((r) => progressMap[r.id]?.inRevisionList).length;
+    const activeTracks = tracks.filter((t) => !t.archived).length;
+    const completionRate = resources.length > 0 ? Math.round((completed / resources.length) * 100) : 0;
+    return { completed, inProgress, inRevision, activeTracks, completionRate };
+  }, [tracks, resources, progressMap]);
+
   const archivedCount = tracks.filter((t) => t.archived).length;
 
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId);
@@ -315,9 +324,14 @@ const TracksPage = () => {
   return (
     <AppShell footer={<Footer />}>
       <PageHeader
-        eyebrow="Tracks"
-        title="Tracks"
-        description="Organize your learning across any topic"
+        eyebrow={
+          <span className="inline-flex items-center gap-1.5">
+            <Sparkles className="size-3.5" />
+            Smart learning tracks
+          </span>
+        }
+        title="Tracks Command Center"
+        description="Plan focused learning paths, keep favorite resources close, and move from discovery to mastery without losing context."
         actions={
           <div className="flex items-center gap-2">
             {archivedCount > 0 && (
@@ -354,19 +368,42 @@ const TracksPage = () => {
       <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
         {loading && <LoadingState />}
 
-        {/* Bookmarks Section */}
-        {bookmarkedResources.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex size-6 items-center justify-center rounded-md bg-amber-500/15">
-                <Star className="size-3 text-amber-400 fill-amber-400" />
+        <section className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: "Active tracks", value: overviewStats.activeTracks, icon: Target, tone: "text-info bg-info/10 border-info/20" },
+            { label: "Resources", value: resources.length, icon: BookOpen, tone: "text-success bg-success/10 border-success/20" },
+            { label: "Completed", value: `${overviewStats.completionRate}%`, icon: CheckCircle2, tone: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" },
+            { label: "In review", value: overviewStats.inRevision, icon: Clock3, tone: "text-amber-500 bg-amber-500/10 border-amber-500/20" },
+          ].map((item) => (
+            <div key={item.label} className="rounded-lg border border-border/70 bg-card/80 p-4 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-foreground/15 hover:shadow-md">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{item.label}</p>
+                  <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{item.value}</p>
+                </div>
+                <div className={`flex size-10 items-center justify-center rounded-md border ${item.tone}`}>
+                  <item.icon className="size-4" />
+                </div>
               </div>
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/70">Bookmarks</h2>
-              <span className="text-[10px] text-muted-foreground/50">{bookmarkedResources.length} items</span>
-              <div className="h-px flex-1 bg-border/40 ml-2" />
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {bookmarkedResources.map((r) => (
+          ))}
+        </section>
+
+        {/* Favorites Section */}
+        {favoriteResources.length > 0 && (
+          <section className="mb-7 overflow-hidden rounded-lg border border-rose-500/20 bg-card/85 shadow-sm backdrop-blur">
+            <div className="flex flex-wrap items-center gap-2 border-b border-border/70 bg-gradient-to-r from-rose-500/10 via-card/60 to-amber-500/10 px-4 py-3">
+              <div className="flex size-8 items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/15">
+                <Heart className="size-3 text-rose-400 fill-rose-400" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-foreground">Favorites inside Tracks</h2>
+                <p className="text-xs text-muted-foreground">Pinned questions from every track, ready for quick revision.</p>
+              </div>
+              <span className="ml-auto rounded-full border border-border/70 bg-background/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">{favoriteResources.length} saved</span>
+            </div>
+            <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+              {favoriteResources.map((r) => (
                 <ResourceCard
                   key={r.id}
                   resource={r}
@@ -374,13 +411,26 @@ const TracksPage = () => {
                   progressEnabled={Boolean(auth.user)}
                   onRequireAuth={auth.login}
                   onStatusChange={setStatus}
+                  onToggleFavorite={(id) => toggleFavorite(id)}
                   onToggleRevision={(id) => toggleRevision(id)}
                   onSaveNotes={(id, notes) => savePersonalNotes(id, notes)}
                 />
               ))}
             </div>
-          </div>
+          </section>
         )}
+
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold tracking-tight text-foreground">Learning paths</h2>
+            <p className="text-xs text-muted-foreground">Open a track to manage questions, links, notes, status, revision, and favorites.</p>
+          </div>
+          {overviewStats.inProgress > 0 && (
+            <span className="hidden rounded-full border border-info/20 bg-info/10 px-3 py-1 text-xs font-medium text-info sm:inline-flex">
+              {overviewStats.inProgress} in progress
+            </span>
+          )}
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visibleTracks.map((track) => {

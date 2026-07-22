@@ -18,10 +18,10 @@ const TrackCard = ({ track, total = 0, completed = 0, inRevision = 0, onClick, o
   return (
     <div
       onClick={() => { if (!track.archived) onClick?.(track.id); }}
-      className={`group block rounded-xl border bg-card hover:bg-accent/50 transition-all duration-200 p-5 ${track.archived ? "border-dashed border-muted-foreground/20 opacity-60 hover:opacity-80" : "border-border hover:border-foreground/15 hover:shadow-sm cursor-pointer"}`}
+      className={`group block rounded-lg border bg-card/85 p-5 shadow-sm backdrop-blur transition-all duration-200 ${track.archived ? "border-dashed border-muted-foreground/20 opacity-60 hover:opacity-80" : "border-border/70 hover:-translate-y-0.5 hover:border-foreground/15 hover:bg-card hover:shadow-md cursor-pointer"}`}
     >
       <div className="flex items-start gap-4">
-        <div className="relative flex size-12 shrink-0 items-center justify-center rounded-lg bg-secondary text-2xl">
+        <div className="relative flex size-12 shrink-0 items-center justify-center rounded-md border border-border/70 bg-secondary/80 text-2xl shadow-inner">
           {track.icon}
         </div>
         <div className="flex-1 min-w-0">
@@ -43,8 +43,8 @@ const TrackCard = ({ track, total = 0, completed = 0, inRevision = 0, onClick, o
                   </>
                 )}
               </div>
-              <div className="h-1 rounded-full bg-secondary overflow-hidden">
-                <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${pct}%` }} />
+              <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+                <div className="h-full rounded-full bg-gradient-to-r from-success to-info transition-all duration-500" style={{ width: `${pct}%` }} />
               </div>
             </div>
           )}

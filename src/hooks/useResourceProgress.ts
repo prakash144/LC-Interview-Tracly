@@ -13,9 +13,11 @@ const emptyProgress = (resourceId: string): UserResourceProgress => ({
   resourceId,
   status: "not-started",
   inRevisionList: false,
+  favorited: false,
   personalNotes: "",
   statusChangedAt: null,
   revisionAddedAt: null,
+  favoritedAt: null,
   updatedAt: Timestamp.now(),
 });
 
@@ -107,6 +109,20 @@ export const useResourceProgress = (uid?: string | null) => {
     [updateProgress]
   );
 
+  const toggleFavorite = useCallback(
+    (resourceId: string) =>
+      updateProgress(resourceId, (current) => {
+        const favorited = !current.favorited;
+        return {
+          ...current,
+          favorited,
+          favoritedAt: favorited ? Timestamp.now() : null,
+          updatedAt: Timestamp.now(),
+        };
+      }),
+    [updateProgress]
+  );
+
   const savePersonalNotes = useCallback(
     (resourceId: string, personalNotes: string) =>
       updateProgress(resourceId, (current) => ({
@@ -124,8 +140,9 @@ export const useResourceProgress = (uid?: string | null) => {
       error,
       setStatus,
       toggleRevision,
+      toggleFavorite,
       savePersonalNotes,
     }),
-    [error, loading, progressMap, savePersonalNotes, setStatus, toggleRevision]
+    [error, loading, progressMap, savePersonalNotes, setStatus, toggleFavorite, toggleRevision]
   );
 };

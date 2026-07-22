@@ -50,15 +50,15 @@ const NavLink = memo(function NavLink({
     <Link
       href={href}
       className={cn(
-        "relative inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors",
+        "relative inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-all",
         isActive
-          ? "text-foreground"
-          : "text-muted-foreground hover:text-foreground"
+          ? "text-foreground shadow-sm"
+          : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
       )}
       aria-current={isActive ? "page" : undefined}
     >
       {isActive && (
-        <span className="absolute inset-0 rounded-md bg-accent/50" />
+        <span className="absolute inset-0 rounded-md border border-border/70 bg-card/90 shadow-[0_8px_24px_rgba(15,23,42,0.08)] dark:bg-secondary/80" />
       )}
       <Icon className="relative z-10 size-4" />
       <span className="relative z-10 whitespace-nowrap">{label}</span>
@@ -154,7 +154,7 @@ const TopNav = ({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 shadow-[0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
       <div className="mx-auto flex h-[50px] max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
         {/* Left: Brand */}
         <Logo showTagline={false} />
