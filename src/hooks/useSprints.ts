@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { Sprint, SprintTaskV2, TaskType } from "@/lib/sprints";
+import type { Priority, Sprint, SprintTaskV2, TaskType } from "@/lib/sprints";
 import { createDefaultTaskV2, migrateTask } from "@/lib/sprints";
 import * as sprintService from "@/services/firebase/sprintService";
 import { addActivityEvent } from "@/services/firebase/activityService";
@@ -45,10 +45,11 @@ export const useSprints = (uid?: string | null) => {
   }, [uid]);
 
   const addSprint = useCallback(
-    async (data: { name: string; goal: string; startDate: string; endDate: string }) => {
+    async (data: { name: string; goal: string; startDate: string; endDate: string; tasks?: { title: string; estimatedHours: number; priority: string }[] }) => {
       const now = Date.now();
+      const sprintId = genId();
       const sprint: Sprint = {
-        id: genId(),
+        id: sprintId,
         name: data.name,
         goal: data.goal,
         status: "planned",
@@ -63,6 +64,20 @@ export const useSprints = (uid?: string | null) => {
       if (uid) {
         try {
           await sprintService.addSprint(uid, sprint);
+          if (data.tasks && data.tasks.length > 0) {
+            for (const t of data.tasks) {
+              const task = createDefaultTaskV2({
+                id: genTaskId(),
+                sprintId,
+                type: "problem",
+                itemId: "",
+                title: t.title,
+              });
+              task.estimatedHours = t.estimatedHours || 0;
+              task.priority = (t.priority as Priority) || "medium";
+              await sprintService.addTask(uid, sprintId, task);
+            }
+          }
           toast.success("Sprint created");
         } catch {
           const rolled = sprintsRef.current.filter((s) => s.id !== sprint.id);

@@ -9,7 +9,7 @@ import TrackCard from "@/app/components/tracks/TrackCard";
 import ResourceCard from "@/app/components/tracks/ResourceCard";
 import ResourceDialog from "@/app/components/tracks/ResourceDialog";
 import ManageTracksDialog from "@/app/components/tracks/ManageTracksDialog";
-import LoadingState from "@/components/states/LoadingState";
+import { TracksSkeleton } from "@/components/states/PageSkeletons";
 import { useAuth } from "@/hooks/useAuth";
 import { useTracks } from "@/hooks/useTracks";
 import { useResources } from "@/hooks/useResources";
@@ -366,7 +366,7 @@ const TracksPage = () => {
       />
 
       <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
-        {loading && <LoadingState />}
+        {loading && <TracksSkeleton />}
 
         <section className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[

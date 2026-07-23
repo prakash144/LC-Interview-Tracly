@@ -5,7 +5,7 @@ import { CheckCircle2, PenTool, RotateCcw, Star, Target } from "lucide-react";
 import FilterBar from "@/app/components/FilterBar";
 import QuestionTable from "@/app/components/QuestionTable";
 import ErrorState from "@/components/states/ErrorState";
-import LoadingState from "@/components/states/LoadingState";
+import { TableSkeleton } from "@/components/states/PageSkeletons";
 import { CommandLink, PremiumSurface, SectionHeader } from "@/components/ui/premium";
 import { useCustomLists } from "@/hooks/useCustomLists";
 import { useCollections } from "@/hooks/useCollections";
@@ -136,7 +136,7 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
       )}
 
       <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8">
-        {questionsState.loading && <LoadingState />}
+        {questionsState.loading && <TableSkeleton rows={8} />}
         {questionsState.error && <ErrorState message={questionsState.error} />}
         {auth.error && <ErrorState message={auth.error} />}
         {progress.error && <ErrorState message={progress.error} />}

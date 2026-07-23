@@ -7,7 +7,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import CollectionSidebar from "@/app/components/collections/CollectionSidebar";
 import CollectionView from "@/app/components/collections/CollectionView";
 import ErrorState from "@/components/states/ErrorState";
-import LoadingState from "@/components/states/LoadingState";
+import { CollectionsSkeleton } from "@/components/states/PageSkeletons";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
 import { useCustomLists } from "@/hooks/useCustomLists";
 import { useCollections } from "@/hooks/useCollections";
@@ -67,7 +67,7 @@ const CollectionsPage = () => {
             <p className="text-sm text-muted-foreground">Sign in to create and manage collections.</p>
           </div>
         ) : questionsState.loading || customListsData.loading ? (
-          <LoadingState message="Loading collections..." />
+          <CollectionsSkeleton />
         ) : (
           <div className="flex gap-6">
             <aside className="hidden sm:block w-64 shrink-0">

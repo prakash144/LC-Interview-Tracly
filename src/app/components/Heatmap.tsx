@@ -5,7 +5,6 @@ import { ChevronDown } from "lucide-react";
 import { useHeatmapData, type HeatmapDay } from "@/hooks/useHeatmapData";
 import ErrorState from "@/components/states/ErrorState";
 import EmptyState from "@/components/states/EmptyState";
-import LoadingState from "@/components/states/LoadingState";
 
 type TimeRange = "current" | "2025" | "2024" | "2023" | "180d" | "90d" | "30d";
 
@@ -252,7 +251,22 @@ const Heatmap = memo(function Heatmap({ uid }: HeatmapProps) {
             {/* States */}
             {error && <ErrorState message={error} />}
             {!uid && <EmptyState message="Sign in to see your activity heatmap." />}
-            {uid && loading && <LoadingState message="Loading activity data..." />}
+            {uid && loading && (
+              <div className="rounded-xl border border-border bg-card/70 px-4 py-6 transition-shadow">
+                <div className="mx-auto mb-4 h-3 max-w-xs overflow-hidden rounded-full bg-secondary">
+                  <div className="h-full w-1/3 animate-pulse rounded-full bg-success" />
+                </div>
+                <div className="flex gap-1">
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <div key={i} className="flex flex-col gap-1">
+                      {Array.from({ length: 7 }).map((_, j) => (
+                        <div key={j} className="size-3 rounded-sm bg-secondary animate-pulse" />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {uid && !loading && !error && !hasActivity && <EmptyState message="No activity yet. Solve or attempt a problem to start filling the heatmap." />}
 
             {/* SVG Heatmap */}

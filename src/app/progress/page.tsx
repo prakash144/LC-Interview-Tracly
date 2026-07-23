@@ -6,7 +6,7 @@ import Footer from "@/app/components/Footer";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
 import ErrorState from "@/components/states/ErrorState";
-import LoadingState from "@/components/states/LoadingState";
+import { TableSkeleton } from "@/components/states/PageSkeletons";
 import CompanyLogo from "@/components/data-display/CompanyLogo";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
 import { ProgressRingChart } from "@/app/components/ProgressRingChart";
@@ -301,7 +301,7 @@ const ProgressPage = () => {
 
       <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10">
         {hasError && typeof hasError === "string" && <ErrorState message={hasError} />}
-        {isLoading && <LoadingState message="Loading progress data..." />}
+        {isLoading && <TableSkeleton rows={8} />}
 
         {!auth.user && !isLoading && (
           <div className="rounded-lg border border-dashed border-border/80 bg-card/70 px-4 py-12 text-center shadow-sm">

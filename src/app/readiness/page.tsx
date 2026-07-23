@@ -5,7 +5,7 @@ import AppShell from "@/components/layout/AppShell";
 import Footer from "@/app/components/Footer";
 import PageHeader from "@/components/layout/PageHeader";
 import ErrorState from "@/components/states/ErrorState";
-import LoadingState from "@/components/states/LoadingState";
+import { ReadinessSkeleton } from "@/components/states/PageSkeletons";
 import { useCompanyReadiness } from "@/hooks/useCompanyReadiness";
 import { useRevisionTracker } from "@/hooks/useRevisionTracker";
 import { useInterviewReadiness } from "@/hooks/useInterviewReadiness";
@@ -101,7 +101,7 @@ const ReadinessPage = () => {
             <p className="text-sm text-muted-foreground">Sign in to view your readiness data.</p>
           </div>
         ) : questionsState.loading || progress.loading || calendarData.loading || unifiedLoading ? (
-          <LoadingState message="Loading readiness data..." />
+          <ReadinessSkeleton />
         ) : (
           <div className="space-y-5">
             <HeroCard
