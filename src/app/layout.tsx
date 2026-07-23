@@ -14,10 +14,11 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || (process.env.NODE_ENV === "production" ? "/Interview-Tracly" : "");
+const repoName = 'LC-Interview-Tracly';
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || (process.env.NODE_ENV === "production" ? `/${repoName}` : "");
 
 export const metadata: Metadata = {
-    metadataBase: new URL("https://prakash144.github.io/Interview-Tracly"),
+    metadataBase: new URL(`https://prakash144.github.io/${repoName}`),
     title: "Interview Tracly",
     description: "Track your journey. Crack your dream company.",
     icons: {
