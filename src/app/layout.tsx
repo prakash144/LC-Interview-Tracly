@@ -39,7 +39,7 @@ export const metadata: Metadata = {
         siteName: "Interview Tracly",
         images: [
             {
-                url: `${basePath}/assets/branding/favicon/android-chrome-192x192.png`,
+                url: `assets/branding/favicon/android-chrome-192x192.png`,
                 width: 192,
                 height: 192,
                 alt: "Interview Tracly",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "Interview Tracly",
         description: "Track your journey. Crack your dream company.",
-        images: [`${basePath}/assets/branding/favicon/android-chrome-192x192.png`],
+        images: [`assets/branding/favicon/android-chrome-192x192.png`],
     },
 };
 
