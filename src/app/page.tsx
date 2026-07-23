@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BarChart3, BookOpen, CheckCircle2, Flame, FolderKanban, Kanban, Layers, Play, RotateCcw, Sparkles, Target, Trophy } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, CheckCircle2, FolderKanban, Kanban, Layers, Play, RotateCcw, Sparkles, Target, Trophy } from "lucide-react";
 import dynamic from "next/dynamic";
 import Footer from "@/app/components/Footer";
 import AppShell from "@/components/layout/AppShell";
@@ -11,12 +11,16 @@ import PageHeader from "@/components/layout/PageHeader";
 import CompanyLogo from "@/components/data-display/CompanyLogo";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
 import ErrorState from "@/components/states/ErrorState";
-import LoadingState from "@/components/states/LoadingState";
+import { DashboardSkeleton } from "@/components/states/PageSkeletons";
 import { ProgressRingChart } from "@/app/components/ProgressRingChart";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommandLink, MetricCard, PremiumSurface, SectionHeader } from "@/components/ui/premium";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
+import { useAchievements } from "@/hooks/useAchievements";
+import { AnimatedStreak } from "@/app/components/AnimatedStreak";
+import { AchievementBadges } from "@/app/components/AchievementBadges";
+import { OnboardingWalkthrough } from "@/app/components/OnboardingWalkthrough";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useResources } from "@/hooks/useResources";
 import { useResourceProgress } from "@/hooks/useResourceProgress";
@@ -89,6 +93,8 @@ const DashboardPage = () => {
     () => (auth.user ? computeStreak(progress.progressMap) : 0),
     [auth.user, progress.progressMap]
   );
+
+  const achievements = useAchievements(stats.solved, streak, stats.bookmarked);
 
   const recentSolved = useMemo(() => {
     const solved: { problem: Problem; date: Date }[] = [];
@@ -255,8 +261,9 @@ const DashboardPage = () => {
         description="A focused cockpit for practice momentum, revision, tracks, and sprint execution."
       />
 
+      <OnboardingWalkthrough />
       <div className="mx-auto max-w-7xl space-y-6 p-4 sm:px-6 lg:px-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-        {isLoading && <LoadingState />}
+        {isLoading && <DashboardSkeleton />}
         {hasError && typeof hasError === "string" && <ErrorState message={hasError} />}
 
         {!isLoading && !hasError && (
@@ -286,10 +293,8 @@ const DashboardPage = () => {
                           {stats.total} coding problems, {allResources.length} track resources, and your most important next action in one place.
                         </p>
                         {streak > 0 && (
-                          <div className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1 shadow-sm">
-                            <Flame className="size-4 text-warning" />
-                            <span className="text-sm font-bold text-warning">{streak}</span>
-                            <span className="text-xs text-muted-foreground">day streak</span>
+                          <div className="mt-3">
+                            <AnimatedStreak streak={streak} />
                           </div>
                         )}
                       </div>
@@ -324,6 +329,11 @@ const DashboardPage = () => {
                       <div className="text-xs text-muted-foreground">Bookmarked</div>
                     </div>
                   </div>
+                  {auth.user && achievements.length > 0 && (
+                    <div className="mt-3">
+                      <AchievementBadges achievements={achievements} />
+                    </div>
+                  )}
                 </div>
                 {stats.total > 0 && (
                   <div className="relative mt-5">

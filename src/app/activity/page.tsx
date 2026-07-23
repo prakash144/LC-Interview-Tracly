@@ -9,7 +9,7 @@ import Footer from "@/app/components/Footer";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
 import ErrorState from "@/components/states/ErrorState";
-import LoadingState from "@/components/states/LoadingState";
+import { ActivitySkeleton } from "@/components/states/PageSkeletons";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
 import { useCalendarData, type TimeRangeId } from "@/hooks/useCalendarData";
 import { useGoals } from "@/hooks/useGoals";
@@ -155,7 +155,7 @@ const ActivityPage = () => {
 
       <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10">
         {hasError && typeof hasError === "string" && <ErrorState message={hasError} />}
-        {isLoading && <LoadingState message="Loading activity data..." />}
+        {isLoading && <ActivitySkeleton />}
 
         {!auth.user && !isLoading && (
           <div className="rounded-xl border border-dashed border-border bg-card/70 px-4 py-12 text-center">

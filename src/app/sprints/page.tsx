@@ -5,7 +5,7 @@ import { Plus, ChevronLeft, Target, Play, CheckCircle2, Trash2, X, Star, Sparkle
 import AppShell from "@/components/layout/AppShell";
 import Footer from "@/app/components/Footer";
 import PageHeader from "@/components/layout/PageHeader";
-import LoadingState from "@/components/states/LoadingState";
+import { SprintsSkeleton } from "@/components/states/PageSkeletons";
 import SprintCard from "@/app/components/sprints/SprintCard";
 import SprintDialog from "@/app/components/sprints/SprintDialog";
 import SprintRetroDialog from "@/app/components/sprints/SprintRetroDialog";
@@ -106,7 +106,7 @@ const SprintsPage = () => {
       />
 
       <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 pb-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
-        {loading && <LoadingState />}
+        {loading && <SprintsSkeleton />}
 
         {!auth.user && !loading && (
           <div className="rounded-lg border border-dashed border-border/80 bg-card/70 px-4 py-12 text-center shadow-sm">

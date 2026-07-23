@@ -33,7 +33,7 @@ const AppShell = ({ children, footer }: AppShellProps) => {
         onLogin={login}
         onLogout={logout}
       />
-      <main id="main-content" className="animate-in fade-in duration-300">{children}</main>
+      <main id="main-content" className="animate-in fade-in slide-in-from-bottom-1 duration-300">{children}</main>
       {footer}
     </div>
   );

@@ -6,7 +6,7 @@ import Footer from "@/app/components/Footer";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
 import ErrorState from "@/components/states/ErrorState";
-import LoadingState from "@/components/states/LoadingState";
+import { SettingsSkeleton } from "@/components/states/PageSkeletons";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
 import { useProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
@@ -60,7 +60,7 @@ const SettingsPage = () => {
         )}
 
         {progress.loading && (
-          <LoadingState message="Loading progress data..." />
+          <SettingsSkeleton />
         )}
 
         {/* Appearance */}

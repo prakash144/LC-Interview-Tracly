@@ -5,7 +5,7 @@ import { Bookmark, LogIn } from "lucide-react";
 import QuestionTable from "@/app/components/QuestionTable";
 import EmptyState from "@/components/states/EmptyState";
 import ErrorState from "@/components/states/ErrorState";
-import LoadingState from "@/components/states/LoadingState";
+import { TableSkeleton } from "@/components/states/PageSkeletons";
 import { Button } from "@/components/ui/button";
 import type { ProblemWorkspaceData } from "@/features/problems/hooks/useProblemWorkspaceData";
 import { filterProblems } from "@/features/problems/hooks/useFilteredProblems";
@@ -71,7 +71,7 @@ const FavoriteProblemsView = ({ workspace }: FavoriteProblemsViewProps) => {
 
   return (
     <section className="mx-auto max-w-7xl space-y-4 p-4 sm:px-6 lg:px-8">
-      {questionsState.loading && <LoadingState />}
+      {questionsState.loading && <TableSkeleton rows={5} />}
       {questionsState.error && <ErrorState message={questionsState.error} />}
       {auth.error && <ErrorState message={auth.error} />}
       {progress.error && <ErrorState message={progress.error} />}
