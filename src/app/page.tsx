@@ -220,6 +220,29 @@ const DashboardPage = () => {
     { title: "Progress", description: "Detailed stats and history", href: "/progress", icon: BarChart3 },
   ];
 
+  const renderQuickActions = (contentStart = false) => (
+    <section className={`grid gap-3 grid-cols-2 sm:grid-cols-4${contentStart ? " content-start" : ""}`}>
+      {quickActions.map((action) => {
+        const Icon = action.icon;
+        return (
+          <Link
+            key={action.title}
+            href={action.href}
+            className="flex flex-col items-center gap-2 rounded-lg border border-border/70 bg-card/85 p-4 text-center shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/15 hover:bg-card hover:shadow-md active:scale-[0.98]"
+          >
+            <div className="flex size-10 items-center justify-center rounded-md border border-success/20 bg-success/10 text-success">
+              <Icon className="size-5" />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-foreground">{action.title}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{action.description}</div>
+            </div>
+          </Link>
+        );
+      })}
+    </section>
+  );
+
   const handleDifficultyClick = useCallback(() => {
     router.push("/progress");
   }, [router]);
@@ -382,6 +405,7 @@ const DashboardPage = () => {
               </PremiumSurface>
             </div>
 
+            {/* Row 2: Metric Cards */}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <MetricCard label="Problem mastery" value={`${solvedPercent}%`} detail={`${stats.solved} of ${stats.total} solved`} icon={Trophy} tone="success" />
               <MetricCard label="Learning tracks" value={`${resourceCompletion}%`} detail={`${allResources.length} resources mapped`} icon={BookOpen} tone="info" />
@@ -389,7 +413,7 @@ const DashboardPage = () => {
               <MetricCard label="Active sprint" value={activeSprint ? "Live" : "None"} detail={activeSprint?.name ?? "Create a focused sprint"} icon={Kanban} tone={activeSprint ? "success" : "rose"} />
             </div>
 
-            {/* Row 2: Activity Heatmap */}
+            {/* Row 3: Activity Heatmap */}
             <section>
               <Heatmap uid={auth.user?.uid} />
               {auth.user && (
@@ -401,7 +425,7 @@ const DashboardPage = () => {
               )}
             </section>
 
-            {/* Row 3: Continue Solving + Recent Activity */}
+            {/* Row 4: Continue Solving + Recent Activity */}
             <div className="grid gap-4 lg:grid-cols-2">
               <PremiumSurface interactive className="p-5">
                 <SectionHeader eyebrow="Momentum" title="Continue Solving" icon={Play} className="mb-3" />
@@ -491,7 +515,7 @@ const DashboardPage = () => {
               </PremiumSurface>
             </div>
 
-            {/* Row 4: Difficulty Breakdown + Company Progress */}
+            {/* Row 5: Difficulty Breakdown + Company Progress */}
             <div className="grid gap-4 lg:grid-cols-2">
               <PremiumSurface interactive className="p-5">
                 <SectionHeader eyebrow="Coverage" title="Difficulty Breakdown" icon={BarChart3} className="mb-3" />
@@ -567,12 +591,17 @@ const DashboardPage = () => {
               </PremiumSurface>
             </div>
 
-            {/* Row 5: Active Sprint */}
-            {activeSprint && (
-              <ActiveSprintWidget sprint={activeSprint} uid={auth.user?.uid} />
+            {/* Active Sprint + Quick Actions */}
+            {activeSprint ? (
+              <div className="grid gap-4 lg:grid-cols-2">
+                <ActiveSprintWidget sprint={activeSprint} uid={auth.user?.uid} />
+                {renderQuickActions(true)}
+              </div>
+            ) : (
+              renderQuickActions()
             )}
 
-            {/* Row 6: Daily Mission */}
+            {/* Daily Mission */}
             <DailyMissionWidget
               uid={auth.user?.uid}
               sprintId={activeSprint?.id}
@@ -583,70 +612,50 @@ const DashboardPage = () => {
               }}
             />
 
-            {/* Row 7: Track Progress */}
-            {allResources.length > 0 && (
-              <PremiumSurface interactive className="p-5">
-                <SectionHeader
-                  eyebrow="Learning system"
-                  title="Track Progress"
-                  description="Knowledge resources organized by preparation track."
-                  icon={BookOpen}
-                  action={<CommandLink href="/tracks" className="text-muted-foreground hover:text-foreground">View all</CommandLink>}
-                  className="mb-4"
-                />
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {tracks.map((track) => {
-                    const trackResources = allResources.filter((r) => r.track === track.id);
-                    const total = trackResources.length;
-                    if (total === 0) return null;
-                    const completed = trackResources.filter((r) => resourceProgress[r.id]?.status === "completed").length;
-                    const pct = Math.round((completed / total) * 100);
-                    return (
-                      <Link
-                        key={track.id}
-                        href={`/tracks/${track.id}`}
-                        className="group rounded-lg border border-border bg-background p-3 hover:bg-accent transition-colors"
-                      >
-                        <div className="flex items-center gap-2.5 mb-2">
-                          <span className="text-lg">{track.icon}</span>
-                          <span className={`text-sm font-medium ${track.color}`}>{track.name}</span>
-                          <span className="ml-auto text-xs text-muted-foreground">{completed}/{total}</span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                          <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${pct}%` }} />
-                        </div>
-                        <div className="mt-1 text-[10px] text-muted-foreground">{pct}% complete</div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </PremiumSurface>
+            {/* Track Progress + Bookmarks */}
+            {allResources.length > 0 ? (
+              <div className="grid gap-4 lg:grid-cols-2">
+                <PremiumSurface interactive className="p-5">
+                  <SectionHeader
+                    eyebrow="Learning system"
+                    title="Track Progress"
+                    description="Knowledge resources organized by preparation track."
+                    icon={BookOpen}
+                    action={<CommandLink href="/tracks" className="text-muted-foreground hover:text-foreground">View all</CommandLink>}
+                    className="mb-4"
+                  />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {tracks.map((track) => {
+                      const trackResources = allResources.filter((r) => r.track === track.id);
+                      const total = trackResources.length;
+                      if (total === 0) return null;
+                      const completed = trackResources.filter((r) => resourceProgress[r.id]?.status === "completed").length;
+                      const pct = Math.round((completed / total) * 100);
+                      return (
+                        <Link
+                          key={track.id}
+                          href={`/tracks/${track.id}`}
+                          className="group rounded-lg border border-border bg-background p-3 hover:bg-accent transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5 mb-2">
+                            <span className="text-lg">{track.icon}</span>
+                            <span className={`text-sm font-medium ${track.color}`}>{track.name}</span>
+                            <span className="ml-auto text-xs text-muted-foreground">{completed}/{total}</span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                            <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${pct}%` }} />
+                          </div>
+                          <div className="mt-1 text-[10px] text-muted-foreground">{pct}% complete</div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </PremiumSurface>
+                <FavoriteResourcesWidget />
+              </div>
+            ) : (
+              <FavoriteResourcesWidget />
             )}
-
-            {/* Row 7: Bookmarks */}
-            <FavoriteResourcesWidget />
-
-            {/* Row 8: Quick Actions */}
-            <section className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-              {quickActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <Link
-                    key={action.title}
-                    href={action.href}
-                    className="flex flex-col items-center gap-2 rounded-lg border border-border/70 bg-card/85 p-4 text-center shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/15 hover:bg-card hover:shadow-md active:scale-[0.98]"
-                  >
-                    <div className="flex size-10 items-center justify-center rounded-md border border-success/20 bg-success/10 text-success">
-                      <Icon className="size-5" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-foreground">{action.title}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{action.description}</div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </section>
           </>
         )}
       </div>

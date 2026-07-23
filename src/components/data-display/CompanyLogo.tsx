@@ -53,6 +53,7 @@ const CompanyLogo = memo(function CompanyLogo({
       title={company}
       aria-label={company}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={`https://cdn.simpleicons.org/${slug}/888`}
         alt={company}
