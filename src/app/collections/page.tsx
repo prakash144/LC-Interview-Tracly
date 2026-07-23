@@ -118,7 +118,7 @@ const CollectionsPage = () => {
             <main className="flex-1 min-w-0">
               <CollectionView
                 collection={selectedCollection}
-                questions={questionsState.questions}
+                questions={workspace.unifiedProblems.length > 0 ? workspace.unifiedProblems : questionsState.questions}
                 progressMap={progress.progressMap}
                 progressLoading={progress.loading}
                 progressEnabled={Boolean(auth.user)}

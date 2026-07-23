@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-export const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 
 export const usePagination = (totalItems: number, initialPageSize = 25) => {
   const [currentPage, setCurrentPage] = useState(1);

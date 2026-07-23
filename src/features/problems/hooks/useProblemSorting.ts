@@ -54,9 +54,13 @@ export const sortProblems = (
   return sorted;
 };
 
-export const useProblemSorting = (problems: Problem[]) => {
-  const [sortBy, setSortBy] = useState<ProblemSortField | null>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+export const useProblemSorting = (
+  problems: Problem[],
+  initialSortBy: ProblemSortField | null = null,
+  initialSortDirection: SortDirection = "asc",
+) => {
+  const [sortBy, setSortBy] = useState<ProblemSortField | null>(initialSortBy);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(initialSortDirection);
 
   const sortedProblems = useMemo(
     () => sortProblems(problems, { sortBy, sortDirection }),

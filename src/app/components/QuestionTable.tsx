@@ -19,6 +19,7 @@ import {
     type ProblemStatusFilter,
     useFilteredProblems,
 } from "@/features/problems/hooks/useFilteredProblems";
+import { loadCodingPrefs, mapSortingToState } from "@/lib/codingPreferences";
 import { useProblemSorting } from "@/features/problems/hooks/useProblemSorting";
 import { usePagination } from "@/features/problems/hooks/usePagination";
 import ProblemPagination from "@/features/problems/components/ProblemPagination";
@@ -131,8 +132,10 @@ const QuestionTable = ({
         progressMap,
         collectionProblemIds,
     });
+    const prefs = loadCodingPrefs();
+    const initialSort = mapSortingToState(prefs.sorting);
     const { sortedProblems, sortBy, sortDirection, handleSort } =
-        useProblemSorting(filteredQuestions);
+        useProblemSorting(filteredQuestions, initialSort.sortBy, initialSort.sortDirection);
     const {
         currentPage,
         pageSize,
@@ -140,7 +143,7 @@ const QuestionTable = ({
         setCurrentPage,
         setPageSize,
         totalPages,
-    } = usePagination(sortedProblems.length);
+    } = usePagination(sortedProblems.length, prefs.pageSize);
     const paginatedProblems = sortedProblems.slice(
         (currentPage - 1) * pageSize,
         currentPage * pageSize

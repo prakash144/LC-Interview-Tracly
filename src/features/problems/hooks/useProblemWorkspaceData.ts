@@ -7,15 +7,15 @@ import { fetchUnifiedProblems } from "@/app/services/fetchUnifiedProblems";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProblemProgress } from "@/hooks/useProblemProgress";
+import { loadCodingPrefs } from "@/lib/codingPreferences";
 import { useProblemFilters } from "./useProblemFilters";
 import type { Problem } from "@/lib/progressTypes";
 
-const DEFAULT_COMPANY = "Google";
-const DEFAULT_LIST = "5. All.csv";
+const initialPrefs = typeof window !== "undefined" ? loadCodingPrefs() : null;
 
 export const useProblemWorkspaceData = () => {
-  const [selectedCompany, setSelectedCompany] = useState(DEFAULT_COMPANY);
-  const [selectedList, setSelectedList] = useState(DEFAULT_LIST);
+  const [selectedCompany, setSelectedCompany] = useState(initialPrefs?.company ?? "Google");
+  const [selectedList, setSelectedList] = useState(initialPrefs?.sheet ?? "5. All.csv");
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [unifiedProblems, setUnifiedProblems] = useState<Problem[]>([]);
   const [unifiedLoading, setUnifiedLoading] = useState(true);

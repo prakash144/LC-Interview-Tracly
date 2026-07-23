@@ -27,6 +27,7 @@ import { useResourceProgress } from "@/hooks/useResourceProgress";
 import { useSprints, useSprintTasks } from "@/hooks/useSprints";
 import FavoriteResourcesWidget from "@/app/components/FavoriteResourcesWidget";
 import DailyMissionWidget from "@/app/components/DailyMission";
+import { useGoals } from "@/hooks/useGoals";
 import { useTracks } from "@/hooks/useTracks";
 import { useRevisionTracker } from "@/hooks/useRevisionTracker";
 import type { Problem, UserProblemProgress } from "@/lib/progressTypes";
@@ -82,6 +83,7 @@ const DashboardPage = () => {
   const { sprints } = useSprints(auth.user?.uid);
   const { tracks } = useTracks(auth.user?.uid);
   const revisionTracker = useRevisionTracker(progress.progressMap, questionsState.questions);
+  const { settings: goalSettings } = useGoals();
   const activeSprint = sprints.find((s) => s.status === "active");
 
   const solvedPercent = useMemo(() => {
@@ -133,6 +135,35 @@ const DashboardPage = () => {
     }
     return last;
   }, [questionsState.questions, progress.progressMap]);
+
+  const weeklySolved = useMemo(() => {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    let count = 0;
+    for (const p of Object.values(progress.progressMap)) {
+      if (p.solved && p.solvedAt) {
+        const d = new Date(p.solvedAt.seconds * 1000);
+        if (d >= weekAgo) count++;
+      }
+    }
+    return count;
+  }, [progress.progressMap]);
+
+  const dailySolved = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let count = 0;
+    for (const p of Object.values(progress.progressMap)) {
+      if (p.solved && p.solvedAt) {
+        const d = new Date(p.solvedAt.seconds * 1000);
+        if (d >= today) count++;
+      }
+    }
+    return count;
+  }, [progress.progressMap]);
+
+  const weeklyGoalPct = goalSettings.weeklyTarget > 0 ? Math.min(100, Math.round((weeklySolved / goalSettings.weeklyTarget) * 100)) : 0;
+  const dailyGoalPct = goalSettings.dailyTarget > 0 ? Math.min(100, Math.round((dailySolved / goalSettings.dailyTarget) * 100)) : 0;
 
   const topCompanies = useMemo(() => {
     return stats.companyStats
@@ -287,7 +318,7 @@ const DashboardPage = () => {
                           Smart prep overview
                         </div>
                         <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                          {auth.user.displayName ? `Welcome back, ${auth.user.displayName}` : "Welcome back"}
+                          {auth.user.displayName ? `Welcome back, ${auth.user.displayName.split(" ")[0]}` : "Welcome back"}
                         </h2>
                         <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
                           {stats.total} coding problems, {allResources.length} track resources, and your most important next action in one place.
@@ -350,6 +381,28 @@ const DashboardPage = () => {
                       aria-label="Overall progress"
                     >
                       <div className="h-full rounded-full bg-gradient-to-r from-success via-info to-warning transition-all duration-500" style={{ width: `${solvedPercent}%` }} />
+                    </div>
+                  </div>
+                )}
+                {auth.user && (
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border border-border/50 bg-background/40 p-3">
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <span className="text-muted-foreground">Daily Goal</span>
+                        <span className="font-medium text-foreground tabular-nums">{dailySolved}/{goalSettings.dailyTarget}</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-secondary/60">
+                        <div className="h-full rounded-full bg-info transition-all duration-500" style={{ width: `${dailyGoalPct}%` }} />
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-border/50 bg-background/40 p-3">
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <span className="text-muted-foreground">Weekly Goal</span>
+                        <span className="font-medium text-foreground tabular-nums">{weeklySolved}/{goalSettings.weeklyTarget}</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-secondary/60">
+                        <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${weeklyGoalPct}%` }} />
+                      </div>
                     </div>
                   </div>
                 )}

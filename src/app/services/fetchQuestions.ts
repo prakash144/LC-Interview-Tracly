@@ -27,7 +27,7 @@ const fetchCSV = async (url: string): Promise<CsvItem[]> => {
         const response = await fetch(url);
 
         if (!response.ok) {
-            throw new Error(`Unable to load CSV: ${response.status} ${response.statusText}`);
+            throw new Error(`Unable to load CSV: ${response.status} ${response.statusText} — ${url}`);
         }
 
         text = await response.text();

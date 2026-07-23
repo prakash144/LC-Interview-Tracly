@@ -104,7 +104,7 @@ const UserMenu = ({
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-border" />
         <DropdownMenuItem asChild className="cursor-pointer hover:bg-accent">
-          <Link href="/settings" className="flex items-center gap-3">
+          <Link href="/settings?tab=profile" className="flex items-center gap-3">
             <UserIcon className="size-4" />
             My Profile
           </Link>
@@ -116,7 +116,7 @@ const UserMenu = ({
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="cursor-pointer hover:bg-accent">
-          <Link href="/settings" className="flex items-center gap-3">
+          <Link href="/settings?tab=preferences" className="flex items-center gap-3">
             <Settings className="size-4" />
             Settings
           </Link>
