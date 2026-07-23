@@ -53,7 +53,7 @@ function LogoMark({ className }: { className?: string }) {
   );
 }
 
-const repoName = 'LC-Interview-Tracly';
+const repoName = 'Interview-Tracly';
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || (process.env.NODE_ENV === "production" ? `/${repoName}` : "");
 
 function Logo({ className, showTagline = true, compact = false }: LogoProps) {
