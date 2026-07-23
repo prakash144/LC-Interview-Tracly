@@ -1,10 +1,20 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { BarChart3, Database, Eye, ListChecks, RotateCcw, Star } from "lucide-react";
+import { BarChart3, Columns3, Database, Eye, ListChecks, RotateCcw, Star } from "lucide-react";
 import type { Problem, ProgressMap, CustomList } from "@/lib/progressTypes";
 import EmptyState from "@/components/states/EmptyState";
 import DifficultyBadge from "@/components/data-display/DifficultyBadge";
 import TopicBadge from "@/components/data-display/TopicBadge";
 import { PremiumSurface, SectionHeader } from "@/components/ui/premium";
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import {
     type ProblemStatusFilter,
     useFilteredProblems,
@@ -43,6 +53,40 @@ interface QuestionTableProps {
     collectionProblemIds?: Set<string>;
 }
 
+const COLUMNS = [
+    { key: "index", label: "#" },
+    { key: "problem", label: "Problem" },
+    { key: "acceptance", label: "Acceptance" },
+    { key: "difficulty", label: "Difficulty" },
+    { key: "frequency", label: "Frequency" },
+    { key: "topic", label: "Topic" },
+    { key: "status", label: "Status" },
+    { key: "attempted", label: "Attempted" },
+    { key: "bookmarked", label: "Saved" },
+    { key: "revision", label: "Revision" },
+    { key: "notes", label: "Notes" },
+    { key: "list", label: "List" },
+] as const;
+
+type ColumnKey = (typeof COLUMNS)[number]["key"];
+
+const STORAGE_KEY = "qtable-columns";
+
+const defaultVisibility: Record<ColumnKey, boolean> = {
+    index: true,
+    problem: true,
+    acceptance: true,
+    difficulty: true,
+    frequency: true,
+    topic: true,
+    status: true,
+    attempted: true,
+    bookmarked: true,
+    revision: true,
+    notes: true,
+    list: true,
+};
+
 const QuestionTable = ({
                              questions,
                              difficultyFilter,
@@ -61,6 +105,24 @@ const QuestionTable = ({
                              customLists,
                              collectionProblemIds,
                          }: QuestionTableProps) => {
+    const [columnVisibility, setColumnVisibility] = useState<Record<ColumnKey, boolean>>(() => {
+        if (typeof window !== "undefined") {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) return { ...defaultVisibility, ...JSON.parse(stored) };
+            } catch {}
+        }
+        return defaultVisibility;
+    });
+
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(columnVisibility));
+    }, [columnVisibility]);
+
+    const toggleColumn = (key: ColumnKey) => {
+        setColumnVisibility((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
     const filteredQuestions = useFilteredProblems(questions, {
         difficulty: difficultyFilter,
         selectedTopics,
@@ -140,7 +202,7 @@ const QuestionTable = ({
                 <EmptyState message="No questions match the current filters." />
             )}
 
-            {/* 🔽 Mobile Problem Cards */}
+            {/* Mobile Problem Cards */}
             <div className="block lg:hidden">
                 {sortedProblems.length > 0 && (
                     <ProblemCardList
@@ -158,7 +220,7 @@ const QuestionTable = ({
                 )}
             </div>
 
-            {/* 🔽 Desktop Question Table */}
+            {/* Desktop Question Table */}
             <div className="hidden lg:block">
             {sortedProblems.length > 0 && (
             <PremiumSurface className="overflow-hidden">
@@ -168,47 +230,76 @@ const QuestionTable = ({
                     title={`${sortedProblems.length} matching problems`}
                     description="Sort by acceptance and frequency, then mark solved, attempted, saved, or revision in place."
                     icon={ListChecks}
-                    action={<span className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-background/70 px-2.5 py-1 text-[11px] text-muted-foreground"><Eye className="size-3" />{pageSize} per page</span>}
+                    action={
+                        <div className="flex items-center gap-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="h-7 gap-1 text-[11px] px-2.5">
+                                        <Columns3 className="size-3" />
+                                        Columns
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40">
+                                    {COLUMNS.filter((col) => col.key !== "list" || customLists).map((col) => (
+                                        <DropdownMenuCheckboxItem
+                                            key={col.key}
+                                            checked={columnVisibility[col.key]}
+                                            onCheckedChange={() => toggleColumn(col.key)}
+                                        >
+                                            {col.label}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <span className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-background/70 px-2.5 py-1 text-[11px] text-muted-foreground">
+                                <Eye className="size-3" />{pageSize} per page
+                            </span>
+                        </div>
+                    }
                 />
             </div>
             <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-foreground" aria-label="Problems table">
-                <thead className="sticky top-0 z-10 border-b border-border/70 bg-card/95 text-xs uppercase tracking-wide text-muted-foreground backdrop-blur">
+            <table className="w-full text-left text-xs text-foreground" aria-label="Problems table">
+                <thead className="sticky top-0 z-10 border-b border-border/70 bg-card/95 text-[10px] uppercase tracking-wide text-muted-foreground backdrop-blur">
                 <tr>
-                    <th className="w-14 px-4 py-3">#</th>
-                    <th className="sticky left-0 z-20 min-w-72 bg-card/95 px-4 py-3 backdrop-blur">Problem</th>
-                    <th
-                        className="cursor-pointer px-4 py-3 transition-colors hover:text-foreground"
-                        onClick={() => handleSort("acceptanceRate")}
-                        aria-sort={sortBy === "acceptanceRate" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
-                    >
-                        Acceptance
-                        {sortBy === "acceptanceRate" && (
-                            <span className={sortDirection === "asc" ? "text-success" : "text-destructive"}>
-                                    {sortDirection === "asc" ? "↑" : "↓"}
-                                </span>
-                        )}
-                    </th>
-                    <th className="px-4 py-3">Difficulty</th>
-                    <th
-                        className="cursor-pointer px-4 py-3 transition-colors hover:text-foreground"
-                        onClick={() => handleSort("frequency")}
-                        aria-sort={sortBy === "frequency" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
-                    >
-                        Frequency
-                        {sortBy === "frequency" && (
-                            <span className={sortDirection === "asc" ? "text-success" : "text-destructive"}>
-                                    {sortDirection === "asc" ? "↑" : "↓"}
-                                </span>
-                        )}
-                    </th>
-                    <th className="px-4 py-3">Topic</th>
-                    <th className="px-4 py-3 text-center">Status</th>
-                    <th className="px-4 py-3 text-center">Attempted</th>
-                    <th className="px-4 py-3 text-center"><Star className="size-4 inline-block text-yellow-400" /></th>
-                    <th className="px-4 py-3 text-center">Revision</th>
-                    <th className="px-4 py-3 text-center">Notes</th>
-                    {customLists && <th className="px-4 py-3 text-center">List</th>}
+                    {columnVisibility.index && <th className="w-10 px-3 py-2.5">#</th>}
+                    {columnVisibility.problem && <th className="sticky left-0 z-20 min-w-56 bg-card/95 px-3 py-2.5 backdrop-blur">Problem</th>}
+                    {columnVisibility.acceptance && (
+                        <th
+                            className="cursor-pointer px-3 py-2.5 transition-colors hover:text-foreground"
+                            onClick={() => handleSort("acceptanceRate")}
+                            aria-sort={sortBy === "acceptanceRate" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
+                        >
+                            Acceptance
+                            {sortBy === "acceptanceRate" && (
+                                <span className={sortDirection === "asc" ? "text-success" : "text-destructive"}>
+                                        {sortDirection === "asc" ? "↑" : "↓"}
+                                    </span>
+                            )}
+                        </th>
+                    )}
+                    {columnVisibility.difficulty && <th className="px-3 py-2.5">Difficulty</th>}
+                    {columnVisibility.frequency && (
+                        <th
+                            className="cursor-pointer px-3 py-2.5 transition-colors hover:text-foreground"
+                            onClick={() => handleSort("frequency")}
+                            aria-sort={sortBy === "frequency" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
+                        >
+                            Frequency
+                            {sortBy === "frequency" && (
+                                <span className={sortDirection === "asc" ? "text-success" : "text-destructive"}>
+                                        {sortDirection === "asc" ? "↑" : "↓"}
+                                    </span>
+                            )}
+                        </th>
+                    )}
+                    {columnVisibility.topic && <th className="px-3 py-2.5">Topic</th>}
+                    {columnVisibility.status && <th className="px-3 py-2.5 text-center">Status</th>}
+                    {columnVisibility.attempted && <th className="px-3 py-2.5 text-center">Attempted</th>}
+                    {columnVisibility.bookmarked && <th className="px-3 py-2.5 text-center"><Star className="size-3.5 inline-block text-yellow-400" /></th>}
+                    {columnVisibility.revision && <th className="px-3 py-2.5 text-center">Revision</th>}
+                    {columnVisibility.notes && <th className="px-3 py-2.5 text-center">Notes</th>}
+                    {customLists && columnVisibility.list && <th className="px-3 py-2.5 text-center">List</th>}
                 </tr>
                 </thead>
                 <tbody>
@@ -217,93 +308,113 @@ const QuestionTable = ({
 
                     return (
                     <tr key={`${q.company}-${q.list}-${q.problemId}`} className="border-b border-border/60 bg-background/35 transition-colors duration-150 hover:bg-accent/45">
-                        <td className="px-4 py-3 text-xs tabular-nums text-muted-foreground">{range.from + index}</td>
-                        <td className="sticky left-0 z-10 bg-background/95 px-4 py-3 font-medium backdrop-blur">
-                            <a href={q.link} target="_blank" rel="noopener noreferrer" title={q.title} className="line-clamp-2 text-foreground transition-colors hover:text-info">
-                                {q.title}
-                            </a>
-                        </td>
-                        <td className="px-4 py-3 tabular-nums text-muted-foreground">
-                            {typeof q.acceptanceRate === "number" ? q.acceptanceRate.toFixed(2) : q.acceptanceRate}
-                        </td>
-                        <td className="px-4 py-3">
-                            <DifficultyBadge difficulty={q.difficulty} />
-                        </td>
-                        <td className="px-4 py-3 tabular-nums text-muted-foreground">{q.frequency}</td>
-                        <td className="px-4 py-3">
-                            {q.topicTag.split(",").map((topic) => {
-                                const trimmed = topic.trim();
-                                const isSelected = selectedTopics.includes(trimmed);
-                                return (
-                                    <TopicBadge key={trimmed} topic={trimmed} active={isSelected} className="mr-1 mb-1" />
-                                );
-                            })}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                            <input
-                                type="checkbox"
-                                title="Mark as solved"
-                                aria-label={progress?.solved ? "Mark as unsolved" : "Mark as solved"}
-                                checked={Boolean(progress?.solved)}
-                                onChange={() => requireProgressOrRun(() => onToggleSolved(q))}
-                                className="form-checkbox size-4 cursor-pointer rounded border-border bg-muted text-success"
-                            />
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                            <input
-                                type="checkbox"
-                                title="Mark as attempted"
-                                aria-label={progress?.attempted ? "Remove attempt" : "Mark as attempted"}
-                                checked={Boolean(progress?.attempted)}
-                                onChange={() => requireProgressOrRun(() => onToggleAttempted(q))}
-                                className="form-checkbox size-4 cursor-pointer rounded border-border bg-muted text-info"
-                            />
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                            <button
-                                type="button"
-                                onClick={() => requireProgressOrRun(() => onToggleBookmarked(q))}
-                                title={progress?.bookmarked ? "Remove from favorites" : "Add to favorites"}
-                                aria-label={progress?.bookmarked ? "Remove from favorites" : "Add to favorites"}
-                                aria-pressed={Boolean(progress?.bookmarked)}
-                                className={`inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
-                                    progress?.bookmarked
-                                        ? "border border-warning/25 bg-yellow-400/10 text-warning"
-                                        : "text-muted-foreground hover:bg-accent hover:text-warning"
-                                }`}
-                            >
-                                <Star className={`size-4 ${progress?.bookmarked ? "fill-yellow-400 text-yellow-400" : ""}`} />
-                                <span className="sr-only sm:not-sr-only">
-                                    {progress?.bookmarked ? "Saved" : "Save"}
-                                </span>
-                            </button>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                            <button
-                                onClick={() => requireProgressOrRun(() => onToggleRevision(q))}
-                                title="Toggle revision"
-                                aria-label={progress?.inRevisionList ? "Remove from revision list" : "Add to revision list"}
-                                className={`cursor-pointer inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
-                                    progress?.inRevisionList
-                                        ? "border border-cyan-500/25 bg-cyan-500/15 text-cyan-400"
-                                        : "text-muted-foreground hover:bg-accent hover:text-cyan-400"
-                                }`}
-                            >
-                                <RotateCcw className="size-3.5" />
-                                <span className="sr-only sm:not-sr-only">Revise</span>
-                            </button>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                            <NotesDialog
-                                problem={q}
-                                notes={progress?.notes ?? ""}
-                                disabled={!progressEnabled}
-                                onRequireAuth={onRequireAuth}
-                                onSave={onSaveNotes}
-                            />
-                        </td>
-                        {customLists && (
-                            <td className="px-4 py-3 text-center">
+                        {columnVisibility.index && <td className="px-3 py-2.5 tabular-nums text-muted-foreground">{range.from + index}</td>}
+                        {columnVisibility.problem && (
+                            <td className="sticky left-0 z-10 bg-background/95 px-3 py-2.5 font-medium backdrop-blur">
+                                <a href={q.link} target="_blank" rel="noopener noreferrer" title={q.title} className="line-clamp-2 text-foreground transition-colors hover:text-info leading-snug">
+                                    {q.title}
+                                </a>
+                            </td>
+                        )}
+                        {columnVisibility.acceptance && (
+                            <td className="px-3 py-2.5 tabular-nums text-muted-foreground">
+                                {typeof q.acceptanceRate === "number" ? q.acceptanceRate.toFixed(2) : q.acceptanceRate}
+                            </td>
+                        )}
+                        {columnVisibility.difficulty && (
+                            <td className="px-3 py-2.5">
+                                <DifficultyBadge difficulty={q.difficulty} />
+                            </td>
+                        )}
+                        {columnVisibility.frequency && (
+                            <td className="px-3 py-2.5 tabular-nums text-muted-foreground">{q.frequency}</td>
+                        )}
+                        {columnVisibility.topic && (
+                            <td className="px-3 py-2.5">
+                                {q.topicTag.split(",").map((topic) => {
+                                    const trimmed = topic.trim();
+                                    const isSelected = selectedTopics.includes(trimmed);
+                                    return (
+                                        <TopicBadge key={trimmed} topic={trimmed} active={isSelected} className="mr-1 mb-1" />
+                                    );
+                                })}
+                            </td>
+                        )}
+                        {columnVisibility.status && (
+                            <td className="px-3 py-2.5 text-center">
+                                <input
+                                    type="checkbox"
+                                    title="Mark as solved"
+                                    aria-label={progress?.solved ? "Mark as unsolved" : "Mark as solved"}
+                                    checked={Boolean(progress?.solved)}
+                                    onChange={() => requireProgressOrRun(() => onToggleSolved(q))}
+                                    className="form-checkbox size-3.5 cursor-pointer rounded border-border bg-muted text-success"
+                                />
+                            </td>
+                        )}
+                        {columnVisibility.attempted && (
+                            <td className="px-3 py-2.5 text-center">
+                                <input
+                                    type="checkbox"
+                                    title="Mark as attempted"
+                                    aria-label={progress?.attempted ? "Remove attempt" : "Mark as attempted"}
+                                    checked={Boolean(progress?.attempted)}
+                                    onChange={() => requireProgressOrRun(() => onToggleAttempted(q))}
+                                    className="form-checkbox size-3.5 cursor-pointer rounded border-border bg-muted text-info"
+                                />
+                            </td>
+                        )}
+                        {columnVisibility.bookmarked && (
+                            <td className="px-3 py-2.5 text-center">
+                                <button
+                                    type="button"
+                                    onClick={() => requireProgressOrRun(() => onToggleBookmarked(q))}
+                                    title={progress?.bookmarked ? "Remove from favorites" : "Add to favorites"}
+                                    aria-label={progress?.bookmarked ? "Remove from favorites" : "Add to favorites"}
+                                    aria-pressed={Boolean(progress?.bookmarked)}
+                                    className={`inline-flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] transition-colors ${
+                                        progress?.bookmarked
+                                            ? "border border-warning/25 bg-yellow-400/10 text-warning"
+                                            : "text-muted-foreground hover:bg-accent hover:text-warning"
+                                    }`}
+                                >
+                                    <Star className={`size-3.5 ${progress?.bookmarked ? "fill-yellow-400 text-yellow-400" : ""}`} />
+                                    <span className="sr-only sm:not-sr-only">
+                                        {progress?.bookmarked ? "Saved" : "Save"}
+                                    </span>
+                                </button>
+                            </td>
+                        )}
+                        {columnVisibility.revision && (
+                            <td className="px-3 py-2.5 text-center">
+                                <button
+                                    onClick={() => requireProgressOrRun(() => onToggleRevision(q))}
+                                    title="Toggle revision"
+                                    aria-label={progress?.inRevisionList ? "Remove from revision list" : "Add to revision list"}
+                                    className={`cursor-pointer inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] transition-colors ${
+                                        progress?.inRevisionList
+                                            ? "border border-cyan-500/25 bg-cyan-500/15 text-cyan-400"
+                                            : "text-muted-foreground hover:bg-accent hover:text-cyan-400"
+                                    }`}
+                                >
+                                    <RotateCcw className="size-3" />
+                                    <span className="sr-only sm:not-sr-only">Revise</span>
+                                </button>
+                            </td>
+                        )}
+                        {columnVisibility.notes && (
+                            <td className="px-3 py-2.5 text-center">
+                                <NotesDialog
+                                    problem={q}
+                                    notes={progress?.notes ?? ""}
+                                    disabled={!progressEnabled}
+                                    onRequireAuth={onRequireAuth}
+                                    onSave={onSaveNotes}
+                                />
+                            </td>
+                        )}
+                        {customLists && columnVisibility.list && (
+                            <td className="px-3 py-2.5 text-center">
                                 <AddToListDialog
                                     problemId={q.problemId}
                                     problemTitle={q.title}

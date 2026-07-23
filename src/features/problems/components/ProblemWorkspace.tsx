@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { BookOpen, CheckCircle2, RotateCcw, Star, Target } from "lucide-react";
+import { CheckCircle2, PenTool, RotateCcw, Star, Target } from "lucide-react";
 import FilterBar from "@/app/components/FilterBar";
 import QuestionTable from "@/app/components/QuestionTable";
 import ErrorState from "@/components/states/ErrorState";
@@ -82,7 +82,7 @@ const ProblemWorkspace = ({ workspace }: ProblemWorkspaceProps) => {
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
               {[
                 { label: "Solved", value: workspaceStats.solved, icon: CheckCircle2, tone: "text-success bg-success/10 border-success/20" },
-                { label: "Attempted", value: workspaceStats.attempted, icon: BookOpen, tone: "text-info bg-info/10 border-info/20" },
+                { label: "Attempted", value: workspaceStats.attempted, icon: PenTool, tone: "text-info bg-info/10 border-info/20" },
                 { label: "Saved", value: workspaceStats.bookmarked, icon: Star, tone: "text-warning bg-warning/10 border-warning/20" },
                 { label: "Revision", value: workspaceStats.revision, icon: RotateCcw, tone: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20" },
               ].map((item) => (

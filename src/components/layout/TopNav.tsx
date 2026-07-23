@@ -6,7 +6,7 @@ import { memo, useState, useCallback, useEffect } from "react";
 import type { User } from "firebase/auth";
 import {
   BarChart3, CalendarDays, Crosshair, LayoutDashboard,
-  LibraryBig, ListChecks, Menu, Moon, Search, Sun, Layers, Kanban, Bell,
+  ListChecks, Menu, Moon, Search, Sun, Layers, Kanban, Bell,
   CheckCircle2, Clock3, RotateCcw, Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -44,7 +44,6 @@ const navItems = [
   { label: "Progress", href: "/progress", icon: BarChart3 },
   { label: "Activity", href: "/activity", icon: CalendarDays },
   { label: "Readiness", href: "/readiness", icon: Crosshair },
-  { label: "Collections", href: "/collections", icon: LibraryBig },
 ] as const;
 
 const NavLink = memo(function NavLink({
@@ -328,7 +327,7 @@ const TopNav = ({
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-4">
               <div className="flex flex-col gap-6 pt-8">
-                <Logo showTagline={false} />
+                <Logo compact />
                 <nav aria-label="Mobile navigation" className="flex flex-col gap-1">
                   {navItems.map((item) => (
                     <MobileNavItem

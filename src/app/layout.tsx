@@ -22,14 +22,14 @@ export const metadata: Metadata = {
     description: "Track your journey. Crack your dream company.",
     icons: {
         icon: [
-            { url: `${basePath}/favicon-32x32.png`, sizes: "32x32", type: "image/png" },
-            { url: `${basePath}/favicon-16x16.png`, sizes: "16x16", type: "image/png" },
-            { url: `${basePath}/favicon.svg`, type: "image/svg+xml" },
+            { url: `${basePath}/assets/branding/favicon/favicon-32x32.png`, sizes: "32x32", type: "image/png" },
+            { url: `${basePath}/assets/branding/favicon/favicon-16x16.png`, sizes: "16x16", type: "image/png" },
+            { url: `${basePath}/assets/branding/favicon/favicon.ico`, type: "image/x-icon" },
         ],
-        apple: `${basePath}/apple-touch-icon.png`,
-        shortcut: { url: `${basePath}/favicon-48x48.png`, type: "image/png" },
+        apple: `${basePath}/assets/branding/favicon/apple-touch-icon.png`,
+        shortcut: { url: `${basePath}/assets/branding/favicon/favicon-32x32.png`, type: "image/png" },
     },
-    manifest: `${basePath}/manifest.json`,
+    manifest: `${basePath}/assets/branding/favicon/site.webmanifest`,
     openGraph: {
         title: "Interview Tracly",
         description: "Track your journey. Crack your dream company.",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
         siteName: "Interview Tracly",
         images: [
             {
-                url: "/icon-192x192.png",
+                url: `${basePath}/assets/branding/favicon/android-chrome-192x192.png`,
                 width: 192,
                 height: 192,
                 alt: "Interview Tracly",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "Interview Tracly",
         description: "Track your journey. Crack your dream company.",
-        images: ["/icon-192x192.png"],
+        images: [`${basePath}/assets/branding/favicon/android-chrome-192x192.png`],
     },
 };
 
